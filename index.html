@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Group Travel Poll</title>
+  <title>Madrid Group Trip Poll</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,7 +38,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Google Sans', 'Inter', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
 
-    body { background-color: var(--md-sys-color-background); color: var(--md-sys-color-on-surface); min-height: 100vh; display: flex; justify-content: center; padding: 16px 12px 48px 12px; }
+    body { background-color: var(--md-sys-color-background); color: var(--md-sys-color-on-surface); min-height: 100vh; display: flex; justify-content: center; padding: 16px 12px 80px 12px; }
 
     .app-container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 16px; }
 
@@ -54,10 +54,62 @@
       overflow: hidden;
     }
     
-    .header-card h1 { font-size: 1.6rem; font-weight: 700; color: #ffffff; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-    .header-card p { font-size: 0.9rem; color: #e2e8f0; margin-top: 6px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+    .header-card h1 { font-size: 1.8rem; font-weight: 700; color: #ffffff; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    .header-card p { font-size: 0.95rem; color: #e2e8f0; margin-top: 6px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); font-weight: 500; }
 
-    .user-badge { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 6px 16px; background: rgba(29, 58, 112, 0.85); backdrop-filter: blur(8px); color: var(--md-sys-color-on-primary-container); border-radius: var(--md-shape-corner-small); font-size: 0.85rem; font-weight: 500; border: 1px solid rgba(168, 199, 250, 0.3); }
+    /* MOBILE APP FOOTER BAR */
+    .app-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--md-sys-color-surface);
+      border-top: 1px solid var(--md-sys-color-outline-variant);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
+      z-index: 90;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .user-profile-footer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: 1px solid rgba(168, 199, 250, 0.3);
+    }
+
+    .user-footer-details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-footer-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .user-footer-sub {
+      font-size: 0.75rem;
+      color: var(--md-sys-color-on-surface-variant);
+    }
 
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; opacity: 0; pointer-events: none; transition: opacity var(--transition-standard); }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
@@ -106,15 +158,12 @@
 
   <div class="app-container">
     <header class="header-card">
-      <h1>🏖️ Group Trip Poll</h1>
-      <p>Vote for your favorite accommodation</p>
-      <div id="user-info-area" style="display: none;">
-        <div class="user-badge">👤 Logged in as: <strong id="display-user-name">User</strong></div>
-      </div>
+      <h1>🇪🇸 Madrid</h1>
+      <p>03.12 – 06.12.2026</p>
     </header>
 
     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
-      <span style="font-size: 1rem; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">Options (<span id="options-count">0</span>)</span>
+      <span style="font-size: 1rem; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">Accommodations (<span id="options-count">0</span>)</span>
       <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; font-size: 0.85rem;" onclick="openAddModal()">+ Add Option</button>
     </div>
 
@@ -125,6 +174,18 @@
       </div>
     </div>
   </div>
+
+  <!-- MOBILE APP FOOTER -->
+  <footer class="app-footer">
+    <div class="user-profile-footer">
+      <div class="user-avatar" id="user-avatar-initials">U</div>
+      <div class="user-footer-details">
+        <span class="user-footer-name" id="footer-user-name">Loading...</span>
+        <span class="user-footer-sub">Active Voter</span>
+      </div>
+    </div>
+    <button class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 0.75rem;" onclick="logoutUser()">Sign Out</button>
+  </footer>
 
   <!-- AUTHENTICATION MODAL -->
   <div id="auth-modal" class="modal-overlay">
@@ -202,6 +263,26 @@
       }
     });
 
+    function getInitials(name) {
+      if (!name) return 'U';
+      const parts = name.trim().split(' ');
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return name.substring(0, 2).toUpperCase();
+    }
+
+    function updateUserUI() {
+      document.getElementById('footer-user-name').innerText = state.userName;
+      document.getElementById('user-avatar-initials').innerText = getInitials(state.userName);
+    }
+
+    function logoutUser() {
+      localStorage.removeItem('poll_user_email');
+      localStorage.removeItem('poll_user_name');
+      location.reload();
+    }
+
     function startVerification() {
       const emailInput = document.getElementById('input-email').value.trim();
       if (!emailInput) return alert('Please enter your email address.');
@@ -265,11 +346,6 @@
         console.error('Verification error:', err);
         alert('Network error during verification.');
       }
-    }
-
-    function updateUserUI() {
-      document.getElementById('display-user-name').innerText = state.userName;
-      document.getElementById('user-info-area').style.display = 'block';
     }
 
     async function fetchPollData() {
