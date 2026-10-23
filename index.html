@@ -7,51 +7,54 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
     /* ==========================================================================
-       THEME & DESIGN SYSTEM
+       MATERIAL 3 (MATERIAL YOU) DESIGN SYSTEM
        ========================================================================== */
     :root {
-      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
-      --card-bg: rgba(30, 41, 59, 0.7);
-      --card-border: rgba(255, 255, 255, 0.1);
-      --glass-blur: blur(16px);
+      --md-sys-color-background: #121316;
+      --md-sys-color-surface: #1e1f24;
+      --md-sys-color-surface-container: #28292e;
+      --md-sys-color-surface-container-high: #33343a;
+      --md-sys-color-primary: #a8c7fa;
+      --md-sys-color-on-primary: #062e6f;
+      --md-sys-color-primary-container: #1d3a70;
+      --md-sys-color-on-primary-container: #d3e3fd;
+      --md-sys-color-outline: #8e9099;
+      --md-sys-color-outline-variant: #44474f;
+      --md-sys-color-on-surface: #e3e3e8;
+      --md-sys-color-on-surface-variant: #c4c6d0;
+      --md-sys-color-success: #6dd58c;
+      --md-sys-color-whatsapp: #25d366;
       
-      --accent-primary: #6366f1;
-      --accent-primary-hover: #4f46e5;
-      --accent-success: #10b981;
-      --accent-whatsapp: #25d366;
+      --md-shape-corner-extra-large: 28px;
+      --md-shape-corner-large: 20px;
+      --md-shape-corner-medium: 12px;
+      --md-shape-corner-small: 8px;
       
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
+      --md-elevation-1: 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+      --md-elevation-2: 0 2px 6px 2px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
       
-      --radius-lg: 16px;
-      --radius-md: 12px;
-      --radius-sm: 8px;
-      
-      --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      --transition-standard: 0.2s cubic-bezier(0.2, 0, 0, 1);
     }
 
     * { 
       box-sizing: border-box; 
       margin: 0; 
       padding: 0; 
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      font-family: 'Google Sans', 'Inter', -apple-system, sans-serif; 
       -webkit-tap-highlight-color: transparent; 
     }
 
     body { 
-      background: var(--bg-gradient); 
-      background-attachment: fixed; 
-      color: var(--text-main); 
+      background-color: var(--md-sys-color-background); 
+      color: var(--md-sys-color-on-surface); 
       min-height: 100vh; 
       display: flex; 
       justify-content: center; 
-      padding: 16px 12px 40px 12px; 
+      padding: 16px 12px 48px 12px; 
     }
 
     .app-container { 
@@ -63,54 +66,51 @@
     }
 
     /* ==========================================================================
-       HEADER COMPONENTS
+       M3 CARDS & HEADER
        ========================================================================== */
     .header-card {
-      background: var(--card-bg); 
-      backdrop-filter: var(--glass-blur); 
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--card-border); 
-      border-radius: var(--radius-lg); 
-      padding: 20px; 
+      background: var(--md-sys-color-surface); 
+      border: 1px solid var(--md-sys-color-outline-variant); 
+      border-radius: var(--md-shape-corner-large); 
+      padding: 24px 20px; 
       text-align: center; 
-      box-shadow: var(--shadow-card);
+      box-shadow: var(--md-elevation-1);
     }
 
     .header-card h1 { 
       font-size: 1.5rem; 
-      font-weight: 700; 
-      background: linear-gradient(to right, #818cf8, #c084fc); 
-      -webkit-background-clip: text; 
-      -webkit-text-fill-color: transparent; 
+      font-weight: 600; 
+      color: var(--md-sys-color-on-surface);
+      letter-spacing: -0.5px;
     }
 
     .header-card p { 
       font-size: 0.875rem; 
-      color: var(--text-muted); 
-      margin-top: 4px; 
+      color: var(--md-sys-color-on-surface-variant); 
+      margin-top: 6px; 
     }
 
     .user-badge {
       display: inline-flex; 
       align-items: center; 
       gap: 8px; 
-      margin-top: 12px; 
-      padding: 6px 14px;
-      background: rgba(99, 102, 241, 0.15); 
-      border: 1px solid rgba(99, 102, 241, 0.3); 
-      border-radius: 20px; 
+      margin-top: 14px; 
+      padding: 6px 16px;
+      background: var(--md-sys-color-primary-container); 
+      color: var(--md-sys-color-on-primary-container);
+      border-radius: var(--md-shape-corner-small); 
       font-size: 0.85rem; 
-      color: #a5b4fc;
+      font-weight: 500;
     }
 
     /* ==========================================================================
-       MODAL OVERLAYS & FORMS
+       MODALS (MATERIAL DIALOGS)
        ========================================================================== */
     .modal-overlay {
       position: fixed; 
       top: 0; left: 0; right: 0; bottom: 0; 
-      background: rgba(15, 23, 42, 0.9);
-      backdrop-filter: blur(8px); 
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px); 
       display: flex; 
       align-items: center; 
       justify-content: center; 
@@ -118,7 +118,7 @@
       z-index: 100;
       opacity: 0; 
       pointer-events: none; 
-      transition: var(--transition-smooth);
+      transition: opacity var(--transition-standard);
     }
 
     .modal-overlay.active { 
@@ -127,57 +127,61 @@
     }
 
     .modal { 
-      background: #1e293b; 
-      border: 1px solid var(--card-border); 
-      border-radius: var(--radius-lg); 
-      padding: 24px; 
+      background: var(--md-sys-color-surface-container); 
+      border: 1px solid var(--md-sys-color-outline-variant); 
+      border-radius: var(--md-shape-corner-extra-large); 
+      padding: 28px 24px; 
       width: 100%; 
       max-width: 400px; 
-      box-shadow: var(--shadow-card); 
+      box-shadow: var(--md-elevation-2); 
     }
 
     .modal h2 { 
-      font-size: 1.25rem; 
-      margin-bottom: 12px; 
+      font-size: 1.35rem; 
+      font-weight: 600;
+      margin-bottom: 8px; 
+      color: var(--md-sys-color-on-surface);
     }
 
     .form-group { 
       margin-bottom: 16px; 
       display: flex; 
       flex-direction: column; 
-      gap: 6px; 
+      gap: 8px; 
     }
 
     .form-group label { 
       font-size: 0.8rem; 
-      color: var(--text-muted); 
+      color: var(--md-sys-color-on-surface-variant); 
       font-weight: 500; 
     }
 
     .input-field { 
       width: 100%; 
-      padding: 12px 14px; 
-      background: rgba(15, 23, 42, 0.6); 
-      border: 1px solid var(--card-border); 
-      border-radius: var(--radius-md); 
-      color: var(--text-main); 
-      font-size: 0.95rem; 
+      padding: 14px 16px; 
+      background: var(--md-sys-color-surface); 
+      border: 1px solid var(--md-sys-color-outline); 
+      border-radius: var(--md-shape-corner-medium); 
+      color: var(--md-sys-color-on-surface); 
+      font-size: 1rem; 
       outline: none; 
+      transition: border-color var(--transition-standard);
     }
 
     .input-field:focus { 
-      border-color: var(--accent-primary); 
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); 
+      border-color: var(--md-sys-color-primary); 
+      border-width: 2px;
+      padding: 13px 15px;
     }
 
     /* ==========================================================================
-       BUTTONS
+       MATERIAL BUTTONS
        ========================================================================== */
     .btn { 
       width: 100%; 
-      padding: 12px 16px; 
+      padding: 14px 20px; 
       border: none; 
-      border-radius: var(--radius-md); 
+      border-radius: var(--md-shape-corner-medium); 
       font-weight: 600; 
       font-size: 0.95rem; 
       cursor: pointer; 
@@ -185,31 +189,31 @@
       align-items: center; 
       justify-content: center; 
       gap: 8px; 
-      transition: var(--transition-smooth); 
+      transition: var(--transition-standard); 
     }
 
     .btn-primary { 
-      background: var(--accent-primary); 
-      color: white; 
+      background: var(--md-sys-color-primary); 
+      color: var(--md-sys-color-on-primary); 
     }
 
     .btn-primary:hover { 
-      background: var(--accent-primary-hover); 
+      opacity: 0.9; 
     }
 
     .btn-whatsapp { 
-      background: var(--accent-whatsapp); 
+      background: var(--md-sys-color-whatsapp); 
       color: #052e16; 
     }
 
     .btn-secondary { 
-      background: rgba(255, 255, 255, 0.08); 
-      color: var(--text-main); 
-      border: 1px solid var(--card-border); 
+      background: var(--md-sys-color-surface-container-high); 
+      color: var(--md-sys-color-on-surface); 
+      border: 1px solid var(--md-sys-color-outline-variant); 
     }
 
     /* ==========================================================================
-       POLL OPTION CARDS
+       POLL OPTION CARDS (M3 TONAL CARDS)
        ========================================================================== */
     .options-list { 
       display: flex; 
@@ -218,24 +222,25 @@
     }
 
     .option-card { 
-      background: var(--card-bg); 
-      backdrop-filter: var(--glass-blur); 
-      border: 2px solid var(--card-border); 
-      border-radius: var(--radius-lg); 
+      background: var(--md-sys-color-surface); 
+      border: 2px solid var(--md-sys-color-outline-variant); 
+      border-radius: var(--md-shape-corner-large); 
       overflow: hidden; 
-      transition: var(--transition-smooth); 
+      transition: var(--transition-standard); 
+      cursor: pointer;
+      box-shadow: var(--md-elevation-1);
     }
 
     .option-card.selected { 
-      border-color: var(--accent-primary); 
-      background: rgba(49, 46, 129, 0.4); 
+      border-color: var(--md-sys-color-primary); 
+      background: var(--md-sys-color-surface-container); 
     }
 
     .card-cover-container { 
       width: 100%; 
       height: 160px; 
       position: relative; 
-      background: #0f172a; 
+      background: var(--md-sys-color-surface-container-high); 
       overflow: hidden; 
     }
 
@@ -249,16 +254,17 @@
       position: absolute; 
       top: 12px; 
       right: 12px; 
-      background: rgba(15, 23, 42, 0.85); 
-      padding: 6px 10px; 
-      border-radius: var(--radius-sm); 
+      background: rgba(18, 19, 22, 0.85); 
+      backdrop-filter: blur(8px);
+      padding: 6px 12px; 
+      border-radius: var(--md-shape-corner-small); 
       font-size: 0.85rem; 
-      font-weight: 700; 
-      color: var(--accent-success); 
+      font-weight: 600; 
+      color: var(--md-sys-color-success); 
     }
 
     .card-body { 
-      padding: 16px; 
+      padding: 20px; 
       display: flex; 
       flex-direction: column; 
       gap: 12px; 
@@ -266,68 +272,74 @@
 
     .card-header-row { 
       display: flex; 
-      align-items: flex-start; 
+      align-items: center; 
       gap: 12px; 
     }
 
     .checkbox-custom { 
-      width: 22px; 
-      height: 22px; 
+      width: 24px; 
+      height: 24px; 
       border-radius: 6px; 
-      border: 2px solid var(--text-muted); 
+      border: 2px solid var(--md-sys-color-outline); 
       display: flex; 
       align-items: center; 
       justify-content: center; 
       flex-shrink: 0; 
-      margin-top: 2px; 
+      transition: var(--transition-standard);
     }
 
     .option-card.selected .checkbox-custom { 
-      background: var(--accent-primary); 
-      border-color: var(--accent-primary); 
+      background: var(--md-sys-color-primary); 
+      border-color: var(--md-sys-color-primary); 
     }
 
     .option-card.selected .checkbox-custom::after { 
       content: '✓'; 
-      color: white; 
+      color: var(--md-sys-color-on-primary); 
       font-weight: bold; 
+      font-size: 0.85rem;
     }
 
     .card-title { 
       font-size: 1.05rem; 
       font-weight: 600; 
-      color: var(--text-main); 
+      color: var(--md-sys-color-on-surface); 
       text-decoration: none; 
       display: flex; 
       align-items: center; 
       gap: 6px; 
     }
 
+    .card-title:hover {
+      color: var(--md-sys-color-primary);
+    }
+
     .progress-bar-bg { 
       width: 100%; 
       height: 8px; 
-      background: rgba(255, 255, 255, 0.1); 
+      background: var(--md-sys-color-surface-container-high); 
       border-radius: 4px; 
       overflow: hidden; 
     }
 
     .progress-bar-fill { 
       height: 100%; 
-      background: linear-gradient(to right, var(--accent-primary), #818cf8); 
+      background: var(--md-sys-color-primary); 
       width: 0%; 
-      transition: width 0.5s ease-out; 
+      transition: width 0.4s ease-out; 
     }
 
     .progress-info { 
       display: flex; 
       justify-content: space-between; 
-      font-size: 0.75rem; 
-      color: var(--text-muted); 
+      font-size: 0.8rem; 
+      color: var(--md-sys-color-on-surface-variant); 
+      font-weight: 500;
     }
 
     .voters-container { 
       font-size: 0.75rem; 
-      color: var(--text-dim); 
+      color: var(--md-sys-color-outline); 
       display: flex; 
       align-items: center; 
       gap: 6px; 
@@ -335,24 +347,18 @@
     }
 
     .voter-tag { 
-      background: rgba(255, 255, 255, 0.05); 
-      padding: 2px 8px; 
-      border-radius: 10px; 
-      color: var(--text-muted); 
-    }
-
-    .submit-bar { 
-      position: sticky; 
-      bottom: 16px; 
-      margin-top: 16px; 
-      z-index: 50; 
+      background: var(--md-sys-color-surface-container-high); 
+      padding: 3px 10px; 
+      border-radius: 12px; 
+      color: var(--md-sys-color-on-surface-variant); 
+      font-weight: 500;
     }
 
     .spinner { 
-      width: 28px; 
-      height: 28px; 
-      border: 3px solid rgba(255, 255, 255, 0.1); 
-      border-top-color: var(--accent-primary); 
+      width: 32px; 
+      height: 32px; 
+      border: 3px solid var(--md-sys-color-outline-variant); 
+      border-top-color: var(--md-sys-color-primary); 
       border-radius: 50%; 
       animation: spin 0.8s linear infinite; 
     }
@@ -373,9 +379,9 @@
       </div>
     </header>
 
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <span style="font-size: 1.1rem; font-weight: 600;">Options (<span id="options-count">0</span>)</span>
-      <button class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 0.8rem;" onclick="openAddModal()">+ Add Option</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
+      <span style="font-size: 1rem; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">Options (<span id="options-count">0</span>)</span>
+      <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; font-size: 0.85rem;" onclick="openAddModal()">+ Add Option</button>
     </div>
 
     <div id="options-container" class="options-list">
@@ -390,7 +396,7 @@
   <div id="auth-modal" class="modal-overlay">
     <div class="modal">
       <h2>Group Access</h2>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+      <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 20px; line-height: 1.4;">
         Enter your whitelisted Croatian (+385) or Norwegian (+47) phone number to enter.
       </p>
 
@@ -403,15 +409,17 @@
       </div>
 
       <div id="auth-step-2" style="display: none; text-align: center;">
-        <p style="font-size: 0.85rem; margin-bottom: 12px;">1. Tap below to open WhatsApp and get your code.<br>2. Enter the 4-digit code shown below:</p>
+        <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 16px; line-height: 1.4;">
+          1. Tap below to open WhatsApp and get your code.<br>2. Enter the 4-digit code shown below:
+        </p>
         
-        <a id="wa-link-btn" href="#" target="_blank" class="btn btn-whatsapp" style="text-decoration: none; display: block; margin-bottom: 16px;">💬 Open WhatsApp for Code</a>
+        <a id="wa-link-btn" href="#" target="_blank" class="btn btn-whatsapp" style="text-decoration: none; display: block; margin-bottom: 20px;">💬 Open WhatsApp for Code</a>
         
-        <div style="margin-bottom: 12px;">
-          <input type="text" id="input-code" placeholder="Enter 4-digit code" maxlength="4" style="padding: 10px; font-size: 1.2rem; text-align: center; width: 150px; letter-spacing: 4px; border: 1px solid var(--border-color); border-radius: 6px;">
+        <div style="margin-bottom: 16px;">
+          <input type="text" id="input-code" placeholder="----" maxlength="4" class="input-field" style="text-align: center; font-size: 1.5rem; letter-spacing: 8px;">
         </div>
         
-        <button class="btn btn-primary" onclick="verifyEnteredCode()">✅ Confirm & Login</button>
+        <button class="btn btn-primary" onclick="verifyEnteredCode()">Confirm & Login</button>
       </div>
     </div>
   </div>
@@ -420,7 +428,7 @@
   <div id="add-modal" class="modal-overlay">
     <div class="modal">
       <h2>Add Accommodation</h2>
-      <div class="form-group">
+      <div class="form-group" style="margin-top: 12px;">
         <label for="input-link">Accommodation Link</label>
         <input type="url" id="input-link" class="input-field" placeholder="https://..." onblur="autoFetchMetadata()" />
       </div>
@@ -436,7 +444,7 @@
         <label for="input-image">Image URL</label>
         <input type="url" id="input-image" class="input-field" placeholder="https://..." />
       </div>
-      <div style="display: flex; gap: 8px; margin-top: 16px;">
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
         <button class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
         <button class="btn btn-primary" id="btn-add-submit" onclick="submitNewOption()">Add Proposal</button>
       </div>
@@ -444,9 +452,6 @@
   </div>
 
   <script>
-    /* ==========================================================================
-       CONFIGURATION & APPLICATION STATE
-       ========================================================================== */
     const GOOGLE_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
 
     let state = {
@@ -455,33 +460,18 @@
       selectedOptionIds: new Set(),
       options: [],
       currentCode: '',
-      waLink: '',
-      isPendingReturn: false
+      waLink: ''
     };
 
-    /* ==========================================================================
-       INITIALIZATION & RE-AUTHENTICATION CHECK
-       ========================================================================== */
     document.addEventListener('DOMContentLoaded', () => {
-      // If localStorage is missing or was cleared, show the lock screen
       if (!state.phone || !state.userName) {
         document.getElementById('auth-modal').classList.add('active');
       } else {
         updateUserUI();
         fetchPollData();
       }
-
-      // Detect when the user switches back from WhatsApp to this app tab
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && state.isPendingReturn) {
-          executeAutoApproval();
-        }
-      });
     });
 
-    /* ==========================================================================
-       AUTHENTICATION FLOW (WHITELIST + RETURN TRIGGER)
-       ========================================================================== */
     function startVerification() {
       const phoneInput = document.getElementById('input-phone').value.trim();
       if (!phoneInput) return alert('Please enter your phone number.');
@@ -493,11 +483,9 @@
       fetch(`${GOOGLE_SCRIPT_URL}?action=checkWhitelist&phone=${encodeURIComponent(phoneInput)}`)
         .then(res => res.json())
         .then(result => {
-          console.log("Apps Script Response:", result); // Debug check in F12 Console
-
           if (result.status === 'success') {
             if (!result.waLink) {
-              alert('Error: Backend did not return a valid WhatsApp link. Please ensure Google Apps Script is re-deployed.');
+              alert('Error: Backend did not return a valid WhatsApp link.');
               return;
             }
 
@@ -523,11 +511,6 @@
           triggerBtn.innerText = 'Verify Phone Number';
           triggerBtn.disabled = false;
         });
-    }
-    
-    function onWhatsAppClicked() {
-      // Mark that user has engaged with WhatsApp, making them eligible for auto-detection on return
-      state.isPendingReturn = true;
     }
 
     async function verifyEnteredCode() {
@@ -564,118 +547,11 @@
       }
     }
 
-    function resetAuthUI() {
-      state.isPendingReturn = false;
-      document.getElementById('auth-step-2').style.display = 'none';
-      document.getElementById('auth-step-1').style.display = 'block';
-    }
-
     function updateUserUI() {
       document.getElementById('display-user-name').innerText = state.userName;
       document.getElementById('user-info-area').style.display = 'block';
     }
 
-    /* ==========================================================================
-       POLL DATA FETCH & VOTING
-       ========================================================================== */
-    function renderPolls() {
-      const container = document.getElementById('poll-container');
-      container.innerHTML = '';
-
-      const totalVoters = new Set();
-      state.options.forEach(opt => opt.voters.forEach(v => totalVoters.add(v)));
-      const totalCount = totalVoters.size;
-
-      state.options.forEach(opt => {
-        const hasVoted = opt.voters.includes(state.userName);
-        const count = opt.voters.length;
-        const percentage = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
-
-        const card = document.createElement('div');
-        card.className = `poll-card ${hasVoted ? 'selected' : ''}`;
-        card.innerHTML = `
-          <div class="poll-card-content">
-            <input type="checkbox" 
-                   value="${opt.id}" 
-                   ${hasVoted ? 'checked' : ''} 
-                   onchange="handleInstantVote(this, '${opt.id}')"
-                   style="transform: scale(1.3); cursor: pointer;">
-            <div style="flex-grow: 1; margin-left: 12px;">
-              <h3 style="margin: 0; font-size: 1rem;"><a href="${opt.link}" target="_blank">${opt.title}</a></h3>
-              <p style="margin: 4px 0 0; color: #666; font-size: 0.85rem;">${opt.price || ''}</p>
-            </div>
-            <div style="text-align: right; font-weight: bold;">
-              <span>${count} votes (${percentage}%)</span>
-            </div>
-          </div>
-          <div class="progress-bar-bg" style="margin-top: 8px; background: #eee; height: 6px; border-radius: 3px; overflow: hidden;">
-            <div style="width: ${percentage}%; background: var(--primary-color); height: 100%; transition: width 0.3s ease;"></div>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    async function handleInstantVote(checkboxElement, optionId) {
-      // 1. Capture previous state for rollback if needed
-      const wasChecked = !checkboxElement.checked; // Since event just fired, current state is opposite of what it was
-      const currentUserName = localStorage.getItem('poll_user_name');
-
-      // 2. Optimistically update local state array
-      const targetOption = state.options.find(o => o.id === optionId);
-      if (targetOption) {
-        if (checkboxElement.checked) {
-          if (!targetOption.voters.includes(currentUserName)) {
-            targetOption.voters.push(currentUserName);
-          }
-        } else {
-          targetOption.voters = targetOption.voters.filter(name => name !== currentUserName);
-        }
-      }
-
-      // Re-render UI instantly for zero perceived latency
-      renderPolls();
-
-      // 3. Gather all currently checked option IDs for this user
-      const allCheckboxes = document.querySelectorAll('#poll-container input[type="checkbox"]');
-      const votedOptionIds = [];
-      allCheckboxes.forEach(cb => {
-        if (cb.checked) votedOptionIds.push(cb.value);
-      });
-
-      // 4. Fire background sync to Google Apps Script
-      try {
-        const res = await fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({
-            action: 'vote',
-            userName: currentUserName,
-            votedOptionIds: votedOptionIds
-          })
-        });
-
-        const result = await res.json();
-        if (result.status !== 'success') {
-          throw new Error('Server rejected vote');
-        }
-      } catch (err) {
-        console.error('Vote sync failed, reverting...', err);
-        alert('Failed to save vote. Reverting change.');
-
-        // Rollback local state
-        checkboxElement.checked = wasChecked;
-        if (targetOption) {
-          if (wasChecked) {
-            if (!targetOption.voters.includes(currentUserName)) targetOption.voters.push(currentUserName);
-          } else {
-            targetOption.voters = targetOption.voters.filter(name => name !== currentUserName);
-          }
-        }
-        renderPolls(); // Re-render back to original state
-      }
-    }
-    
     async function fetchPollData() {
       try {
         const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getPollData`);
@@ -683,7 +559,6 @@
         if (result.status === 'success') {
           state.options = result.data;
           
-          // Re-select options previously voted for by this user
           state.selectedOptionIds.clear();
           state.options.forEach(opt => {
             if (opt.voters && opt.voters.includes(state.userName)) {
@@ -697,9 +572,89 @@
       }
     }
 
-    /* ==========================================================================
-       ACCOMMODATION METADATA EXTRACTION & PROPOSALS
-       ========================================================================== */
+    function renderOptions() {
+      const container = document.getElementById('options-container');
+      document.getElementById('options-count').innerText = state.options.length;
+
+      const allVoters = new Set();
+      state.options.forEach(opt => opt.voters?.forEach(v => allVoters.add(v)));
+      const totalVoters = allVoters.size || 1;
+
+      const sorted = [...state.options].sort((a, b) => (b.voters?.length || 0) - (a.voters?.length || 0));
+
+      container.innerHTML = sorted.map(opt => {
+        const isSelected = state.selectedOptionIds.has(opt.id);
+        const votes = opt.voters ? opt.voters.length : 0;
+        const pct = Math.round((votes / totalVoters) * 100) || 0;
+        const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>No votes</em>';
+
+        return `
+          <div class="option-card ${isSelected ? 'selected' : ''}" onclick="handleCardClick('${opt.id}')">
+            <div class="card-cover-container">
+              <img class="card-cover" src="${opt.image}" alt="${opt.title}" loading="lazy" onError="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'" />
+              <div class="price-badge">${opt.price}</div>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <div class="checkbox-custom"></div>
+                <a href="${opt.link}" target="_blank" class="card-title" onclick="event.stopPropagation()">${opt.title} ↗</a>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%;"></div></div>
+              <div class="progress-info"><span>${votes} votes</span><span>${pct}%</span></div>
+              <div class="voters-container"><span>Voted by:</span> ${votersList}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function handleCardClick(optionId) {
+      const isCurrentlySelected = state.selectedOptionIds.has(optionId);
+      
+      // Optimistic Local Update
+      if (isCurrentlySelected) {
+        state.selectedOptionIds.delete(optionId);
+      } else {
+        state.selectedOptionIds.add(optionId);
+      }
+
+      const targetOpt = state.options.find(o => o.id === optionId);
+      if (targetOpt) {
+        if (!isCurrentlySelected) {
+          if (!targetOpt.voters.includes(state.userName)) targetOpt.voters.push(state.userName);
+        } else {
+          targetOpt.voters = targetOpt.voters.filter(v => v !== state.userName);
+        }
+      }
+
+      renderOptions(); // Update UI instantly
+
+      // Background Sync
+      try {
+        const res = await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            action: 'vote',
+            userName: state.userName,
+            votedOptionIds: Array.from(state.selectedOptionIds)
+          })
+        });
+
+        const result = await res.json();
+        if (result.status !== 'success') {
+          throw new Error('Server rejected vote');
+        }
+      } catch (err) {
+        console.error('Vote sync failed:', err);
+        alert('Failed to save vote. Reverting...');
+        // Rollback
+        if (isCurrentlySelected) state.selectedOptionIds.add(optionId);
+        else state.selectedOptionIds.delete(optionId);
+        fetchPollData();
+      }
+    }
+
     async function autoFetchMetadata() {
       const url = document.getElementById('input-link').value.trim();
       if (!url) return;
@@ -745,52 +700,6 @@
       } catch (err) { 
         alert('Failed to add proposal.'); 
       }
-    }
-
-    /* ==========================================================================
-       DYNAMIC UI RENDERING & SORTING
-       ========================================================================== */
-    function renderOptions() {
-      const container = document.getElementById('options-container');
-      document.getElementById('options-count').innerText = state.options.length;
-
-      const allVoters = new Set();
-      state.options.forEach(opt => opt.voters?.forEach(v => allVoters.add(v)));
-      const totalVoters = allVoters.size || 1;
-
-      // Automatically sort options by highest vote count
-      const sorted = [...state.options].sort((a, b) => (b.voters?.length || 0) - (a.voters?.length || 0));
-
-      container.innerHTML = sorted.map(opt => {
-        const isSelected = state.selectedOptionIds.has(opt.id);
-        const votes = opt.voters ? opt.voters.length : 0;
-        const pct = Math.round((votes / totalVoters) * 100) || 0;
-        const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>No votes</em>';
-
-        return `
-          <div class="option-card ${isSelected ? 'selected' : ''}" onclick="toggleOption('${opt.id}')">
-            <div class="card-cover-container">
-              <img class="card-cover" src="${opt.image}" alt="${opt.title}" loading="lazy" onError="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'" />
-              <div class="price-badge">${opt.price}</div>
-            </div>
-            <div class="card-body">
-              <div class="card-header-row">
-                <div class="checkbox-custom"></div>
-                <a href="${opt.link}" target="_blank" class="card-title" onclick="event.stopPropagation()">${opt.title} ↗</a>
-              </div>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%;"></div></div>
-              <div class="progress-info"><span>${votes} votes</span><span>${pct}%</span></div>
-              <div class="voters-container"><span>Voted by:</span> ${votersList}</div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function toggleOption(id) {
-      if (state.selectedOptionIds.has(id)) state.selectedOptionIds.delete(id);
-      else state.selectedOptionIds.add(id);
-      renderOptions();
     }
 
     function openAddModal() { document.getElementById('add-modal').classList.add('active'); }
