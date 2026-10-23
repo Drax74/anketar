@@ -44,11 +44,16 @@
 
     .header-card { 
       position: relative;
-      background: linear-gradient(rgba(18, 19, 22, 0.75), rgba(18, 19, 22, 0.85)), 
-                  url('https://35milimetros.es/wp-content/uploads/2026/03/2b4013cc-60a9-4680-a9bd-f9f891d42a63_source-aspect-ratio_1600w_0.webp') center/cover no-repeat;
+      background: linear-gradient(rgba(18, 19, 22, 0.70), rgba(18, 19, 22, 0.85)), 
+                  url('https://35milimetros.es/wp-content/uploads/2026/03/2b4013cc-60a9-4680-a9bd-f9f891d42a63_source-aspect-ratio_1600w_0.webp') center top / cover no-repeat;
       border: 1px solid var(--md-sys-color-outline-variant); 
       border-radius: var(--md-shape-corner-large); 
-      padding: 32px 20px; 
+      padding: 64px 20px 48px 20px; /* Increased top/bottom padding for extra height */
+      min-height: 220px; /* Ensures ample vertical room */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       text-align: center; 
       box-shadow: var(--md-elevation-1);
       overflow: hidden;
