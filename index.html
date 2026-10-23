@@ -10,9 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
-    /* ==========================================================================
-       MATERIAL 3 (MATERIAL YOU) DESIGN SYSTEM
-       ========================================================================== */
     :root {
       --md-sys-color-background: #121316;
       --md-sys-color-surface: #1e1f24;
@@ -27,7 +24,6 @@
       --md-sys-color-on-surface: #e3e3e8;
       --md-sys-color-on-surface-variant: #c4c6d0;
       --md-sys-color-success: #6dd58c;
-      --md-sys-color-whatsapp: #25d366;
       
       --md-shape-corner-extra-large: 28px;
       --md-shape-corner-large: 20px;
@@ -40,332 +36,59 @@
       --transition-standard: 0.2s cubic-bezier(0.2, 0, 0, 1);
     }
 
-    * { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0; 
-      font-family: 'Google Sans', 'Inter', -apple-system, sans-serif; 
-      -webkit-tap-highlight-color: transparent; 
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Google Sans', 'Inter', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
 
-    body { 
-      background-color: var(--md-sys-color-background); 
-      color: var(--md-sys-color-on-surface); 
-      min-height: 100vh; 
-      display: flex; 
-      justify-content: center; 
-      padding: 16px 12px 48px 12px; 
-    }
+    body { background-color: var(--md-sys-color-background); color: var(--md-sys-color-on-surface); min-height: 100vh; display: flex; justify-content: center; padding: 16px 12px 48px 12px; }
 
-    .app-container { 
-      width: 100%; 
-      max-width: 480px; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 16px; 
-    }
+    .app-container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 16px; }
 
-    /* ==========================================================================
-       M3 CARDS & HEADER
-       ========================================================================== */
-    .header-card {
-      background: var(--md-sys-color-surface); 
-      border: 1px solid var(--md-sys-color-outline-variant); 
-      border-radius: var(--md-shape-corner-large); 
-      padding: 24px 20px; 
-      text-align: center; 
-      box-shadow: var(--md-elevation-1);
-    }
+    .header-card { background: var(--md-sys-color-surface); border: 1px solid var(--md-sys-color-outline-variant); border-radius: var(--md-shape-corner-large); padding: 24px 20px; text-align: center; box-shadow: var(--md-elevation-1); }
+    .header-card h1 { font-size: 1.5rem; font-weight: 600; color: var(--md-sys-color-on-surface); letter-spacing: -0.5px; }
+    .header-card p { font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant); margin-top: 6px; }
 
-    .header-card h1 { 
-      font-size: 1.5rem; 
-      font-weight: 600; 
-      color: var(--md-sys-color-on-surface);
-      letter-spacing: -0.5px;
-    }
+    .user-badge { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 6px 16px; background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); border-radius: var(--md-shape-corner-small); font-size: 0.85rem; font-weight: 500; }
 
-    .header-card p { 
-      font-size: 0.875rem; 
-      color: var(--md-sys-color-on-surface-variant); 
-      margin-top: 6px; 
-    }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; opacity: 0; pointer-events: none; transition: opacity var(--transition-standard); }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal { background: var(--md-sys-color-surface-container); border: 1px solid var(--md-sys-color-outline-variant); border-radius: var(--md-shape-corner-extra-large); padding: 28px 24px; width: 100%; max-width: 400px; box-shadow: var(--md-elevation-2); }
+    .modal h2 { font-size: 1.35rem; font-weight: 600; margin-bottom: 8px; color: var(--md-sys-color-on-surface); }
 
-    .user-badge {
-      display: inline-flex; 
-      align-items: center; 
-      gap: 8px; 
-      margin-top: 14px; 
-      padding: 6px 16px;
-      background: var(--md-sys-color-primary-container); 
-      color: var(--md-sys-color-on-primary-container);
-      border-radius: var(--md-shape-corner-small); 
-      font-size: 0.85rem; 
-      font-weight: 500;
-    }
+    .form-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .form-group label { font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); font-weight: 500; }
 
-    /* ==========================================================================
-       MODALS (MATERIAL DIALOGS)
-       ========================================================================== */
-    .modal-overlay {
-      position: fixed; 
-      top: 0; left: 0; right: 0; bottom: 0; 
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px); 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      padding: 20px; 
-      z-index: 100;
-      opacity: 0; 
-      pointer-events: none; 
-      transition: opacity var(--transition-standard);
-    }
+    .input-field { width: 100%; padding: 14px 16px; background: var(--md-sys-color-surface); border: 1px solid var(--md-sys-color-outline); border-radius: var(--md-shape-corner-medium); color: var(--md-sys-color-on-surface); font-size: 1rem; outline: none; transition: border-color var(--transition-standard); }
+    .input-field:focus { border-color: var(--md-sys-color-primary); border-width: 2px; padding: 13px 15px; }
 
-    .modal-overlay.active { 
-      opacity: 1; 
-      pointer-events: auto; 
-    }
+    .btn { width: 100%; padding: 14px 20px; border: none; border-radius: var(--md-shape-corner-medium); font-weight: 600; font-size: 0.95rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition-standard); }
+    .btn-primary { background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-secondary { background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); border: 1px solid var(--md-sys-color-outline-variant); }
 
-    .modal { 
-      background: var(--md-sys-color-surface-container); 
-      border: 1px solid var(--md-sys-color-outline-variant); 
-      border-radius: var(--md-shape-corner-extra-large); 
-      padding: 28px 24px; 
-      width: 100%; 
-      max-width: 400px; 
-      box-shadow: var(--md-elevation-2); 
-    }
+    .options-list { display: flex; flex-direction: column; gap: 16px; }
+    .option-card { background: var(--md-sys-color-surface); border: 2px solid var(--md-sys-color-outline-variant); border-radius: var(--md-shape-corner-large); overflow: hidden; transition: var(--transition-standard); cursor: pointer; box-shadow: var(--md-elevation-1); }
+    .option-card.selected { border-color: var(--md-sys-color-primary); background: var(--md-sys-color-surface-container); }
 
-    .modal h2 { 
-      font-size: 1.35rem; 
-      font-weight: 600;
-      margin-bottom: 8px; 
-      color: var(--md-sys-color-on-surface);
-    }
+    .card-cover-container { width: 100%; height: 160px; position: relative; background: var(--md-sys-color-surface-container-high); overflow: hidden; }
+    .card-cover { width: 100%; height: 100%; object-fit: cover; }
+    .price-badge { position: absolute; top: 12px; right: 12px; background: rgba(18, 19, 22, 0.85); backdrop-filter: blur(8px); padding: 6px 12px; border-radius: var(--md-shape-corner-small); font-size: 0.85rem; font-weight: 600; color: var(--md-sys-color-success); }
 
-    .form-group { 
-      margin-bottom: 16px; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 8px; 
-    }
+    .card-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .card-header-row { display: flex; align-items: center; gap: 12px; }
+    .checkbox-custom { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--md-sys-color-outline); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: var(--transition-standard); }
+    .option-card.selected .checkbox-custom { background: var(--md-sys-color-primary); border-color: var(--md-sys-color-primary); }
+    .option-card.selected .checkbox-custom::after { content: '✓'; color: var(--md-sys-color-on-primary); font-weight: bold; font-size: 0.85rem; }
 
-    .form-group label { 
-      font-size: 0.8rem; 
-      color: var(--md-sys-color-on-surface-variant); 
-      font-weight: 500; 
-    }
+    .card-title { font-size: 1.05rem; font-weight: 600; color: var(--md-sys-color-on-surface); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+    .card-title:hover { color: var(--md-sys-color-primary); }
 
-    .input-field { 
-      width: 100%; 
-      padding: 14px 16px; 
-      background: var(--md-sys-color-surface); 
-      border: 1px solid var(--md-sys-color-outline); 
-      border-radius: var(--md-shape-corner-medium); 
-      color: var(--md-sys-color-on-surface); 
-      font-size: 1rem; 
-      outline: none; 
-      transition: border-color var(--transition-standard);
-    }
+    .progress-bar-bg { width: 100%; height: 8px; background: var(--md-sys-color-surface-container-high); border-radius: 4px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--md-sys-color-primary); width: 0%; transition: width 0.4s ease-out; }
+    .progress-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); font-weight: 500; }
+    .voters-container { font-size: 0.75rem; color: var(--md-sys-color-outline); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .voter-tag { background: var(--md-sys-color-surface-container-high); padding: 3px 10px; border-radius: 12px; color: var(--md-sys-color-on-surface-variant); font-weight: 500; }
 
-    .input-field:focus { 
-      border-color: var(--md-sys-color-primary); 
-      border-width: 2px;
-      padding: 13px 15px;
-    }
-
-    /* ==========================================================================
-       MATERIAL BUTTONS
-       ========================================================================== */
-    .btn { 
-      width: 100%; 
-      padding: 14px 20px; 
-      border: none; 
-      border-radius: var(--md-shape-corner-medium); 
-      font-weight: 600; 
-      font-size: 0.95rem; 
-      cursor: pointer; 
-      display: inline-flex; 
-      align-items: center; 
-      justify-content: center; 
-      gap: 8px; 
-      transition: var(--transition-standard); 
-    }
-
-    .btn-primary { 
-      background: var(--md-sys-color-primary); 
-      color: var(--md-sys-color-on-primary); 
-    }
-
-    .btn-primary:hover { 
-      opacity: 0.9; 
-    }
-
-    .btn-whatsapp { 
-      background: var(--md-sys-color-whatsapp); 
-      color: #052e16; 
-    }
-
-    .btn-secondary { 
-      background: var(--md-sys-color-surface-container-high); 
-      color: var(--md-sys-color-on-surface); 
-      border: 1px solid var(--md-sys-color-outline-variant); 
-    }
-
-    /* ==========================================================================
-       POLL OPTION CARDS (M3 TONAL CARDS)
-       ========================================================================== */
-    .options-list { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 16px; 
-    }
-
-    .option-card { 
-      background: var(--md-sys-color-surface); 
-      border: 2px solid var(--md-sys-color-outline-variant); 
-      border-radius: var(--md-shape-corner-large); 
-      overflow: hidden; 
-      transition: var(--transition-standard); 
-      cursor: pointer;
-      box-shadow: var(--md-elevation-1);
-    }
-
-    .option-card.selected { 
-      border-color: var(--md-sys-color-primary); 
-      background: var(--md-sys-color-surface-container); 
-    }
-
-    .card-cover-container { 
-      width: 100%; 
-      height: 160px; 
-      position: relative; 
-      background: var(--md-sys-color-surface-container-high); 
-      overflow: hidden; 
-    }
-
-    .card-cover { 
-      width: 100%; 
-      height: 100%; 
-      object-fit: cover; 
-    }
-
-    .price-badge { 
-      position: absolute; 
-      top: 12px; 
-      right: 12px; 
-      background: rgba(18, 19, 22, 0.85); 
-      backdrop-filter: blur(8px);
-      padding: 6px 12px; 
-      border-radius: var(--md-shape-corner-small); 
-      font-size: 0.85rem; 
-      font-weight: 600; 
-      color: var(--md-sys-color-success); 
-    }
-
-    .card-body { 
-      padding: 20px; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 12px; 
-    }
-
-    .card-header-row { 
-      display: flex; 
-      align-items: center; 
-      gap: 12px; 
-    }
-
-    .checkbox-custom { 
-      width: 24px; 
-      height: 24px; 
-      border-radius: 6px; 
-      border: 2px solid var(--md-sys-color-outline); 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      flex-shrink: 0; 
-      transition: var(--transition-standard);
-    }
-
-    .option-card.selected .checkbox-custom { 
-      background: var(--md-sys-color-primary); 
-      border-color: var(--md-sys-color-primary); 
-    }
-
-    .option-card.selected .checkbox-custom::after { 
-      content: '✓'; 
-      color: var(--md-sys-color-on-primary); 
-      font-weight: bold; 
-      font-size: 0.85rem;
-    }
-
-    .card-title { 
-      font-size: 1.05rem; 
-      font-weight: 600; 
-      color: var(--md-sys-color-on-surface); 
-      text-decoration: none; 
-      display: flex; 
-      align-items: center; 
-      gap: 6px; 
-    }
-
-    .card-title:hover {
-      color: var(--md-sys-color-primary);
-    }
-
-    .progress-bar-bg { 
-      width: 100%; 
-      height: 8px; 
-      background: var(--md-sys-color-surface-container-high); 
-      border-radius: 4px; 
-      overflow: hidden; 
-    }
-
-    .progress-bar-fill { 
-      height: 100%; 
-      background: var(--md-sys-color-primary); 
-      width: 0%; 
-      transition: width 0.4s ease-out; 
-    }
-
-    .progress-info { 
-      display: flex; 
-      justify-content: space-between; 
-      font-size: 0.8rem; 
-      color: var(--md-sys-color-on-surface-variant); 
-      font-weight: 500;
-    }
-
-    .voters-container { 
-      font-size: 0.75rem; 
-      color: var(--md-sys-color-outline); 
-      display: flex; 
-      align-items: center; 
-      gap: 6px; 
-      flex-wrap: wrap; 
-    }
-
-    .voter-tag { 
-      background: var(--md-sys-color-surface-container-high); 
-      padding: 3px 10px; 
-      border-radius: 12px; 
-      color: var(--md-sys-color-on-surface-variant); 
-      font-weight: 500;
-    }
-
-    .spinner { 
-      width: 32px; 
-      height: 32px; 
-      border: 3px solid var(--md-sys-color-outline-variant); 
-      border-top-color: var(--md-sys-color-primary); 
-      border-radius: 50%; 
-      animation: spin 0.8s linear infinite; 
-    }
-
-    @keyframes spin { 
-      to { transform: rotate(360deg); } 
-    }
+    .spinner { width: 32px; height: 32px; border: 3px solid var(--md-sys-color-outline-variant); border-top-color: var(--md-sys-color-primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -397,23 +120,21 @@
     <div class="modal">
       <h2>Group Access</h2>
       <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 20px; line-height: 1.4;">
-        Enter your whitelisted Croatian (+385) or Norwegian (+47) phone number to enter.
+        Enter your whitelisted email address to receive your login code.
       </p>
 
       <div id="auth-step-1">
         <div class="form-group">
-          <label for="input-phone">Your Phone Number</label>
-          <input type="tel" id="input-phone" class="input-field" placeholder="+385912345678 or +4791234567" />
+          <label for="input-email">Your Email Address</label>
+          <input type="email" id="input-email" class="input-field" placeholder="name@example.com" />
         </div>
-        <button class="btn btn-primary" id="btn-verify-trigger" onclick="startVerification()">Verify Phone Number</button>
+        <button class="btn btn-primary" id="btn-verify-trigger" onclick="startVerification()">Send Code to Email</button>
       </div>
 
       <div id="auth-step-2" style="display: none; text-align: center;">
         <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 16px; line-height: 1.4;">
-          1. Tap below to open WhatsApp and get your code.<br>2. Enter the 4-digit code shown below:
+          We sent a 4-digit code to your email. Check your inbox and enter it below:
         </p>
-        
-        <a id="wa-link-btn" href="#" target="_blank" class="btn btn-whatsapp" style="text-decoration: none; display: block; margin-bottom: 20px;">💬 Open WhatsApp for Code</a>
         
         <div style="margin-bottom: 16px;">
           <input type="text" id="input-code" placeholder="----" maxlength="4" class="input-field" style="text-align: center; font-size: 1.5rem; letter-spacing: 8px;">
@@ -455,16 +176,14 @@
     const GOOGLE_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
 
     let state = {
-      phone: localStorage.getItem('poll_user_phone') || '',
+      email: localStorage.getItem('poll_user_email') || '',
       userName: localStorage.getItem('poll_user_name') || '',
       selectedOptionIds: new Set(),
-      options: [],
-      currentCode: '',
-      waLink: ''
+      options: []
     };
 
     document.addEventListener('DOMContentLoaded', () => {
-      if (!state.phone || !state.userName) {
+      if (!state.email || !state.userName) {
         document.getElementById('auth-modal').classList.add('active');
       } else {
         updateUserUI();
@@ -473,34 +192,24 @@
     });
 
     function startVerification() {
-      const phoneInput = document.getElementById('input-phone').value.trim();
-      if (!phoneInput) return alert('Please enter your phone number.');
+      const emailInput = document.getElementById('input-email').value.trim();
+      if (!emailInput) return alert('Please enter your email address.');
     
       const triggerBtn = document.getElementById('btn-verify-trigger');
-      triggerBtn.innerText = 'Checking Whitelist...';
+      triggerBtn.innerText = 'Sending Code...';
       triggerBtn.disabled = true;
     
-      fetch(`${GOOGLE_SCRIPT_URL}?action=checkWhitelist&phone=${encodeURIComponent(phoneInput)}`)
+      fetch(`${GOOGLE_SCRIPT_URL}?action=checkWhitelist&email=${encodeURIComponent(emailInput)}`)
         .then(res => res.json())
         .then(result => {
           if (result.status === 'success') {
-            if (!result.waLink) {
-              alert('Error: Backend did not return a valid WhatsApp link.');
-              return;
-            }
-
-            state.phone = phoneInput;
+            state.email = emailInput;
             state.userName = result.name;
-            state.currentCode = result.code;
-            state.waLink = result.waLink;
-    
-            const waBtn = document.getElementById('wa-link-btn');
-            waBtn.setAttribute('href', state.waLink);
 
             document.getElementById('auth-step-1').style.display = 'none';
             document.getElementById('auth-step-2').style.display = 'block';
           } else {
-            alert(result.message || 'Access Denied: Number not on group whitelist.');
+            alert(result.message || 'Access Denied: Email not on group whitelist.');
           }
         })
         .catch(err => {
@@ -508,7 +217,7 @@
           alert('Verification request failed. Check your network.');
         })
         .finally(() => {
-          triggerBtn.innerText = 'Verify Phone Number';
+          triggerBtn.innerText = 'Send Code to Email';
           triggerBtn.disabled = false;
         });
     }
@@ -525,7 +234,7 @@
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({
             action: 'verifyCode',
-            phone: state.phone,
+            email: state.email,
             code: enteredCode
           })
         });
@@ -533,13 +242,13 @@
         const result = await res.json();
 
         if (result.status === 'success' && result.approved === true) {
-          localStorage.setItem('poll_user_phone', state.phone);
+          localStorage.setItem('poll_user_email', state.email);
           localStorage.setItem('poll_user_name', state.userName);
           document.getElementById('auth-modal').classList.remove('active');
           updateUserUI();
           fetchPollData();
         } else {
-          alert(result.message || 'Invalid code. Please try again.');
+          alert(result.message || 'Invalid code. Please check your inbox and try again.');
         }
       } catch (err) {
         console.error('Verification error:', err);
@@ -611,7 +320,6 @@
     async function handleCardClick(optionId) {
       const isCurrentlySelected = state.selectedOptionIds.has(optionId);
       
-      // Optimistic Local Update
       if (isCurrentlySelected) {
         state.selectedOptionIds.delete(optionId);
       } else {
@@ -627,9 +335,8 @@
         }
       }
 
-      renderOptions(); // Update UI instantly
+      renderOptions();
 
-      // Background Sync
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
@@ -648,7 +355,6 @@
       } catch (err) {
         console.error('Vote sync failed:', err);
         alert('Failed to save vote. Reverting...');
-        // Rollback
         if (isCurrentlySelected) state.selectedOptionIds.add(optionId);
         else state.selectedOptionIds.delete(optionId);
         fetchPollData();
