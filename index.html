@@ -42,11 +42,22 @@
 
     .app-container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 16px; }
 
-    .header-card { background: var(--md-sys-color-surface); border: 1px solid var(--md-sys-color-outline-variant); border-radius: var(--md-shape-corner-large); padding: 24px 20px; text-align: center; box-shadow: var(--md-elevation-1); }
-    .header-card h1 { font-size: 1.5rem; font-weight: 600; color: var(--md-sys-color-on-surface); letter-spacing: -0.5px; }
-    .header-card p { font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant); margin-top: 6px; }
+    .header-card { 
+      position: relative;
+      background: linear-gradient(rgba(18, 19, 22, 0.75), rgba(18, 19, 22, 0.85)), 
+                  url('https://35milimetros.es/wp-content/uploads/2026/03/2b4013cc-60a9-4680-a9bd-f9f891d42a63_source-aspect-ratio_1600w_0.webp') center/cover no-repeat;
+      border: 1px solid var(--md-sys-color-outline-variant); 
+      border-radius: var(--md-shape-corner-large); 
+      padding: 32px 20px; 
+      text-align: center; 
+      box-shadow: var(--md-elevation-1);
+      overflow: hidden;
+    }
+    
+    .header-card h1 { font-size: 1.6rem; font-weight: 700; color: #ffffff; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    .header-card p { font-size: 0.9rem; color: #e2e8f0; margin-top: 6px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
 
-    .user-badge { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 6px 16px; background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); border-radius: var(--md-shape-corner-small); font-size: 0.85rem; font-weight: 500; }
+    .user-badge { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 6px 16px; background: rgba(29, 58, 112, 0.85); backdrop-filter: blur(8px); color: var(--md-sys-color-on-primary-container); border-radius: var(--md-shape-corner-small); font-size: 0.85rem; font-weight: 500; border: 1px solid rgba(168, 199, 250, 0.3); }
 
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; opacity: 0; pointer-events: none; transition: opacity var(--transition-standard); }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
