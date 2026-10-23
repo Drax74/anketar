@@ -135,16 +135,25 @@
 
     .card-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
     
-    /* NAPOMENA CHIP / BOX STYLING */
+    /* MODERN SLEEK NAPOMENA BOX */
     .card-note-box {
-      background: var(--md-sys-color-surface-container-high);
-      border-left: 3px solid var(--md-sys-color-primary);
-      padding: 8px 12px;
-      border-radius: 0 var(--md-shape-corner-small) var(--md-shape-corner-small) 0;
+      background: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-shape-corner-small);
+      padding: 10px 14px;
       font-size: 0.85rem;
       color: var(--md-sys-color-on-surface-variant);
-      line-height: 1.4;
+      line-height: 1.45;
       word-break: break-word;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .card-note-box::before {
+      content: '📝';
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      margin-top: 1px;
     }
 
     .card-header-row { display: flex; align-items: center; gap: 12px; }
@@ -483,7 +492,7 @@
         const votes = opt.voters ? opt.voters.length : 0;
         const pct = Math.round((votes / totalWhitelistCount) * 100) || 0;
         const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>Nema glasova</em>';
-        const noteHtml = opt.note ? `<div class="card-note-box">💬 ${opt.note}</div>` : '';
+        const noteHtml = opt.note ? `<div class="card-note-box">${opt.note}</div>` : '';
 
         return `
           <div class="option-card ${isSelected ? 'selected' : ''}" onclick="handleCardClick('${opt.id}')">
@@ -583,7 +592,6 @@
 
       if (hasError) return;
 
-      // 1. Create a temporary local ID and option object
       const tempId = 'opt_' + Date.now();
       const newOption = {
         id: tempId,
@@ -595,12 +603,10 @@
         voters: []
       };
 
-      // 2. Optimistically update local state & render immediately
-      state.options.unshift(newOption); // Add to the top of the list
+      state.options.unshift(newOption);
       renderOptions();
-      closeAddModal(); // Close modal instantly with zero lag
+      closeAddModal();
 
-      // 3. Fire background network request to Google Sheets silently
       try {
         await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
@@ -614,13 +620,9 @@
             note: note || ''
           })
         });
-        
-        // Optional silent background sync to ensure IDs match if needed later
-        // fetchPollData(); 
       } catch (err) { 
         console.error('Background add option failed:', err);
         alert('Došlo je do greške pri spremanju u bazu.');
-        // Revert local state if it failed
         state.options = state.options.filter(o => o.id !== tempId);
         renderOptions();
       }
