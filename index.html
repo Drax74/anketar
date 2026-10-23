@@ -407,13 +407,15 @@
       </div>
 
       <div id="auth-step-2" style="display: none; text-align: center;">
-        <p style="font-size: 0.85rem; margin-bottom: 12px;">Tap below to send your verification message on WhatsApp, then switch back here.</p>
-        <!-- Native <a> tag guarantees mobile browsers won't block the popup -->
-        <a id="wa-link-btn" href="#" target="_blank" class="btn btn-whatsapp" style="text-decoration: none;" onclick="onWhatsAppClicked()">💬 Open WhatsApp & Verify</a>
-        <div style="margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <div class="spinner"></div>
-          <span style="font-size: 0.8rem; color: var(--text-muted);">Awaiting Tab Focus Return...</span>
+        <p style="font-size: 0.85rem; margin-bottom: 12px;">1. Tap below to open WhatsApp and get your code.<br>2. Enter the 4-digit code shown below:</p>
+        
+        <a id="wa-link-btn" href="#" target="_blank" class="btn btn-whatsapp" style="text-decoration: none; display: block; margin-bottom: 16px;">💬 Open WhatsApp for Code</a>
+        
+        <div style="margin-bottom: 12px;">
+          <input type="text" id="input-code" placeholder="Enter 4-digit code" maxlength="4" style="padding: 10px; font-size: 1.2rem; text-align: center; width: 150px; letter-spacing: 4px; border: 1px solid var(--border-color); border-radius: 6px;">
         </div>
+        
+        <button class="btn btn-primary" onclick="verifyEnteredCode()">✅ Confirm & Login</button>
       </div>
     </div>
   </div>
@@ -532,39 +534,37 @@
       state.isPendingReturn = true;
     }
 
-    async function executeAutoApproval() {
-      // Prevent double firing if visibility toggles rapidly
-      if (!state.isPendingReturn || !state.phone || !state.currentCode) return;
-      state.isPendingReturn = false; // Lock immediately
+    async function verifyEnteredCode() {
+      const enteredCode = document.getElementById('input-code').value.trim();
+      if (!enteredCode || enteredCode.length !== 4) {
+        return alert('Please enter the 4-digit code.');
+      }
 
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({
-            action: 'autoApprove',
+            action: 'verifyCode',
             phone: state.phone,
-            code: state.currentCode
+            code: enteredCode
           })
         });
 
         const result = await res.json();
 
         if (result.status === 'success' && result.approved === true) {
-          // Strictly verified! Save to storage and unlock UI
           localStorage.setItem('poll_user_phone', state.phone);
           localStorage.setItem('poll_user_name', state.userName);
           document.getElementById('auth-modal').classList.remove('active');
           updateUserUI();
           fetchPollData();
         } else {
-          // Explicitly failed or expired — keep modal locked and notify user
-          alert(result.message || 'Verification not completed yet. Please send the WhatsApp message first.');
-          resetAuthUI();
+          alert(result.message || 'Invalid code. Please try again.');
         }
       } catch (err) {
-        console.error('Auto-approval check error:', err);
-        state.isPendingReturn = true; // Allow retry on next focus if it was just a temporary network blip
+        console.error('Verification error:', err);
+        alert('Network error during verification.');
       }
     }
 
