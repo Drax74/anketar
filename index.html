@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Group Travel Poll</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       THEME & DESIGN SYSTEM
+       ========================================================================== */
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --glass-blur: blur(16px);
+      
+      --accent-primary: #6366f1;
+      --accent-primary-hover: #4f46e5;
+      --accent-success: #10b981;
+      --accent-whatsapp: #25d366;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      
+      --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      -webkit-tap-highlight-color: transparent; 
+    }
+
+    body { 
+      background: var(--bg-gradient); 
+      background-attachment: fixed; 
+      color: var(--text-main); 
+      min-height: 100vh; 
+      display: flex; 
+      justify-content: center; 
+      padding: 16px 12px 40px 12px; 
+    }
+
+    .app-container { 
+      width: 100%; 
+      max-width: 480px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 16px; 
+    }
+
+    /* ==========================================================================
+       HEADER COMPONENTS
+       ========================================================================== */
+    .header-card {
+      background: var(--card-bg); 
+      backdrop-filter: var(--glass-blur); 
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--card-border); 
+      border-radius: var(--radius-lg); 
+      padding: 20px; 
+      text-align: center; 
+      box-shadow: var(--shadow-card);
+    }
+
+    .header-card h1 { 
+      font-size: 1.5rem; 
+      font-weight: 700; 
+      background: linear-gradient(to right, #818cf8, #c084fc); 
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent; 
+    }
+
+    .header-card p { 
+      font-size: 0.875rem; 
+      color: var(--text-muted); 
+      margin-top: 4px; 
+    }
+
+    .user-badge {
+      display: inline-flex; 
+      align-items: center; 
+      gap: 8px; 
+      margin-top: 12px; 
+      padding: 6px 14px;
+      background: rgba(99, 102, 241, 0.15); 
+      border: 1px solid rgba(99, 102, 241, 0.3); 
+      border-radius: 20px; 
+      font-size: 0.85rem; 
+      color: #a5b4fc;
+    }
+
+    /* ==========================================================================
+       MODAL OVERLAYS & FORMS
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed; 
+      top: 0; left: 0; right: 0; bottom: 0; 
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(8px); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      padding: 20px; 
+      z-index: 100;
+      opacity: 0; 
+      pointer-events: none; 
+      transition: var(--transition-smooth);
+    }
+
+    .modal-overlay.active { 
+      opacity: 1; 
+      pointer-events: auto; 
+    }
+
+    .modal { 
+      background: #1e293b; 
+      border: 1px solid var(--card-border); 
+      border-radius: var(--radius-lg); 
+      padding: 24px; 
+      width: 100%; 
+      max-width: 400px; 
+      box-shadow: var(--shadow-card); 
+    }
+
+    .modal h2 { 
+      font-size: 1.25rem; 
+      margin-bottom: 12px; 
+    }
+
+    .form-group { 
+      margin-bottom: 16px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 6px; 
+    }
+
+    .form-group label { 
+      font-size: 0.8rem; 
+      color: var(--text-muted); 
+      font-weight: 500; 
+    }
+
+    .input-field { 
+      width: 100%; 
+      padding: 12px 14px; 
+      background: rgba(15, 23, 42, 0.6); 
+      border: 1px solid var(--card-border); 
+      border-radius: var(--radius-md); 
+      color: var(--text-main); 
+      font-size: 0.95rem; 
+      outline: none; 
+    }
+
+    .input-field:focus { 
+      border-color: var(--accent-primary); 
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); 
+    }
+
+    /* ==========================================================================
+       BUTTONS
+       ========================================================================== */
+    .btn { 
+      width: 100%; 
+      padding: 12px 16px; 
+      border: none; 
+      border-radius: var(--radius-md); 
+      font-weight: 600; 
+      font-size: 0.95rem; 
+      cursor: pointer; 
+      display: inline-flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 8px; 
+      transition: var(--transition-smooth); 
+    }
+
+    .btn-primary { 
+      background: var(--accent-primary); 
+      color: white; 
+    }
+
+    .btn-primary:hover { 
+      background: var(--accent-primary-hover); 
+    }
+
+    .btn-whatsapp { 
+      background: var(--accent-whatsapp); 
+      color: #052e16; 
+    }
+
+    .btn-secondary { 
+      background: rgba(255, 255, 255, 0.08); 
+      color: var(--text-main); 
+      border: 1px solid var(--card-border); 
+    }
+
+    /* ==========================================================================
+       POLL OPTION CARDS
+       ========================================================================== */
+    .options-list { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 16px; 
+    }
+
+    .option-card { 
+      background: var(--card-bg); 
+      backdrop-filter: var(--glass-blur); 
+      border: 2px solid var(--card-border); 
+      border-radius: var(--radius-lg); 
+      overflow: hidden; 
+      transition: var(--transition-smooth); 
+    }
+
+    .option-card.selected { 
+      border-color: var(--accent-primary); 
+      background: rgba(49, 46, 129, 0.4); 
+    }
+
+    .card-cover-container { 
+      width: 100%; 
+      height: 160px; 
+      position: relative; 
+      background: #0f172a; 
+      overflow: hidden; 
+    }
+
+    .card-cover { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover; 
+    }
+
+    .price-badge { 
+      position: absolute; 
+      top: 12px; 
+      right: 12px; 
+      background: rgba(15, 23, 42, 0.85); 
+      padding: 6px 10px; 
+      border-radius: var(--radius-sm); 
+      font-size: 0.85rem; 
+      font-weight: 700; 
+      color: var(--accent-success); 
+    }
+
+    .card-body { 
+      padding: 16px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 12px; 
+    }
+
+    .card-header-row { 
+      display: flex; 
+      align-items: flex-start; 
+      gap: 12px; 
+    }
+
+    .checkbox-custom { 
+      width: 22px; 
+      height: 22px; 
+      border-radius: 6px; 
+      border: 2px solid var(--text-muted); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      flex-shrink: 0; 
+      margin-top: 2px; 
+    }
+
+    .option-card.selected .checkbox-custom { 
+      background: var(--accent-primary); 
+      border-color: var(--accent-primary); 
+    }
+
+    .option-card.selected .checkbox-custom::after { 
+      content: '✓'; 
+      color: white; 
+      font-weight: bold; 
+    }
+
+    .card-title { 
+      font-size: 1.05rem; 
+      font-weight: 600; 
+      color: var(--text-main); 
+      text-decoration: none; 
+      display: flex; 
+      align-items: center; 
+      gap: 6px; 
+    }
+
+    .progress-bar-bg { 
+      width: 100%; 
+      height: 8px; 
+      background: rgba(255, 255, 255, 0.1); 
+      border-radius: 4px; 
+      overflow: hidden; 
+    }
+
+    .progress-bar-fill { 
+      height: 100%; 
+      background: linear-gradient(to right, var(--accent-primary), #818cf8); 
+      width: 0%; 
+      transition: width 0.5s ease-out; 
+    }
+
+    .progress-info { 
+      display: flex; 
+      justify-content: space-between; 
+      font-size: 0.75rem; 
+      color: var(--text-muted); 
+    }
+
+    .voters-container { 
+      font-size: 0.75rem; 
+      color: var(--text-dim); 
+      display: flex; 
+      align-items: center; 
+      gap: 6px; 
+      flex-wrap: wrap; 
+    }
+
+    .voter-tag { 
+      background: rgba(255, 255, 255, 0.05); 
+      padding: 2px 8px; 
+      border-radius: 10px; 
+      color: var(--text-muted); 
+    }
+
+    .submit-bar { 
+      position: sticky; 
+      bottom: 16px; 
+      margin-top: 16px; 
+      z-index: 50; 
+    }
+
+    .spinner { 
+      width: 28px; 
+      height: 28px; 
+      border: 3px solid rgba(255, 255, 255, 0.1); 
+      border-top-color: var(--accent-primary); 
+      border-radius: 50%; 
+      animation: spin 0.8s linear infinite; 
+    }
+
+    @keyframes spin { 
+      to { transform: rotate(360deg); } 
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <header class="header-card">
+      <h1>🏖️ Group Trip Poll</h1>
+      <p>Vote for your favorite accommodation</p>
+      <div id="user-info-area" style="display: none;">
+        <div class="user-badge">👤 Logged in as: <strong id="display-user-name">User</strong></div>
+      </div>
+    </header>
+
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-size: 1.1rem; font-weight: 600;">Options (<span id="options-count">0</span>)</span>
+      <button class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 0.8rem;" onclick="openAddModal()">+ Add Option</button>
+    </div>
+
+    <div id="options-container" class="options-list">
+      <div class="header-card" style="padding: 40px 20px;">
+        <div class="spinner" style="margin: 0 auto 12px auto;"></div>
+        <p>Loading accommodations...</p>
+      </div>
+    </div>
+
+    <div class="submit-bar">
+      <button id="submit-btn" class="btn btn-primary" onclick="submitVotes()">💾 Save / Submit My Votes</button>
+    </div>
+  </div>
+
+  <!-- AUTHENTICATION MODAL -->
+  <div id="auth-modal" class="modal-overlay">
+    <div class="modal">
+      <h2>Group Access</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+        Enter your whitelisted Croatian (+385) or Norwegian (+47) phone number to enter.
+      </p>
+
+      <div id="auth-step-1">
+        <div class="form-group">
+          <label for="input-phone">Your Phone Number</label>
+          <input type="tel" id="input-phone" class="input-field" placeholder="+385912345678 or +4791234567" />
+        </div>
+        <button class="btn btn-primary" id="btn-verify-trigger" onclick="startVerification()">Verify Phone Number</button>
+      </div>
+
+      <div id="auth-step-2" style="display: none; text-align: center;">
+        <p style="font-size: 0.85rem; margin-bottom: 12px;">Tap below to trigger WhatsApp verification, then switch back to this tab to enter automatically.</p>
+        <button class="btn btn-whatsapp" id="wa-send-btn" onclick="triggerWhatsAppReturn()">💬 Open WhatsApp & Verify</button>
+        <div style="margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <div class="spinner"></div>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Awaiting Tab Focus Return...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD OPTION MODAL -->
+  <div id="add-modal" class="modal-overlay">
+    <div class="modal">
+      <h2>Add Accommodation</h2>
+      <div class="form-group">
+        <label for="input-link">Accommodation Link</label>
+        <input type="url" id="input-link" class="input-field" placeholder="https://..." onblur="autoFetchMetadata()" />
+      </div>
+      <div class="form-group">
+        <label for="input-title">Title / Name</label>
+        <input type="text" id="input-title" class="input-field" placeholder="Villa Horizon" />
+      </div>
+      <div class="form-group">
+        <label for="input-price">Total Price</label>
+        <input type="text" id="input-price" class="input-field" placeholder="450€ total" />
+      </div>
+      <div class="form-group">
+        <label for="input-image">Image URL</label>
+        <input type="url" id="input-image" class="input-field" placeholder="https://..." />
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 16px;">
+        <button class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
+        <button class="btn btn-primary" id="btn-add-submit" onclick="submitNewOption()">Add Proposal</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       CONFIGURATION & APPLICATION STATE
+       ========================================================================== */
+
+    let state = {
+      phone: localStorage.getItem('poll_user_phone') || '',
+      userName: localStorage.getItem('poll_user_name') || '',
+      selectedOptionIds: new Set(),
+      options: [],
+      currentCode: '',
+      waLink: '',
+      isPendingReturn: false
+    };
+
+    /* ==========================================================================
+       INITIALIZATION & RE-AUTHENTICATION CHECK
+       ========================================================================== */
+    document.addEventListener('DOMContentLoaded', () => {
+      // If localStorage is missing or was cleared, show the lock screen
+      if (!state.phone || !state.userName) {
+        document.getElementById('auth-modal').classList.add('active');
+      } else {
+        updateUserUI();
+        fetchPollData();
+      }
+
+      // Detect when the user switches back from WhatsApp to this app tab
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && state.isPendingReturn) {
+          executeAutoApproval();
+        }
+      });
+    });
+
+    /* ==========================================================================
+       AUTHENTICATION FLOW (WHITELIST + RETURN TRIGGER)
+       ========================================================================== */
+    async function startVerification() {
+      const phoneInput = document.getElementById('input-phone').value.trim();
+      if (!phoneInput) return alert('Please enter your phone number.');
+    
+      const triggerBtn = document.getElementById('btn-verify-trigger');
+      triggerBtn.innerText = 'Checking Whitelist...';
+      triggerBtn.disabled = true;
+    
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=checkWhitelist&phone=${encodeURIComponent(phoneInput)}`);
+        const result = await res.json();
+    
+        if (result.status === 'success') {
+          state.phone = phoneInput;
+          state.userName = result.name;
+          state.currentCode = result.code;
+          state.waLink = result.waLink; // <-- Securely received from Apps Script
+    
+          document.getElementById('auth-step-1').style.display = 'none';
+          document.getElementById('auth-step-2').style.display = 'block';
+        } else {
+          alert(result.message || 'Access Denied: Number not on group whitelist.');
+        }
+      } catch (err) {
+        alert('Verification request failed. Check your network.');
+      } finally {
+        triggerBtn.innerText = 'Verify Phone Number';
+        triggerBtn.disabled = false;
+      }
+    }
+    
+    function triggerWhatsAppReturn() {
+      state.isPendingReturn = true;
+      window.open(state.waLink, '_blank');
+    }
+
+    async function executeAutoApproval() {
+      state.isPendingReturn = false;
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            action: 'autoApprove',
+            phone: state.phone,
+            code: state.currentCode
+          })
+        });
+
+        const result = await res.json();
+
+        if (result.status === 'success' && result.approved) {
+          localStorage.setItem('poll_user_phone', state.phone);
+          localStorage.setItem('poll_user_name', state.userName);
+          document.getElementById('auth-modal').classList.remove('active');
+          updateUserUI();
+          fetchPollData();
+        } else {
+          alert(result.message || 'Verification expired or invalid. Please try again.');
+          resetAuthUI();
+        }
+      } catch (err) {
+        alert('Auto-approval network check failed.');
+      }
+    }
+
+    function resetAuthUI() {
+      state.isPendingReturn = false;
+      document.getElementById('auth-step-2').style.display = 'none';
+      document.getElementById('auth-step-1').style.display = 'block';
+    }
+
+    function updateUserUI() {
+      document.getElementById('display-user-name').innerText = state.userName;
+      document.getElementById('user-info-area').style.display = 'block';
+    }
+
+    /* ==========================================================================
+       POLL DATA FETCH & VOTING
+       ========================================================================== */
+    async function fetchPollData() {
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=getPollData`);
+        const result = await res.json();
+        if (result.status === 'success') {
+          state.options = result.data;
+          
+          // Re-select options previously voted for by this user
+          state.selectedOptionIds.clear();
+          state.options.forEach(opt => {
+            if (opt.voters && opt.voters.includes(state.userName)) {
+              state.selectedOptionIds.add(opt.id);
+            }
+          });
+          renderOptions();
+        }
+      } catch (err) { 
+        console.error('Fetch poll data failed:', err); 
+      }
+    }
+
+    async function submitVotes() {
+      const btn = document.getElementById('submit-btn');
+      btn.innerText = 'Saving...'; 
+      btn.disabled = true;
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            action: 'vote',
+            userName: state.userName,
+            votedOptionIds: Array.from(state.selectedOptionIds)
+          })
+        });
+        alert('Votes successfully saved!');
+        fetchPollData();
+      } catch (err) { 
+        alert('Failed to save votes.'); 
+      } finally { 
+        btn.innerText = '💾 Save / Submit My Votes'; 
+        btn.disabled = false; 
+      }
+    }
+
+    /* ==========================================================================
+       ACCOMMODATION METADATA EXTRACTION & PROPOSALS
+       ========================================================================== */
+    async function autoFetchMetadata() {
+      const url = document.getElementById('input-link').value.trim();
+      if (!url) return;
+
+      try {
+        const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`);
+        const json = await res.json();
+        if (json.status === 'success' && json.data) {
+          if (json.data.title && !document.getElementById('input-title').value) {
+            document.getElementById('input-title').value = json.data.title;
+          }
+          if (json.data.image?.url && !document.getElementById('input-image').value) {
+            document.getElementById('input-image').value = json.data.image.url;
+          }
+        }
+      } catch (e) {
+        console.warn('Metadata fetch skipped:', e);
+      }
+    }
+
+    async function submitNewOption() {
+      const title = document.getElementById('input-title').value.trim();
+      const link = document.getElementById('input-link').value.trim();
+      const price = document.getElementById('input-price').value.trim();
+      const image = document.getElementById('input-image').value.trim();
+
+      if (!title || !link) return alert('Title and link are required.');
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            action: 'addOption',
+            id: 'opt_' + Date.now(),
+            title, link, 
+            price: price || 'N/A',
+            image: image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'
+          })
+        });
+        closeAddModal();
+        fetchPollData();
+      } catch (err) { 
+        alert('Failed to add proposal.'); 
+      }
+    }
+
+    /* ==========================================================================
+       DYNAMIC UI RENDERING & SORTING
+       ========================================================================== */
+    function renderOptions() {
+      const container = document.getElementById('options-container');
+      document.getElementById('options-count').innerText = state.options.length;
+
+      const allVoters = new Set();
+      state.options.forEach(opt => opt.voters?.forEach(v => allVoters.add(v)));
+      const totalVoters = allVoters.size || 1;
+
+      // Automatically sort options by highest vote count
+      const sorted = [...state.options].sort((a, b) => (b.voters?.length || 0) - (a.voters?.length || 0));
+
+      container.innerHTML = sorted.map(opt => {
+        const isSelected = state.selectedOptionIds.has(opt.id);
+        const votes = opt.voters ? opt.voters.length : 0;
+        const pct = Math.round((votes / totalVoters) * 100) || 0;
+        const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>No votes</em>';
+
+        return `
+          <div class="option-card ${isSelected ? 'selected' : ''}" onclick="toggleOption('${opt.id}')">
+            <div class="card-cover-container">
+              <img class="card-cover" src="${opt.image}" alt="${opt.title}" loading="lazy" onError="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'" />
+              <div class="price-badge">${opt.price}</div>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <div class="checkbox-custom"></div>
+                <a href="${opt.link}" target="_blank" class="card-title" onclick="event.stopPropagation()">${opt.title} ↗</a>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%;"></div></div>
+              <div class="progress-info"><span>${votes} votes</span><span>${pct}%</span></div>
+              <div class="voters-container"><span>Voted by:</span> ${votersList}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleOption(id) {
+      if (state.selectedOptionIds.has(id)) state.selectedOptionIds.delete(id);
+      else state.selectedOptionIds.add(id);
+      renderOptions();
+    }
+
+    function openAddModal() { document.getElementById('add-modal').classList.add('active'); }
+    function closeAddModal() { 
+      document.getElementById('add-modal').classList.remove('active');
+      document.getElementById('input-title').value = '';
+      document.getElementById('input-link').value = '';
+      document.getElementById('input-price').value = '';
+      document.getElementById('input-image').value = '';
+    }
+  </script>
+</body>
+</html>
