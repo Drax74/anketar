@@ -384,10 +384,6 @@
         <p>Loading accommodations...</p>
       </div>
     </div>
-
-    <div class="submit-bar">
-      <button id="submit-btn" class="btn btn-primary" onclick="submitVotes()">💾 Save / Submit My Votes</button>
-    </div>
   </div>
 
   <!-- AUTHENTICATION MODAL -->
@@ -582,6 +578,104 @@
     /* ==========================================================================
        POLL DATA FETCH & VOTING
        ========================================================================== */
+    function renderPolls() {
+      const container = document.getElementById('poll-container');
+      container.innerHTML = '';
+
+      const totalVoters = new Set();
+      state.options.forEach(opt => opt.voters.forEach(v => totalVoters.add(v)));
+      const totalCount = totalVoters.size;
+
+      state.options.forEach(opt => {
+        const hasVoted = opt.voters.includes(state.userName);
+        const count = opt.voters.length;
+        const percentage = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
+
+        const card = document.createElement('div');
+        card.className = `poll-card ${hasVoted ? 'selected' : ''}`;
+        card.innerHTML = `
+          <div class="poll-card-content">
+            <input type="checkbox" 
+                   value="${opt.id}" 
+                   ${hasVoted ? 'checked' : ''} 
+                   onchange="handleInstantVote(this, '${opt.id}')"
+                   style="transform: scale(1.3); cursor: pointer;">
+            <div style="flex-grow: 1; margin-left: 12px;">
+              <h3 style="margin: 0; font-size: 1rem;"><a href="${opt.link}" target="_blank">${opt.title}</a></h3>
+              <p style="margin: 4px 0 0; color: #666; font-size: 0.85rem;">${opt.price || ''}</p>
+            </div>
+            <div style="text-align: right; font-weight: bold;">
+              <span>${count} votes (${percentage}%)</span>
+            </div>
+          </div>
+          <div class="progress-bar-bg" style="margin-top: 8px; background: #eee; height: 6px; border-radius: 3px; overflow: hidden;">
+            <div style="width: ${percentage}%; background: var(--primary-color); height: 100%; transition: width 0.3s ease;"></div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    async function handleInstantVote(checkboxElement, optionId) {
+      // 1. Capture previous state for rollback if needed
+      const wasChecked = !checkboxElement.checked; // Since event just fired, current state is opposite of what it was
+      const currentUserName = localStorage.getItem('poll_user_name');
+
+      // 2. Optimistically update local state array
+      const targetOption = state.options.find(o => o.id === optionId);
+      if (targetOption) {
+        if (checkboxElement.checked) {
+          if (!targetOption.voters.includes(currentUserName)) {
+            targetOption.voters.push(currentUserName);
+          }
+        } else {
+          targetOption.voters = targetOption.voters.filter(name => name !== currentUserName);
+        }
+      }
+
+      // Re-render UI instantly for zero perceived latency
+      renderPolls();
+
+      // 3. Gather all currently checked option IDs for this user
+      const allCheckboxes = document.querySelectorAll('#poll-container input[type="checkbox"]');
+      const votedOptionIds = [];
+      allCheckboxes.forEach(cb => {
+        if (cb.checked) votedOptionIds.push(cb.value);
+      });
+
+      // 4. Fire background sync to Google Apps Script
+      try {
+        const res = await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            action: 'vote',
+            userName: currentUserName,
+            votedOptionIds: votedOptionIds
+          })
+        });
+
+        const result = await res.json();
+        if (result.status !== 'success') {
+          throw new Error('Server rejected vote');
+        }
+      } catch (err) {
+        console.error('Vote sync failed, reverting...', err);
+        alert('Failed to save vote. Reverting change.');
+
+        // Rollback local state
+        checkboxElement.checked = wasChecked;
+        if (targetOption) {
+          if (wasChecked) {
+            if (!targetOption.voters.includes(currentUserName)) targetOption.voters.push(currentUserName);
+          } else {
+            targetOption.voters = targetOption.voters.filter(name => name !== currentUserName);
+          }
+        }
+        renderPolls(); // Re-render back to original state
+      }
+    }
+    
     async function fetchPollData() {
       try {
         const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getPollData`);
@@ -600,31 +694,6 @@
         }
       } catch (err) { 
         console.error('Fetch poll data failed:', err); 
-      }
-    }
-
-    async function submitVotes() {
-      const btn = document.getElementById('submit-btn');
-      btn.innerText = 'Saving...'; 
-      btn.disabled = true;
-
-      try {
-        await fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({
-            action: 'vote',
-            userName: state.userName,
-            votedOptionIds: Array.from(state.selectedOptionIds)
-          })
-        });
-        alert('Votes successfully saved!');
-        fetchPollData();
-      } catch (err) { 
-        alert('Failed to save votes.'); 
-      } finally { 
-        btn.innerText = '💾 Save / Submit My Votes'; 
-        btn.disabled = false; 
       }
     }
 
