@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Madrid Group Trip Poll</title>
+  <title>Madrid Ekskurzija</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -153,14 +153,14 @@
     </header>
 
     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
-      <span style="font-size: 1rem; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">Accommodations (<span id="options-count">0</span>)</span>
-      <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; font-size: 0.85rem;" onclick="openAddModal()">+ Add Option</button>
+      <span style="font-size: 1rem; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">Smjestaji (<span id="options-count">0</span>)</span>
+      <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; font-size: 0.85rem;" onclick="openAddModal()">+ Dodaj Smjestaj</button>
     </div>
 
     <div id="options-container" class="options-list">
       <div class="header-card" style="padding: 40px 20px;">
         <div class="spinner" style="margin: 0 auto 12px auto;"></div>
-        <p>Loading accommodations...</p>
+        <p>Loading smjestaje...</p>
       </div>
     </div>
   </div>
@@ -172,7 +172,6 @@
         <div class="user-avatar" id="user-avatar-initials">U</div>
         <div class="user-footer-details">
           <span class="user-footer-name" id="footer-user-name">Loading...</span>
-          <span class="user-footer-sub">Active Voter</span>
         </div>
       </div>
       <button class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 0.75rem;" onclick="logoutUser()">Sign Out</button>
@@ -182,37 +181,37 @@
   <!-- AUTHENTICATION MODAL -->
   <div id="auth-modal" class="modal-overlay">
     <div class="modal">
-      <h2>Select Your Profile</h2>
+      <h2>Izaberi Svoj Profil</h2>
       <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 20px; line-height: 1.4;">
-        Choose your name from the group list to receive your login code.
+        Izaberi svog trkadziju ili rumoljuba iz liste da ti se posalje login kod.
       </p>
 
       <div id="auth-step-1">
         <div class="form-group">
-          <label for="user-select">Who are you?</label>
+          <label for="user-select">Tko si ti?</label>
           <div class="select-wrapper">
             <select id="user-select" class="input-field" onchange="onUserSelected()">
-              <option value="" disabled selected>Loading group members...</option>
+              <option value="" disabled selected>Loading trkadzije i rumoljube...</option>
             </select>
           </div>
           <div id="selected-chip-container" class="user-chip-preview" style="display: none;">
             <div class="user-avatar" id="preview-chip-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">--</div>
-            <span id="preview-chip-name" style="font-size: 0.85rem; font-weight: 500;">Select user</span>
+            <span id="preview-chip-name" style="font-size: 0.85rem; font-weight: 500;">Izaberi svog trkadziju ili rumoljuba</span>
           </div>
         </div>
-        <button class="btn btn-primary" id="btn-verify-trigger" onclick="startVerification()" disabled>Send Code to My Email</button>
+        <button class="btn btn-primary" id="btn-verify-trigger" onclick="startVerification()" disabled>Posalji Mi Kod Na Email</button>
       </div>
 
       <div id="auth-step-2" style="display: none; text-align: center;">
         <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 16px; line-height: 1.4;">
-          We sent a 4-digit code to your email. Check your inbox and enter it below:
+          Poslal sam ti 4-znamenkasti kod na tvoj email. Provjeri si email i upisi kod ispod:
         </p>
         
         <div style="margin-bottom: 16px;">
           <input type="text" id="input-code" placeholder="----" maxlength="4" class="input-field" style="text-align: center; font-size: 1.5rem; letter-spacing: 8px;">
         </div>
         
-        <button class="btn btn-primary" onclick="verifyEnteredCode()">Confirm & Login</button>
+        <button class="btn btn-primary" onclick="verifyEnteredCode()">Potvrdi & Login</button>
       </div>
     </div>
   </div>
@@ -220,17 +219,17 @@
   <!-- ADD OPTION MODAL -->
   <div id="add-modal" class="modal-overlay">
     <div class="modal">
-      <h2>Add Accommodation</h2>
+      <h2>Dodaj Smjestaj</h2>
       <div class="form-group" style="margin-top: 12px;">
-        <label for="input-link">Accommodation Link</label>
+        <label for="input-link">Link</label>
         <input type="url" id="input-link" class="input-field" placeholder="https://..." onblur="autoFetchMetadata()" />
       </div>
       <div class="form-group">
-        <label for="input-title">Title / Name</label>
+        <label for="input-title">Ime</label>
         <input type="text" id="input-title" class="input-field" placeholder="Villa Horizon" />
       </div>
       <div class="form-group">
-        <label for="input-price">Total Price</label>
+        <label for="input-price">Ukupna Cijena</label>
         <input type="text" id="input-price" class="input-field" placeholder="450€ total" />
       </div>
       <div class="form-group">
@@ -238,8 +237,8 @@
         <input type="url" id="input-image" class="input-field" placeholder="https://..." />
       </div>
       <div style="display: flex; gap: 12px; margin-top: 24px;">
-        <button class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
-        <button class="btn btn-primary" id="btn-add-submit" onclick="submitNewOption()">Add Proposal</button>
+        <button class="btn btn-secondary" onclick="closeAddModal()">Odustani</button>
+        <button class="btn btn-primary" id="btn-add-submit" onclick="submitNewOption()">Dodaj Prijedlog</button>
       </div>
     </div>
   </div>
@@ -309,10 +308,10 @@
     function startVerification() {
       const selectedEmail = document.getElementById('user-select').value;
       const user = state.whitelistedUsers.find(u => u.email === selectedEmail);
-      if (!user) return alert('Please select a profile.');
+      if (!user) return alert('Izaberi svog trkadziju ili rumoljuba.');
 
       const triggerBtn = document.getElementById('btn-verify-trigger');
-      triggerBtn.innerText = 'Sending Code...';
+      triggerBtn.innerText = 'Salje Kod...';
       triggerBtn.disabled = true;
 
       fetch(`${GOOGLE_SCRIPT_URL}?action=requestVerificationCode&email=${encodeURIComponent(selectedEmail)}`)
@@ -332,7 +331,7 @@
         .catch(err => {
           console.error('Request error:', err);
           alert('Network request failed.');
-          triggerBtn.innerText = 'Send Code to My Email';
+          triggerBtn.innerText = 'Posalji Kod Na Moj Email';
           triggerBtn.disabled = false;
         });
     }
@@ -346,10 +345,10 @@
       state.cooldownTimer = setInterval(() => {
         if (remaining <= 0) {
           clearInterval(state.cooldownTimer);
-          triggerBtn.innerText = 'Send Code to My Email';
+          triggerBtn.innerText = 'Posalji Kod Na Moj Email';
           triggerBtn.disabled = false;
         } else {
-          triggerBtn.innerText = `Please wait (${remaining}s)`;
+          triggerBtn.innerText = `Pricekaj (${remaining}s)`;
           remaining--;
         }
       }, 1000);
@@ -357,7 +356,7 @@
 
     async function verifyEnteredCode() {
       const enteredCode = document.getElementById('input-code').value.trim();
-      if (!enteredCode || enteredCode.length !== 4) return alert('Please enter the 4-digit code.');
+      if (!enteredCode || enteredCode.length !== 4) return alert('Ukucaj 4 znamenke za kod, ni vise ni manje.');
 
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
@@ -378,7 +377,7 @@
           updateUserUI();
           fetchPollData();
         } else {
-          alert(result.message || 'Invalid code. Check your inbox.');
+          alert(result.message || 'Krivi kod. Provjeri kod u mail.');
         }
       } catch (err) {
         console.error('Verification error:', err);
@@ -428,7 +427,7 @@
         const isSelected = state.selectedOptionIds.has(opt.id);
         const votes = opt.voters ? opt.voters.length : 0;
         const pct = Math.round((votes / totalVoters) * 100) || 0;
-        const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>No votes</em>';
+        const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>Nema glasova</em>';
 
         return `
           <div class="option-card ${isSelected ? 'selected' : ''}" onclick="handleCardClick('${opt.id}')">
@@ -480,7 +479,7 @@
         if (result.status !== 'success') throw new Error('Server rejected vote');
       } catch (err) {
         console.error('Vote sync failed:', err);
-        alert('Failed to save vote. Reverting...');
+        alert('Nekaj se sjebalo sa sejvanjem. Vracam nazad...');
         if (isCurrentlySelected) state.selectedOptionIds.add(optionId);
         else state.selectedOptionIds.delete(optionId);
         fetchPollData();
@@ -506,7 +505,7 @@
       const price = document.getElementById('input-price').value.trim();
       const image = document.getElementById('input-image').value.trim();
 
-      if (!title || !link) return alert('Title and link are required.');
+      if (!title || !link) return alert('Daj bar dodaj naslov i link.');
 
       try {
         await fetch(GOOGLE_SCRIPT_URL, {
@@ -522,7 +521,7 @@
         });
         closeAddModal();
         fetchPollData();
-      } catch (err) { alert('Failed to add proposal.'); }
+      } catch (err) { alert('Nekaj si sjebo, nije proslo.'); }
     }
 
     function openAddModal() { document.getElementById('add-modal').classList.add('active'); }
