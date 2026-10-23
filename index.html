@@ -48,8 +48,8 @@
                   url('https://35milimetros.es/wp-content/uploads/2026/03/2b4013cc-60a9-4680-a9bd-f9f891d42a63_source-aspect-ratio_1600w_0.webp') center top / cover no-repeat;
       border: 1px solid var(--md-sys-color-outline-variant); 
       border-radius: var(--md-shape-corner-large); 
-      padding: 64px 20px 48px 20px; /* Increased top/bottom padding for extra height */
-      min-height: 220px; /* Ensures ample vertical room */
+      padding: 64px 20px 48px 20px;
+      min-height: 220px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -62,67 +62,35 @@
     .header-card h1 { font-size: 1.8rem; font-weight: 700; color: #ffffff; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
     .header-card p { font-size: 0.95rem; color: #e2e8f0; margin-top: 6px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); font-weight: 500; }
 
-    /* MOBILE APP FOOTER BAR */
-    /* MOBILE APP FOOTER BAR */
+    /* FOOTER BAR */
     .app-footer {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      width: 100%; /* Spans full screen width */
+      bottom: 0; left: 0; right: 0;
+      width: 100%;
       background: var(--md-sys-color-surface);
       border-top: 1px solid var(--md-sys-color-outline-variant);
       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
       z-index: 90;
       display: flex;
-      justify-content: center; /* Centers the inner content */
+      justify-content: center;
     }
 
     .app-footer-content {
       width: 100%;
-      max-width: 480px; /* Aligns perfectly with app-container */
+      max-width: 480px;
       padding: 12px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .user-profile-footer {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .user-profile-footer { display: flex; align-items: center; gap: 12px; }
+    .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem; border: 1px solid rgba(168, 199, 250, 0.3); }
+    .user-footer-details { display: flex; flex-direction: column; }
+    .user-footer-name { font-size: 0.9rem; font-weight: 600; color: var(--md-sys-color-on-surface); }
+    .user-footer-sub { font-size: 0.75rem; color: var(--md-sys-color-on-surface-variant); }
 
-    .user-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      font-size: 0.9rem;
-      border: 1px solid rgba(168, 199, 250, 0.3);
-    }
-
-    .user-footer-details {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .user-footer-name {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--md-sys-color-on-surface);
-    }
-
-    .user-footer-sub {
-      font-size: 0.75rem;
-      color: var(--md-sys-color-on-surface-variant);
-    }
-
+    /* MODAL & SELECT UI */
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; opacity: 0; pointer-events: none; transition: opacity var(--transition-standard); }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
     .modal { background: var(--md-sys-color-surface-container); border: 1px solid var(--md-sys-color-outline-variant); border-radius: var(--md-shape-corner-extra-large); padding: 28px 24px; width: 100%; max-width: 400px; box-shadow: var(--md-elevation-2); }
@@ -131,12 +99,24 @@
     .form-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
     .form-group label { font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); font-weight: 500; }
 
-    .input-field { width: 100%; padding: 14px 16px; background: var(--md-sys-color-surface); border: 1px solid var(--md-sys-color-outline); border-radius: var(--md-shape-corner-medium); color: var(--md-sys-color-on-surface); font-size: 1rem; outline: none; transition: border-color var(--transition-standard); }
+    .select-wrapper { position: relative; width: 100%; }
+    .input-field { width: 100%; padding: 14px 16px; background: var(--md-sys-color-surface); border: 1px solid var(--md-sys-color-outline); border-radius: var(--md-shape-corner-medium); color: var(--md-sys-color-on-surface); font-size: 1rem; outline: none; appearance: none; transition: border-color var(--transition-standard); cursor: pointer; }
     .input-field:focus { border-color: var(--md-sys-color-primary); border-width: 2px; padding: 13px 15px; }
+
+    .user-chip-preview {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: var(--md-sys-color-surface);
+      border-radius: var(--md-shape-corner-small);
+      border: 1px dashed var(--md-sys-color-outline-variant);
+    }
 
     .btn { width: 100%; padding: 14px 20px; border: none; border-radius: var(--md-shape-corner-medium); font-weight: 600; font-size: 0.95rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition-standard); }
     .btn-primary { background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
-    .btn-primary:hover { opacity: 0.9; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-secondary { background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); border: 1px solid var(--md-sys-color-outline-variant); }
 
     .options-list { display: flex; flex-direction: column; gap: 16px; }
@@ -154,8 +134,6 @@
     .option-card.selected .checkbox-custom::after { content: '✓'; color: var(--md-sys-color-on-primary); font-weight: bold; font-size: 0.85rem; }
 
     .card-title { font-size: 1.05rem; font-weight: 600; color: var(--md-sys-color-on-surface); text-decoration: none; display: flex; align-items: center; gap: 6px; }
-    .card-title:hover { color: var(--md-sys-color-primary); }
-
     .progress-bar-bg { width: 100%; height: 8px; background: var(--md-sys-color-surface-container-high); border-radius: 4px; overflow: hidden; }
     .progress-bar-fill { height: 100%; background: var(--md-sys-color-primary); width: 0%; transition: width 0.4s ease-out; }
     .progress-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); font-weight: 500; }
@@ -187,13 +165,14 @@
     </div>
   </div>
 
-  <!-- MOBILE APP FOOTER -->
+  <!-- FOOTER -->
   <footer class="app-footer">
     <div class="app-footer-content">
       <div class="user-profile-footer">
         <div class="user-avatar" id="user-avatar-initials">U</div>
         <div class="user-footer-details">
           <span class="user-footer-name" id="footer-user-name">Loading...</span>
+          <span class="user-footer-sub">Active Voter</span>
         </div>
       </div>
       <button class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 0.75rem;" onclick="logoutUser()">Sign Out</button>
@@ -203,17 +182,25 @@
   <!-- AUTHENTICATION MODAL -->
   <div id="auth-modal" class="modal-overlay">
     <div class="modal">
-      <h2>Group Access</h2>
+      <h2>Select Your Profile</h2>
       <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 20px; line-height: 1.4;">
-        Enter your whitelisted email address to receive your login code.
+        Choose your name from the group list to receive your login code.
       </p>
 
       <div id="auth-step-1">
         <div class="form-group">
-          <label for="input-email">Your Email Address</label>
-          <input type="email" id="input-email" class="input-field" placeholder="name@example.com" />
+          <label for="user-select">Who are you?</label>
+          <div class="select-wrapper">
+            <select id="user-select" class="input-field" onchange="onUserSelected()">
+              <option value="" disabled selected>Loading group members...</option>
+            </select>
+          </div>
+          <div id="selected-chip-container" class="user-chip-preview" style="display: none;">
+            <div class="user-avatar" id="preview-chip-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">--</div>
+            <span id="preview-chip-name" style="font-size: 0.85rem; font-weight: 500;">Select user</span>
+          </div>
         </div>
-        <button class="btn btn-primary" id="btn-verify-trigger" onclick="startVerification()">Send Code to Email</button>
+        <button class="btn btn-primary" id="btn-verify-trigger" onclick="startVerification()" disabled>Send Code to My Email</button>
       </div>
 
       <div id="auth-step-2" style="display: none; text-align: center;">
@@ -264,12 +251,15 @@
       email: localStorage.getItem('poll_user_email') || '',
       userName: localStorage.getItem('poll_user_name') || '',
       selectedOptionIds: new Set(),
-      options: []
+      options: [],
+      whitelistedUsers: [],
+      cooldownTimer: null
     };
 
     document.addEventListener('DOMContentLoaded', () => {
       if (!state.email || !state.userName) {
         document.getElementById('auth-modal').classList.add('active');
+        fetchWhitelistedUsers();
       } else {
         updateUserUI();
         fetchPollData();
@@ -279,59 +269,95 @@
     function getInitials(name) {
       if (!name) return 'U';
       const parts = name.trim().split(' ');
-      if (parts.length >= 2) {
-        return (parts[0][0] + parts[1][0]).toUpperCase();
-      }
+      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
       return name.substring(0, 2).toUpperCase();
     }
 
-    function updateUserUI() {
-      document.getElementById('footer-user-name').innerText = state.userName;
-      document.getElementById('user-avatar-initials').innerText = getInitials(state.userName);
+    function fetchWhitelistedUsers() {
+      fetch(`${GOOGLE_SCRIPT_URL}?action=getWhitelistedUsers`)
+        .then(res => res.json())
+        .then(result => {
+          if (result.status === 'success' && result.users) {
+            state.whitelistedUsers = result.users;
+            const selectEl = document.getElementById('user-select');
+            selectEl.innerHTML = '<option value="" disabled selected>-- Select your name --</option>';
+            
+            result.users.forEach(u => {
+              const opt = document.createElement('option');
+              opt.value = u.email;
+              opt.innerText = `[${getInitials(u.name)}] ${u.name}`;
+              selectEl.appendChild(opt);
+            });
+          }
+        })
+        .catch(err => console.error('Error fetching whitelist:', err));
     }
 
-    function logoutUser() {
-      localStorage.removeItem('poll_user_email');
-      localStorage.removeItem('poll_user_name');
-      location.reload();
+    function onUserSelected() {
+      const selectEl = document.getElementById('user-select');
+      const selectedEmail = selectEl.value;
+      const user = state.whitelistedUsers.find(u => u.email === selectedEmail);
+
+      if (user) {
+        document.getElementById('preview-chip-avatar').innerText = getInitials(user.name);
+        document.getElementById('preview-chip-name').innerText = user.name;
+        document.getElementById('selected-chip-container').style.display = 'flex';
+        document.getElementById('btn-verify-trigger').disabled = false;
+      }
     }
 
     function startVerification() {
-      const emailInput = document.getElementById('input-email').value.trim();
-      if (!emailInput) return alert('Please enter your email address.');
-    
+      const selectedEmail = document.getElementById('user-select').value;
+      const user = state.whitelistedUsers.find(u => u.email === selectedEmail);
+      if (!user) return alert('Please select a profile.');
+
       const triggerBtn = document.getElementById('btn-verify-trigger');
       triggerBtn.innerText = 'Sending Code...';
       triggerBtn.disabled = true;
-    
-      fetch(`${GOOGLE_SCRIPT_URL}?action=checkWhitelist&email=${encodeURIComponent(emailInput)}`)
+
+      fetch(`${GOOGLE_SCRIPT_URL}?action=requestVerificationCode&email=${encodeURIComponent(selectedEmail)}`)
         .then(res => res.json())
         .then(result => {
           if (result.status === 'success') {
-            state.email = emailInput;
+            state.email = selectedEmail;
             state.userName = result.name;
 
             document.getElementById('auth-step-1').style.display = 'none';
             document.getElementById('auth-step-2').style.display = 'block';
           } else {
-            alert(result.message || 'Access Denied: Email not on group whitelist.');
+            alert(result.message || 'Error requesting verification code.');
+            startRateLimitCooldown(30); // 30s local cooldown on error
           }
         })
         .catch(err => {
-          console.error('Whitelist check error:', err);
-          alert('Verification request failed. Check your network.');
-        })
-        .finally(() => {
-          triggerBtn.innerText = 'Send Code to Email';
+          console.error('Request error:', err);
+          alert('Network request failed.');
+          triggerBtn.innerText = 'Send Code to My Email';
           triggerBtn.disabled = false;
         });
     }
 
+    function startRateLimitCooldown(seconds) {
+      const triggerBtn = document.getElementById('btn-verify-trigger');
+      let remaining = seconds;
+      triggerBtn.disabled = true;
+
+      clearInterval(state.cooldownTimer);
+      state.cooldownTimer = setInterval(() => {
+        if (remaining <= 0) {
+          clearInterval(state.cooldownTimer);
+          triggerBtn.innerText = 'Send Code to My Email';
+          triggerBtn.disabled = false;
+        } else {
+          triggerBtn.innerText = `Please wait (${remaining}s)`;
+          remaining--;
+        }
+      }, 1000);
+    }
+
     async function verifyEnteredCode() {
       const enteredCode = document.getElementById('input-code').value.trim();
-      if (!enteredCode || enteredCode.length !== 4) {
-        return alert('Please enter the 4-digit code.');
-      }
+      if (!enteredCode || enteredCode.length !== 4) return alert('Please enter the 4-digit code.');
 
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
@@ -345,7 +371,6 @@
         });
 
         const result = await res.json();
-
         if (result.status === 'success' && result.approved === true) {
           localStorage.setItem('poll_user_email', state.email);
           localStorage.setItem('poll_user_name', state.userName);
@@ -353,12 +378,23 @@
           updateUserUI();
           fetchPollData();
         } else {
-          alert(result.message || 'Invalid code. Please check your inbox and try again.');
+          alert(result.message || 'Invalid code. Check your inbox.');
         }
       } catch (err) {
         console.error('Verification error:', err);
-        alert('Network error during verification.');
+        alert('Network error.');
       }
+    }
+
+    function updateUserUI() {
+      document.getElementById('footer-user-name').innerText = state.userName;
+      document.getElementById('user-avatar-initials').innerText = getInitials(state.userName);
+    }
+
+    function logoutUser() {
+      localStorage.removeItem('poll_user_email');
+      localStorage.removeItem('poll_user_name');
+      location.reload();
     }
 
     async function fetchPollData() {
@@ -367,7 +403,6 @@
         const result = await res.json();
         if (result.status === 'success') {
           state.options = result.data;
-          
           state.selectedOptionIds.clear();
           state.options.forEach(opt => {
             if (opt.voters && opt.voters.includes(state.userName)) {
@@ -376,9 +411,7 @@
           });
           renderOptions();
         }
-      } catch (err) { 
-        console.error('Fetch poll data failed:', err); 
-      }
+      } catch (err) { console.error('Fetch poll failed:', err); }
     }
 
     function renderOptions() {
@@ -419,12 +452,8 @@
 
     async function handleCardClick(optionId) {
       const isCurrentlySelected = state.selectedOptionIds.has(optionId);
-      
-      if (isCurrentlySelected) {
-        state.selectedOptionIds.delete(optionId);
-      } else {
-        state.selectedOptionIds.add(optionId);
-      }
+      if (isCurrentlySelected) state.selectedOptionIds.delete(optionId);
+      else state.selectedOptionIds.add(optionId);
 
       const targetOpt = state.options.find(o => o.id === optionId);
       if (targetOpt) {
@@ -447,11 +476,8 @@
             votedOptionIds: Array.from(state.selectedOptionIds)
           })
         });
-
         const result = await res.json();
-        if (result.status !== 'success') {
-          throw new Error('Server rejected vote');
-        }
+        if (result.status !== 'success') throw new Error('Server rejected vote');
       } catch (err) {
         console.error('Vote sync failed:', err);
         alert('Failed to save vote. Reverting...');
@@ -464,21 +490,14 @@
     async function autoFetchMetadata() {
       const url = document.getElementById('input-link').value.trim();
       if (!url) return;
-
       try {
         const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`);
         const json = await res.json();
         if (json.status === 'success' && json.data) {
-          if (json.data.title && !document.getElementById('input-title').value) {
-            document.getElementById('input-title').value = json.data.title;
-          }
-          if (json.data.image?.url && !document.getElementById('input-image').value) {
-            document.getElementById('input-image').value = json.data.image.url;
-          }
+          if (json.data.title && !document.getElementById('input-title').value) document.getElementById('input-title').value = json.data.title;
+          if (json.data.image?.url && !document.getElementById('input-image').value) document.getElementById('input-image').value = json.data.image.url;
         }
-      } catch (e) {
-        console.warn('Metadata fetch skipped:', e);
-      }
+      } catch (e) { console.warn('Metadata fetch skipped:', e); }
     }
 
     async function submitNewOption() {
@@ -503,9 +522,7 @@
         });
         closeAddModal();
         fetchPollData();
-      } catch (err) { 
-        alert('Failed to add proposal.'); 
-      }
+      } catch (err) { alert('Failed to add proposal.'); }
     }
 
     function openAddModal() { document.getElementById('add-modal').classList.add('active'); }
