@@ -583,36 +583,46 @@
 
       if (hasError) return;
 
-      const submitBtn = document.getElementById('btn-add-submit');
-      const originalText = submitBtn.innerHTML;
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = `<div class="btn-spinner"></div> Dodavanje...`;
+      // 1. Create a temporary local ID and option object
+      const tempId = 'opt_' + Date.now();
+      const newOption = {
+        id: tempId,
+        title: title,
+        link: link,
+        price: price || 'N/A',
+        image: image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80',
+        note: note || '',
+        voters: []
+      };
 
+      // 2. Optimistically update local state & render immediately
+      state.options.unshift(newOption); // Add to the top of the list
+      renderOptions();
+      closeAddModal(); // Close modal instantly with zero lag
+
+      // 3. Fire background network request to Google Sheets silently
       try {
         await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({
             action: 'addOption',
-            id: 'opt_' + Date.now(),
+            id: tempId,
             title, link, 
             price: price || 'N/A',
-            image: image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80',
+            image: newOption.image,
             note: note || ''
           })
         });
-        closeAddModal();
         
-        // Wait 1.5 seconds for Google Sheets to finish writing/indexing the new row before fetching
-        setTimeout(async () => {
-          await fetchPollData();
-        }, 1500);
-
+        // Optional silent background sync to ensure IDs match if needed later
+        // fetchPollData(); 
       } catch (err) { 
-        alert('Nekaj si sjebo, nije proslo.'); 
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
+        console.error('Background add option failed:', err);
+        alert('Došlo je do greške pri spremanju u bazu.');
+        // Revert local state if it failed
+        state.options = state.options.filter(o => o.id !== tempId);
+        renderOptions();
       }
     }
 
