@@ -499,7 +499,7 @@
             state.phone = phoneInput;
             state.userName = result.name;
             state.currentCode = result.code;
-            state.waLink = result.waLink || `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=Hi`; 
+            state.waLink = result.waLink; 
     
             // Directly set the link href on the DOM button
             const waBtn = document.getElementById('wa-link-btn');
