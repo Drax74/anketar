@@ -495,17 +495,21 @@
       fetch(`${GOOGLE_SCRIPT_URL}?action=checkWhitelist&phone=${encodeURIComponent(phoneInput)}`)
         .then(res => res.json())
         .then(result => {
+          console.log("Apps Script Response:", result); // Debug check in F12 Console
+
           if (result.status === 'success') {
+            if (!result.waLink) {
+              alert('Error: Backend did not return a valid WhatsApp link. Please ensure Google Apps Script is re-deployed.');
+              return;
+            }
+
             state.phone = phoneInput;
             state.userName = result.name;
             state.currentCode = result.code;
-            state.waLink = result.waLink; 
+            state.waLink = result.waLink;
     
-            // Directly set the link href on the DOM button
             const waBtn = document.getElementById('wa-link-btn');
             waBtn.setAttribute('href', state.waLink);
-
-            console.log("Generated WhatsApp Link:", state.waLink);
 
             document.getElementById('auth-step-1').style.display = 'none';
             document.getElementById('auth-step-2').style.display = 'block';
