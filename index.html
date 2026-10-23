@@ -448,8 +448,6 @@
     /* ==========================================================================
        CONFIGURATION & APPLICATION STATE
        ========================================================================== */
-    const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
-    const ADMIN_WHATSAPP_NUMBER = 'YOUR_ADMIN_PHONE_NUMBER'; // Format: Numbers only, no plus (e.g. '4791234567')
 
     let state = {
       phone: localStorage.getItem('poll_user_phone') || '',
@@ -457,6 +455,7 @@
       selectedOptionIds: new Set(),
       options: [],
       currentCode: '',
+      waLink: '',
       isPendingReturn: false
     };
 
@@ -486,20 +485,21 @@
     async function startVerification() {
       const phoneInput = document.getElementById('input-phone').value.trim();
       if (!phoneInput) return alert('Please enter your phone number.');
-
+    
       const triggerBtn = document.getElementById('btn-verify-trigger');
       triggerBtn.innerText = 'Checking Whitelist...';
       triggerBtn.disabled = true;
-
+    
       try {
         const res = await fetch(`${SCRIPT_URL}?action=checkWhitelist&phone=${encodeURIComponent(phoneInput)}`);
         const result = await res.json();
-
+    
         if (result.status === 'success') {
           state.phone = phoneInput;
           state.userName = result.name;
           state.currentCode = result.code;
-
+          state.waLink = result.waLink; // <-- Securely received from Apps Script
+    
           document.getElementById('auth-step-1').style.display = 'none';
           document.getElementById('auth-step-2').style.display = 'block';
         } else {
@@ -512,11 +512,10 @@
         triggerBtn.disabled = false;
       }
     }
-
+    
     function triggerWhatsAppReturn() {
       state.isPendingReturn = true;
-      const msg = encodeURIComponent(`Hi! Verification trigger for ${state.phone} [${state.currentCode}]`);
-      window.open(`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${msg}`, '_blank');
+      window.open(state.waLink, '_blank');
     }
 
     async function executeAutoApproval() {
