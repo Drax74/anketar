@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Madrid Ekskurzija</title>
+  <title>Madrid - Trkadzije &amp; Rumoljubi</title>
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text y='20' font-size='20'>🇪🇸</text></svg>">  
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,6 +25,8 @@
       --md-sys-color-on-surface: #e3e3e8;
       --md-sys-color-on-surface-variant: #c4c6d0;
       --md-sys-color-success: #6dd58c;
+      --md-sys-color-error: #f2b8b5;
+      --md-sys-color-error-container: #8c1d18;
       
       --md-shape-corner-extra-large: 28px;
       --md-shape-corner-large: 20px;
@@ -97,12 +99,17 @@
     .modal { background: var(--md-sys-color-surface-container); border: 1px solid var(--md-sys-color-outline-variant); border-radius: var(--md-shape-corner-extra-large); padding: 28px 24px; width: 100%; max-width: 400px; box-shadow: var(--md-elevation-2); }
     .modal h2 { font-size: 1.35rem; font-weight: 600; margin-bottom: 8px; color: var(--md-sys-color-on-surface); }
 
-    .form-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .form-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); font-weight: 500; }
 
     .select-wrapper { position: relative; width: 100%; }
     .input-field { width: 100%; padding: 14px 16px; background: var(--md-sys-color-surface); border: 1px solid var(--md-sys-color-outline); border-radius: var(--md-shape-corner-medium); color: var(--md-sys-color-on-surface); font-size: 1rem; outline: none; appearance: none; transition: border-color var(--transition-standard); cursor: pointer; }
     .input-field:focus { border-color: var(--md-sys-color-primary); border-width: 2px; padding: 13px 15px; }
+    
+    /* Inline Validation Error State (Google Forms style) */
+    .input-field.error { border-color: var(--md-sys-color-error); border-width: 2px; padding: 13px 15px; }
+    .error-message { font-size: 0.75rem; color: var(--md-sys-color-error); font-weight: 500; display: none; margin-top: 2px; }
+    .error-message.visible { display: block; }
 
     .user-chip-preview {
       display: flex;
@@ -117,7 +124,7 @@
 
     .btn { width: 100%; padding: 14px 20px; border: none; border-radius: var(--md-shape-corner-medium); font-weight: 600; font-size: 0.95rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition-standard); }
     .btn-primary { background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-secondary { background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); border: 1px solid var(--md-sys-color-outline-variant); }
 
     .options-list { display: flex; flex-direction: column; gap: 16px; }
@@ -142,6 +149,7 @@
     .voter-tag { background: var(--md-sys-color-surface-container-high); padding: 3px 10px; border-radius: 12px; color: var(--md-sys-color-on-surface-variant); font-weight: 500; }
 
     .spinner { width: 32px; height: 32px; border: 3px solid var(--md-sys-color-outline-variant); border-top-color: var(--md-sys-color-primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    .btn-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #ffffff; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
@@ -195,12 +203,13 @@
               <option value="" disabled selected>Loading trkadzije i rumoljube...</option>
             </select>
           </div>
+          <div class="error-message" id="error-user-select">Molimo izaberite profil s popisa.</div>
           <div id="selected-chip-container" class="user-chip-preview" style="display: none;">
             <div class="user-avatar" id="preview-chip-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">--</div>
             <span id="preview-chip-name" style="font-size: 0.85rem; font-weight: 500;">Izaberi svog trkadziju ili rumoljuba</span>
           </div>
         </div>
-        <button class="btn btn-primary" id="btn-verify-trigger" onclick="startVerification()" disabled>Posalji Mi Kod Na Email</button>
+        <button class="btn btn-primary" id="btn-verify-trigger" onclick="startVerification()">Posalji Mi Kod Na Email</button>
       </div>
 
       <div id="auth-step-2" style="display: none; text-align: center;">
@@ -208,8 +217,9 @@
           Poslal sam ti 4-znamenkasti kod na tvoj email. Provjeri si email i upisi kod ispod:
         </p>
         
-        <div style="margin-bottom: 16px;">
-          <input type="text" id="input-code" placeholder="----" maxlength="4" class="input-field" style="text-align: center; font-size: 1.5rem; letter-spacing: 8px;">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <input type="text" id="input-code" placeholder="----" maxlength="4" class="input-field" style="text-align: center; font-size: 1.5rem; letter-spacing: 8px;" oninput="clearFieldError('input-code', 'error-input-code')">
+          <div class="error-message" id="error-input-code" style="text-align: center;">Molimo unesite valjani 4-znamenkasti kod.</div>
         </div>
         
         <button class="btn btn-primary" onclick="verifyEnteredCode()">Potvrdi & Login</button>
@@ -223,11 +233,13 @@
       <h2>Dodaj Smjestaj</h2>
       <div class="form-group" style="margin-top: 12px;">
         <label for="input-link">Link</label>
-        <input type="url" id="input-link" class="input-field" placeholder="https://..." onblur="autoFetchMetadata()" />
+        <input type="url" id="input-link" class="input-field" placeholder="https://..." onblur="autoFetchMetadata()" oninput="clearFieldError('input-link', 'error-input-link')" />
+        <div class="error-message" id="error-input-link">Unesite važeći URL smještaja.</div>
       </div>
       <div class="form-group">
         <label for="input-title">Ime</label>
-        <input type="text" id="input-title" class="input-field" placeholder="Villa Horizon" />
+        <input type="text" id="input-title" class="input-field" placeholder="Villa Horizon" oninput="clearFieldError('input-title', 'error-input-title')" />
+        <div class="error-message" id="error-input-title">Naziv smještaja je obavezno polje.</div>
       </div>
       <div class="form-group">
         <label for="input-price">Ukupna Cijena</label>
@@ -299,20 +311,41 @@
       const user = state.whitelistedUsers.find(u => u.email === selectedEmail);
 
       if (user) {
+        clearFieldError('user-select', 'error-user-select');
         document.getElementById('preview-chip-avatar').innerText = getInitials(user.name);
         document.getElementById('preview-chip-name').innerText = user.name;
         document.getElementById('selected-chip-container').style.display = 'flex';
-        document.getElementById('btn-verify-trigger').disabled = false;
       }
     }
 
+    function showFieldError(inputId, errorId) {
+      const field = document.getElementById(inputId);
+      const error = document.getElementById(errorId);
+      if (field) field.classList.add('error');
+      if (error) error.classList.add('visible');
+    }
+
+    function clearFieldError(inputId, errorId) {
+      const field = document.getElementById(inputId);
+      const error = document.getElementById(errorId);
+      if (field) field.classList.remove('error');
+      if (error) error.classList.remove('visible');
+    }
+
     function startVerification() {
-      const selectedEmail = document.getElementById('user-select').value;
+      const selectEl = document.getElementById('user-select');
+      const selectedEmail = selectEl.value;
+      
+      if (!selectedEmail) {
+        showFieldError('user-select', 'error-user-select');
+        return;
+      }
+
       const user = state.whitelistedUsers.find(u => u.email === selectedEmail);
-      if (!user) return alert('Izaberi svog trkadziju ili rumoljuba.');
+      if (!user) return;
 
       const triggerBtn = document.getElementById('btn-verify-trigger');
-      triggerBtn.innerText = 'Salje Kod...';
+      triggerBtn.innerText = 'Šalje Kod...';
       triggerBtn.disabled = true;
 
       fetch(`${GOOGLE_SCRIPT_URL}?action=requestVerificationCode&email=${encodeURIComponent(selectedEmail)}`)
@@ -325,13 +358,13 @@
             document.getElementById('auth-step-1').style.display = 'none';
             document.getElementById('auth-step-2').style.display = 'block';
           } else {
-            alert(result.message || 'Error requesting verification code.');
-            startRateLimitCooldown(30); // 30s local cooldown on error
+            alert(result.message || 'Greška pri slanju koda.');
+            startRateLimitCooldown(30);
           }
         })
         .catch(err => {
           console.error('Request error:', err);
-          alert('Network request failed.');
+          alert('Došlo je do mrežne greške.');
           triggerBtn.innerText = 'Posalji Kod Na Moj Email';
           triggerBtn.disabled = false;
         });
@@ -349,7 +382,7 @@
           triggerBtn.innerText = 'Posalji Kod Na Moj Email';
           triggerBtn.disabled = false;
         } else {
-          triggerBtn.innerText = `Pricekaj (${remaining}s)`;
+          triggerBtn.innerText = `Pričekajte (${remaining}s)`;
           remaining--;
         }
       }, 1000);
@@ -357,7 +390,10 @@
 
     async function verifyEnteredCode() {
       const enteredCode = document.getElementById('input-code').value.trim();
-      if (!enteredCode || enteredCode.length !== 4) return alert('Ukucaj 4 znamenke za kod, ni vise ni manje.');
+      if (!enteredCode || enteredCode.length !== 4) {
+        showFieldError('input-code', 'error-input-code');
+        return;
+      }
 
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
@@ -378,11 +414,11 @@
           updateUserUI();
           fetchPollData();
         } else {
-          alert(result.message || 'Krivi kod. Provjeri kod u mail.');
+          showFieldError('input-code', 'error-input-code');
         }
       } catch (err) {
         console.error('Verification error:', err);
-        alert('Network error.');
+        alert('Došlo je do mrežne greške.');
       }
     }
 
@@ -399,6 +435,13 @@
 
     async function fetchPollData() {
       try {
+        // Fetch whitelist users length in parallel or keep count for percentages
+        const whitelistRes = await fetch(`${GOOGLE_SCRIPT_URL}?action=getWhitelistedUsers`);
+        const whitelistJson = await whitelistRes.json();
+        if (whitelistJson.status === 'success' && whitelistJson.users) {
+          state.whitelistedUsers = whitelistJson.users;
+        }
+
         const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getPollData`);
         const result = await res.json();
         if (result.status === 'success') {
@@ -418,16 +461,15 @@
       const container = document.getElementById('options-container');
       document.getElementById('options-count').innerText = state.options.length;
 
-      const allVoters = new Set();
-      state.options.forEach(opt => opt.voters?.forEach(v => allVoters.add(v)));
-      const totalVoters = allVoters.size || 1;
+      // Calculate percentage based on total whitelisted users count (fallback to 1 if empty)
+      const totalWhitelistCount = state.whitelistedUsers.length > 0 ? state.whitelistedUsers.length : 1;
 
       const sorted = [...state.options].sort((a, b) => (b.voters?.length || 0) - (a.voters?.length || 0));
 
       container.innerHTML = sorted.map(opt => {
         const isSelected = state.selectedOptionIds.has(opt.id);
         const votes = opt.voters ? opt.voters.length : 0;
-        const pct = Math.round((votes / totalVoters) * 100) || 0;
+        const pct = Math.round((votes / totalWhitelistCount) * 100) || 0;
         const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>Nema glasova</em>';
 
         return `
@@ -490,23 +532,46 @@
     async function autoFetchMetadata() {
       const url = document.getElementById('input-link').value.trim();
       if (!url) return;
+      clearFieldError('input-link', 'error-input-link');
       try {
         const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`);
         const json = await res.json();
         if (json.status === 'success' && json.data) {
-          if (json.data.title && !document.getElementById('input-title').value) document.getElementById('input-title').value = json.data.title;
-          if (json.data.image?.url && !document.getElementById('input-image').value) document.getElementById('input-image').value = json.data.image.url;
+          if (json.data.title && !document.getElementById('input-title').value) {
+            document.getElementById('input-title').value = json.data.title;
+            clearFieldError('input-title', 'error-input-title');
+          }
+          if (json.data.image?.url && !document.getElementById('input-image').value) {
+            document.getElementById('input-image').value = json.data.image.url;
+          }
         }
       } catch (e) { console.warn('Metadata fetch skipped:', e); }
     }
 
     async function submitNewOption() {
-      const title = document.getElementById('input-title').value.trim();
-      const link = document.getElementById('input-link').value.trim();
+      const titleInput = document.getElementById('input-title');
+      const linkInput = document.getElementById('input-link');
+      const title = titleInput.value.trim();
+      const link = linkInput.value.trim();
       const price = document.getElementById('input-price').value.trim();
       const image = document.getElementById('input-image').value.trim();
 
-      if (!title || !link) return alert('Daj bar dodaj naslov i link.');
+      let hasError = false;
+      if (!link) {
+        showFieldError('input-link', 'error-input-link');
+        hasError = true;
+      }
+      if (!title) {
+        showFieldError('input-title', 'error-input-title');
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      const submitBtn = document.getElementById('btn-add-submit');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<div class="btn-spinner"></div> Dodavanje...`;
 
       try {
         await fetch(GOOGLE_SCRIPT_URL, {
@@ -521,8 +586,13 @@
           })
         });
         closeAddModal();
-        fetchPollData();
-      } catch (err) { alert('Nekaj si sjebo, nije proslo.'); }
+        await fetchPollData();
+      } catch (err) { 
+        alert('Nekaj si sjebo, nije proslo.'); 
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
     }
 
     function openAddModal() { document.getElementById('add-modal').classList.add('active'); }
@@ -532,6 +602,8 @@
       document.getElementById('input-link').value = '';
       document.getElementById('input-price').value = '';
       document.getElementById('input-image').value = '';
+      clearFieldError('input-link', 'error-input-link');
+      clearFieldError('input-title', 'error-input-title');
     }
   </script>
 </body>
