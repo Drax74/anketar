@@ -407,8 +407,9 @@
       </div>
 
       <div id="auth-step-2" style="display: none; text-align: center;">
-        <p style="font-size: 0.85rem; margin-bottom: 12px;">Tap below to trigger WhatsApp verification, then switch back to this tab to enter automatically.</p>
-        <button class="btn btn-whatsapp" id="wa-send-btn" onclick="triggerWhatsAppReturn()">💬 Open WhatsApp & Verify</button>
+        <p style="font-size: 0.85rem; margin-bottom: 12px;">Tap below to send your verification message on WhatsApp, then switch back here.</p>
+        <!-- Native <a> tag guarantees mobile browsers won't block the popup -->
+        <a id="wa-link-btn" href="#" target="_blank" class="btn btn-whatsapp" style="text-decoration: none;" onclick="onWhatsAppClicked()">💬 Open WhatsApp & Verify</a>
         <div style="margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
           <div class="spinner"></div>
           <span style="font-size: 0.8rem; color: var(--text-muted);">Awaiting Tab Focus Return...</span>
@@ -483,7 +484,7 @@
     /* ==========================================================================
        AUTHENTICATION FLOW (WHITELIST + RETURN TRIGGER)
        ========================================================================== */
-    async function startVerification() {
+    function startVerification() {
       const phoneInput = document.getElementById('input-phone').value.trim();
       if (!phoneInput) return alert('Please enter your phone number.');
     
@@ -491,36 +492,42 @@
       triggerBtn.innerText = 'Checking Whitelist...';
       triggerBtn.disabled = true;
     
-      try {
-        const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=checkWhitelist&phone=${encodeURIComponent(phoneInput)}`);
-        const result = await res.json();
+      fetch(`${GOOGLE_SCRIPT_URL}?action=checkWhitelist&phone=${encodeURIComponent(phoneInput)}`)
+        .then(res => res.json())
+        .then(result => {
+          if (result.status === 'success') {
+            state.phone = phoneInput;
+            state.userName = result.name;
+            state.currentCode = result.code;
+            state.waLink = result.waLink; 
     
-        if (result.status === 'success') {
-          state.phone = phoneInput;
-          state.userName = result.name;
-          state.currentCode = result.code;
-          state.waLink = result.waLink; 
-    
-          document.getElementById('auth-step-1').style.display = 'none';
-          document.getElementById('auth-step-2').style.display = 'block';
-        } else {
-          alert(result.message || 'Access Denied: Number not on group whitelist.');
-        }
-      } catch (err) {
-        alert('Verification request failed. Check your network.');
-      } finally {
-        triggerBtn.innerText = 'Verify Phone Number';
-        triggerBtn.disabled = false;
-      }
+            // Set the href directly on the anchor element so mobile OS trusts it natively
+            document.getElementById('wa-link-btn').href = state.waLink;
+
+            document.getElementById('auth-step-1').style.display = 'none';
+            document.getElementById('auth-step-2').style.display = 'block';
+          } else {
+            alert(result.message || 'Access Denied: Number not on group whitelist.');
+          }
+        })
+        .catch(err => {
+          alert('Verification request failed. Check your network.');
+        })
+        .finally(() => {
+          triggerBtn.innerText = 'Verify Phone Number';
+          triggerBtn.disabled = false;
+        });
     }
     
-    function triggerWhatsAppReturn() {
+    function onWhatsAppClicked() {
+      // Mark that user has engaged with WhatsApp, making them eligible for auto-detection on return
       state.isPendingReturn = true;
-      window.open(state.waLink, '_blank');
     }
 
     async function executeAutoApproval() {
-      state.isPendingReturn = false;
+      // Prevent double firing if visibility toggles rapidly
+      if (!state.isPendingReturn || !state.phone || !state.currentCode) return;
+      state.isPendingReturn = false; // Lock immediately
 
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
@@ -535,18 +542,21 @@
 
         const result = await res.json();
 
-        if (result.status === 'success' && result.approved) {
+        if (result.status === 'success' && result.approved === true) {
+          // Strictly verified! Save to storage and unlock UI
           localStorage.setItem('poll_user_phone', state.phone);
           localStorage.setItem('poll_user_name', state.userName);
           document.getElementById('auth-modal').classList.remove('active');
           updateUserUI();
           fetchPollData();
         } else {
-          alert(result.message || 'Verification expired or invalid. Please try again.');
+          // Explicitly failed or expired — keep modal locked and notify user
+          alert(result.message || 'Verification not completed yet. Please send the WhatsApp message first.');
           resetAuthUI();
         }
       } catch (err) {
-        alert('Auto-approval network check failed.');
+        console.error('Auto-approval check error:', err);
+        state.isPendingReturn = true; // Allow retry on next focus if it was just a temporary network blip
       }
     }
 
