@@ -499,17 +499,13 @@
             state.phone = phoneInput;
             state.userName = result.name;
             state.currentCode = result.code;
-            let link = result.waLink || '';
-            if (link && !link.startsWith('http')) {
-              link = 'https://' + link.replace(/^\/+/, '');
-            }
-            state.waLink = link;
-            
-            // Set the href safely on the anchor element
-            document.getElementById('wa-link-btn').href = state.waLink;
+            state.waLink = result.waLink || `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=Hi`; 
     
-            // Set the href directly on the anchor element so mobile OS trusts it natively
-            document.getElementById('wa-link-btn').href = state.waLink;
+            // Directly set the link href on the DOM button
+            const waBtn = document.getElementById('wa-link-btn');
+            waBtn.setAttribute('href', state.waLink);
+
+            console.log("Generated WhatsApp Link:", state.waLink);
 
             document.getElementById('auth-step-1').style.display = 'none';
             document.getElementById('auth-step-2').style.display = 'block';
@@ -518,6 +514,7 @@
           }
         })
         .catch(err => {
+          console.error('Whitelist check error:', err);
           alert('Verification request failed. Check your network.');
         })
         .finally(() => {
