@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Google Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
   <style>
     :root {
@@ -135,7 +137,7 @@
 
     .card-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
     
-    /* MODERN SLEEK NAPOMENA BOX */
+    /* GOOGLE MATERIAL SYMBOLS NOTE BOX */
     .card-note-box {
       background: var(--md-sys-color-surface-container);
       border: 1px solid var(--md-sys-color-outline-variant);
@@ -146,12 +148,12 @@
       line-height: 1.45;
       word-break: break-word;
       display: flex;
-      gap: 8px;
+      gap: 10px;
       align-items: flex-start;
     }
-    .card-note-box::before {
-      content: '📝';
-      font-size: 0.9rem;
+    .card-note-box .material-symbols-outlined {
+      font-size: 1.15rem;
+      color: var(--md-sys-color-primary);
       flex-shrink: 0;
       margin-top: 1px;
     }
@@ -492,7 +494,7 @@
         const votes = opt.voters ? opt.voters.length : 0;
         const pct = Math.round((votes / totalWhitelistCount) * 100) || 0;
         const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>Nema glasova</em>';
-        const noteHtml = opt.note ? `<div class="card-note-box">${opt.note}</div>` : '';
+        const noteHtml = opt.note ? `<div class="card-note-box"><span class="material-symbols-outlined">chat_bubble</span><span>${opt.note}</span></div>` : '';
 
         return `
           <div class="option-card ${isSelected ? 'selected' : ''}" onclick="handleCardClick('${opt.id}')">
