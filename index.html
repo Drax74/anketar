@@ -280,7 +280,7 @@
           if (result.status === 'success' && result.users) {
             state.whitelistedUsers = result.users;
             const selectEl = document.getElementById('user-select');
-            selectEl.innerHTML = '<option value="" disabled selected>-- Select your name --</option>';
+            selectEl.innerHTML = '<option value="" disabled selected>-- Izaberi svoje ime --</option>';
             
             result.users.forEach(u => {
               const opt = document.createElement('option');
@@ -442,8 +442,8 @@
                 <a href="${opt.link}" target="_blank" class="card-title" onclick="event.stopPropagation()">${opt.title} ↗</a>
               </div>
               <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%;"></div></div>
-              <div class="progress-info"><span>${votes} votes</span><span>${pct}%</span></div>
-              <div class="voters-container"><span>Voted by:</span> ${votersList}</div>
+              <div class="progress-info"><span>Broj glasova: ${votes}</span><span>${pct}%</span></div>
+              <div class="voters-container"><span>Glasali:</span> ${votersList}</div>
             </div>
           </div>
         `;
