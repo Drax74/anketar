@@ -491,14 +491,14 @@
       triggerBtn.disabled = true;
     
       try {
-        const res = await fetch(`${SCRIPT_URL}?action=checkWhitelist&phone=${encodeURIComponent(phoneInput)}`);
+        const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=checkWhitelist&phone=${encodeURIComponent(phoneInput)}`);
         const result = await res.json();
     
         if (result.status === 'success') {
           state.phone = phoneInput;
           state.userName = result.name;
           state.currentCode = result.code;
-          state.waLink = result.waLink; // <-- Securely received from Apps Script
+          state.waLink = result.waLink; 
     
           document.getElementById('auth-step-1').style.display = 'none';
           document.getElementById('auth-step-2').style.display = 'block';
@@ -522,7 +522,7 @@
       state.isPendingReturn = false;
 
       try {
-        const res = await fetch(SCRIPT_URL, {
+        const res = await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({
@@ -565,7 +565,7 @@
        ========================================================================== */
     async function fetchPollData() {
       try {
-        const res = await fetch(`${SCRIPT_URL}?action=getPollData`);
+        const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getPollData`);
         const result = await res.json();
         if (result.status === 'success') {
           state.options = result.data;
@@ -590,7 +590,7 @@
       btn.disabled = true;
 
       try {
-        await fetch(SCRIPT_URL, {
+        await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({
@@ -641,7 +641,7 @@
       if (!title || !link) return alert('Title and link are required.');
 
       try {
-        await fetch(SCRIPT_URL, {
+        await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({
