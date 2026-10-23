@@ -499,7 +499,14 @@
             state.phone = phoneInput;
             state.userName = result.name;
             state.currentCode = result.code;
-            state.waLink = result.waLink; 
+            let link = result.waLink || '';
+            if (link && !link.startsWith('http')) {
+              link = 'https://' + link.replace(/^\/+/, '');
+            }
+            state.waLink = link;
+            
+            // Set the href safely on the anchor element
+            document.getElementById('wa-link-btn').href = state.waLink;
     
             // Set the href directly on the anchor element so mobile OS trusts it natively
             document.getElementById('wa-link-btn').href = state.waLink;
