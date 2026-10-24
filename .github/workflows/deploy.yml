@@ -24,11 +24,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Inject Secret into index.html
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Inject Secret into index.html (if applicable)
         env:
           SCRIPT_URL: ${{ secrets.GOOGLE_SCRIPT_URL }}
         run: |
-          sed -i "s|YOUR_GOOGLE_APPS_SCRIPT_URL|$SCRIPT_URL|g" index.html
+          if [ -f "index.html" ]; then
+            sed -i "s|YOUR_GOOGLE_APPS_SCRIPT_URL|$SCRIPT_URL|g" index.html || true
+          fi
+
+      - name: Build Vite App
+        run: npm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -36,8 +50,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
-
+          path: './dist'
+          
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

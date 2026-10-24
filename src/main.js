@@ -1,9 +1,8 @@
 import { supabase } from './supabase.js';
-import {getWhitelistedUsers, getPollData, addVote, removeVote, addOption, sendMagicLink, updateOption} from './api.js';
+import { getWhitelistedUsers, getPollData, addVote, removeVote, addOption, updateOption, sendMagicLink } from './api.js';
 import { normalizeUrl } from "./shared/helpers/url";
 import { isValidUrl, isBookingOrAirbnbUrl } from "./shared/helpers/validation.js";
-
-const fallbackImage = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80';
+import { animateLayout } from "motion";
 
 let state = {
     userEmail: localStorage.getItem('poll_user_email') || '',
@@ -15,127 +14,6 @@ let state = {
     cooldownTimer: null,
     savingVotes: false
 };
-
-function openDetail(optionId) {
-    const opt = state.options.find(item => String(item.id) === String(optionId));
-    if (!opt) return;
-    activeDetailId = opt.id;
-
-    const overlay = document.getElementById('detail-overlay');
-    const image = document.getElementById('detail-image');
-    const title = document.getElementById('detail-title');
-    const priceEl = document.getElementById('detail-price');
-    const votesEl = document.getElementById('detail-votes');
-    const noteEl = document.getElementById('detail-note');
-    const link = document.getElementById('detail-link');
-    const voteBtn = document.getElementById('detail-vote');
-
-    const safeImage = opt.image || fallbackImage;
-    if (image) {
-        image.src = safeImage;
-        image.alt = opt.title || 'Accommodation';
-    }
-
-    if (votesEl) votesEl.textContent = `${opt.voters?.length || 0} glasova`;
-
-    if (voteBtn) {
-        voteBtn.textContent = state.selectedOptionIds.has(opt.id) ? 'Ukloni svoj glas' : 'Glasaj za ovaj smještaj';
-    }
-
-    // CHECK IF CURRENT USER IS THE CREATOR
-    const isCreator = Boolean(state.userEmail && opt.created_by && opt.created_by.toLowerCase() === state.userEmail.toLowerCase());
-
-    const editableSection = document.getElementById('detail-editable-section');
-    const readonlySection = document.getElementById('detail-readonly-section');
-
-    if (isCreator) {
-        // Show editable inputs for creator
-        if (readonlySection) readonlySection.style.display = 'none';
-        if (editableSection) editableSection.style.display = 'block';
-
-        const editTitle = document.getElementById('edit-detail-title');
-        const editPrice = document.getElementById('edit-detail-price');
-        const editImage = document.getElementById('edit-detail-image');
-        const editNote = document.getElementById('edit-detail-note');
-
-        if (editTitle) editTitle.value = opt.title || '';
-        if (editPrice) editPrice.value = opt.price || '';
-        if (editImage) editImage.value = (opt.image && opt.image !== fallbackImage) ? opt.image : '';
-        if (editNote) editNote.value = opt.note || '';
-    } else {
-        // Show clean read-only view for other users
-        if (editableSection) editableSection.style.display = 'none';
-        if (readonlySection) readonlySection.style.display = 'block';
-
-        if (title) title.textContent = opt.title || 'Smještaj';
-        if (priceEl) priceEl.textContent = opt.price || 'Cijena nije navedena';
-        if (noteEl) noteEl.textContent = opt.note || 'Nema dodatnih napomena za ovaj smještaj.';
-    }
-
-    if (link) {
-        link.href = opt.link || '#';
-        link.style.display = opt.link ? 'inline-flex' : 'none';
-    }
-
-    if (overlay) {
-        overlay.classList.add('active');
-        overlay.setAttribute('aria-hidden', 'false');
-    }
-    document.body.style.overflow = 'hidden';
-    setTimeout(() => document.querySelector('.detail-close')?.focus({ preventScroll: true }), 80);
-}
-
-async function saveOptionDetails() {
-    if (!activeDetailId) return;
-
-    const opt = state.options.find(item => String(item.id) === String(activeDetailId));
-    if (!opt) return;
-
-    // Extra security check: Creator validation
-    const isCreator = Boolean(state.userEmail && opt.created_by && opt.created_by.toLowerCase() === state.userEmail.toLowerCase());
-    if (!isCreator) {
-        showToast('Samo autor prijedloga može uređivati ove podatke.', 'error');
-        return;
-    }
-
-    const editTitle = document.getElementById('edit-detail-title')?.value.trim();
-    const editPrice = document.getElementById('edit-detail-price')?.value.trim();
-    const editImage = document.getElementById('edit-detail-image')?.value.trim();
-    const editNote = document.getElementById('edit-detail-note')?.value.trim();
-
-    if (!editTitle) {
-        showToast('Naziv smještaja ne može biti prazan.', 'error');
-        return;
-    }
-
-    const updates = {
-        title: editTitle,
-        price: editPrice || 'N/A',
-        image: editImage || fallbackImage,
-        note: editNote || ''
-    };
-
-    // 1. Optimistically patch state tree
-    state.options = state.options.map(o => {
-        if (String(o.id) === String(activeDetailId)) {
-            return { ...o, ...updates };
-        }
-        return o;
-    });
-
-    renderOptions();
-    closeDetail();
-    showToast('Izmjene uspješno spremljene!');
-
-    // 2. Persist update in backend
-    try {
-        await updateOption(activeDetailId, updates);
-    } catch (err) {
-        console.error('Failed to save option edits:', err);
-        showToast('Greška pri spremanju izmjena. Osvježavam podatke…', 'error');
-        await fetchPollData();
-    }
-}
 
 // SURGICAL REALTIME SUBSCRIPTION WITH IMMUTABLE STATE PATCHING & SELF-ECHO FILTERING
 function setupRealtimeSubscription() {
@@ -254,18 +132,15 @@ document.addEventListener('keydown', event => {
 // UNIFIED INITIALIZATION: Fetch everything once on page load
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // 1. Check Supabase's native session directly
         const { data: { session } } = await supabase.auth.getSession();
         if (session && session.user) {
             state.userEmail = session.user.email;
         }
 
-        // 2. Fetch all poll data (whitelist, options, votes) in one clean batch
         const { whitelist, options, votes } = await getPollData();
         state.whitelistedUsers = whitelist;
         state.votes = votes;
 
-        // 3. Populate dropdown list immediately so it's always ready for anyone logging in/out
         const selectEl = document.getElementById('user-select');
         if (selectEl) {
             selectEl.innerHTML = '<option value="" disabled selected>-- Izaberi svoje ime --</option>';
@@ -277,7 +152,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // 4. Resolve names, emails, and creators for option cards
         state.options = options.map(opt => {
             const optVotes = votes.filter(v => v.option_id === opt.id);
             const voterEmails = optVotes.map(v => v.user_email);
@@ -299,13 +173,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
         });
 
-        // 5. Handle active session or show login modal accordingly
         const authModal = document.getElementById('auth-modal');
         if (state.userEmail) {
             const matchedUser = state.whitelistedUsers.find(u => u.email === state.userEmail);
             state.userName = matchedUser ? matchedUser.name : state.userEmail;
 
-            // Sync selections
             state.selectedOptionIds.clear();
             state.options.forEach(opt => {
                 if (opt.voterEmails && opt.voterEmails.includes(state.userEmail)) {
@@ -329,7 +201,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, 100);
         }
 
-        // 6. Render final view, reveal container, and initialize real-time listeners
         renderOptions();
         const container = document.getElementById('options-container');
         if (container) container.classList.add('loaded');
@@ -341,7 +212,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// AUTH STATE CHANGE: Strictly handles incoming magic link returns post-login
+// AUTH STATE CHANGE
 supabase.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session && session.user) {
         state.userEmail = session.user.email;
@@ -378,7 +249,6 @@ function getInitials(name) {
     return name.substring(0, 2).toUpperCase();
 }
 
-// Handles user selection for direct login from dropdown
 function onUserSelected() {
     const selectEl = document.getElementById('user-select');
     const selectedEmail = selectEl.value;
@@ -436,133 +306,133 @@ async function logoutUser() {
     location.reload();
 }
 
-function renderOptions(isNewItemAdded = false, newItemId = null) {
+/**
+ * Renders and animates option cards using Motion's animateLayout API.
+ * Uses deterministic tie-breaking sorting and stable data-id identity tracking.
+ */
+async function renderOptions(isNewItemAdded = false, newItemId = null) {
     const container = document.getElementById('options-container');
     const countEl = document.getElementById('options-count');
     if (countEl) countEl.innerText = state.options.length;
     if (!container) return;
 
-    // REMOVE THE LOADING CARD AUTOMATICALLY ONCE DATA RENDERS
+    // Purge loading indicator on initial data render
     container.querySelectorAll('.loading-card').forEach(el => el.remove());
 
     const totalWhitelistCount = state.whitelistedUsers.length > 0 ? state.whitelistedUsers.length : 1;
-    const sorted = [...state.options].sort((a, b) => (b.voters?.length || 0) - (a.voters?.length || 0));
 
-    // Get current order of card IDs in the DOM
-    const currentDomIds = Array.from(container.querySelectorAll('.option-card')).map(card => card.dataset.id);
-    const targetSortedIds = sorted.map(opt => String(opt.id));
-
-    // Check if the overall sorting order has actually changed
-    const orderChanged = currentDomIds.length !== targetSortedIds.length ||
-        currentDomIds.some((id, idx) => id !== targetSortedIds[idx]);
-
-    // Capture rects only if we are reordering
-    const prevRects = new Map();
-    if (orderChanged) {
-        container.querySelectorAll('.option-card').forEach(card => {
-            prevRects.set(card.dataset.id, card.getBoundingClientRect());
-        });
-    }
+    // Deterministic sort: Primary by vote count descending, secondary tie-breaker by title / ID
+    const sorted = [...state.options].sort((a, b) => {
+        const votesA = a.voters?.length || 0;
+        const votesB = b.voters?.length || 0;
+        if (votesB !== votesA) {
+            return votesB - votesA;
+        }
+        return String(a.title || '').localeCompare(String(b.title || ''));
+    });
 
     const existingCardsMap = new Map();
     container.querySelectorAll('.option-card').forEach(card => {
         existingCardsMap.set(card.dataset.id, card);
     });
 
-    sorted.forEach(opt => {
-        const isSelected = state.selectedOptionIds.has(opt.id);
-        const votes = opt.voters ? opt.voters.length : 0;
-        const pct = Math.round((votes / totalWhitelistCount) * 100) || 0;
-        const isBrandNew = isNewItemAdded && opt.id === newItemId;
+    const updateDOMNodes = () => {
+        const fragment = document.createDocumentFragment();
 
-        let cardEl = existingCardsMap.get(String(opt.id));
+        sorted.forEach(opt => {
+            const isSelected = state.selectedOptionIds.has(opt.id);
+            const votes = opt.voters ? opt.voters.length : 0;
+            const pct = Math.round((votes / totalWhitelistCount) * 100) || 0;
+            const isBrandNew = isNewItemAdded && opt.id === newItemId;
 
-        if (cardEl) {
-            // SURGICAL IN-PLACE UPDATE (No DOM node re-mounting or flicker)
-            cardEl.classList.toggle('selected', isSelected);
-            if (isBrandNew) cardEl.classList.add('new-item');
+            let cardEl = existingCardsMap.get(String(opt.id));
 
-            const fillEl = cardEl.querySelector('.progress-bar-fill');
-            if (fillEl && fillEl.style.width !== `${pct}%`) {
-                fillEl.style.width = `${pct}%`;
-            }
+            if (cardEl) {
+                // In-place patch to protect sub-elements and avoid flicker
+                cardEl.classList.toggle('selected', isSelected);
+                if (isBrandNew) cardEl.classList.add('new-item');
 
-            const progressInfoEl = cardEl.querySelector('.progress-info');
-            if (progressInfoEl) {
-                progressInfoEl.innerHTML = `<span>Broj glasova: ${votes}</span><span>${pct}%</span>`;
-            }
-
-            const votersListContainer = cardEl.querySelector('.voters-list-row');
-            if (votersListContainer) {
-                const votersListHtml = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>Nema glasova</em>';
-                votersListContainer.innerHTML = `<span>Glasali:</span> ${votersListHtml}`;
-            }
-        } else {
-            // CREATE NEW CARD NODE
-            cardEl = document.createElement('div');
-            cardEl.className = `option-card ${isSelected ? 'selected' : ''} ${isBrandNew ? 'new-item' : ''}`;
-            cardEl.dataset.id = opt.id;
-            cardEl.setAttribute('onclick', `toggleVote('${opt.id}')`);
-
-            const creatorUser = state.whitelistedUsers.find(u => u.email === opt.created_by);
-            const creatorName = creatorUser ? creatorUser.name : (opt.created_by || 'Nepoznato');
-            const creatorHtml = `<div class="voters-container" style="margin-bottom: 4px;"><span>Dodao:</span> <span class="voter-tag" style="background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);">${creatorName}</span></div>`;
-            const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>Nema glasova</em>';
-            const noteHtml = opt.note ? `<div class="card-note-box"><span class="material-symbols-outlined">chat_bubble</span><span>${opt.note}</span></div>` : '';
-
-            cardEl.innerHTML = `
-                <div class="card-cover-container" onclick="event.stopPropagation(); openDetail('${opt.id}')">
-                  <img class="card-cover" style="view-transition-name: cover-${String(opt.id).replace(/[^a-zA-Z0-9_-]/g, '')};" src="${opt.image}" alt="${opt.title}" loading="lazy" onError="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'" />
-                  <div class="price-badge">${opt.price}</div>
-                  <button class="cover-detail-button" type="button" onclick="event.stopPropagation(); openDetail('${opt.id}')" aria-label="View details for ${opt.title}">Pogledaj detalje ↗</button>
-                </div>
-                <div class="card-body">
-                  ${noteHtml}
-                  <div class="card-header-row">
-                    <div class="checkbox-custom"></div>
-                    <a href="${opt.link}" target="_blank" class="card-title" onclick="event.stopPropagation()">${opt.title} ↗</a>
-                  </div>
-                  <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%;"></div></div>
-                  <div class="progress-info"><span>Broj glasova: ${votes}</span><span>${pct}%</span></div>
-                  ${creatorHtml}
-                  <div class="voters-container voters-list-row"><span>Glasali:</span> ${votersList}</div>
-                </div>
-            `;
-        }
-
-        // Only re-append to container if the order actually changed or it's a new element
-        if (orderChanged || !existingCardsMap.has(String(opt.id))) {
-            container.appendChild(cardEl);
-        }
-    });
-
-    // Remove deleted cards
-    container.querySelectorAll('.option-card').forEach(card => {
-        if (!state.options.some(o => String(o.id) === String(card.dataset.id))) {
-            card.remove();
-        }
-    });
-
-    // Run FLIP animation ONLY if rank/order changed
-    if (orderChanged) {
-        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        container.querySelectorAll('.option-card').forEach((card, index) => {
-            const id = card.dataset.id;
-            const prevRect = prevRects.get(id);
-            if (prevRect && !reducedMotion) {
-                const nextRect = card.getBoundingClientRect();
-                const deltaY = prevRect.top - nextRect.top;
-                const deltaX = prevRect.left - nextRect.left;
-                if (Math.abs(deltaY) > 1 || Math.abs(deltaX) > 1) {
-                    card.animate([
-                        { transform: `translate(${deltaX}px, ${deltaY}px) scale(.985)` },
-                        { transform: 'translate(0, 0) scale(1)' }
-                    ], { duration: 520, easing: 'cubic-bezier(.2, 1.15, .3, 1)', fill: 'none' });
+                const fillEl = cardEl.querySelector('.progress-bar-fill');
+                if (fillEl && fillEl.style.width !== `${pct}%`) {
+                    fillEl.style.width = `${pct}%`;
                 }
+
+                const progressInfoEl = cardEl.querySelector('.progress-info');
+                if (progressInfoEl) {
+                    progressInfoEl.innerHTML = `<span>Broj glasova: ${votes}</span><span>${pct}%</span>`;
+                }
+
+                const votersListContainer = cardEl.querySelector('.voters-list-row');
+                if (votersListContainer) {
+                    const votersListHtml = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>Nema glasova</em>';
+                    votersListContainer.innerHTML = `<span>Glasali:</span> ${votersListHtml}`;
+                }
+            } else {
+                // Create brand-new node with data-layout for Motion animation tracking
+                cardEl = document.createElement('div');
+                cardEl.className = `option-card ${isSelected ? 'selected' : ''} ${isBrandNew ? 'new-item' : ''}`;
+                cardEl.dataset.id = opt.id;
+                cardEl.setAttribute('data-layout', '');
+                cardEl.setAttribute('onclick', `toggleVote('${opt.id}')`);
+
+                const creatorUser = state.whitelistedUsers.find(u => u.email === opt.created_by);
+                const creatorName = creatorUser ? creatorUser.name : (opt.created_by || 'Nepoznato');
+                const creatorHtml = `<div class="voters-container" style="margin-bottom: 4px;"><span>Dodao:</span> <span class="voter-tag" style="background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);">${creatorName}</span></div>`;
+                const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>Nema glasova</em>';
+                const noteHtml = opt.note ? `<div class="card-note-box"><span class="material-symbols-outlined">chat_bubble</span><span>${opt.note}</span></div>` : '';
+
+                cardEl.innerHTML = `
+                    <div class="card-cover-container" onclick="event.stopPropagation(); openDetail('${opt.id}')">
+                      <img class="card-cover" style="view-transition-name: cover-${String(opt.id).replace(/[^a-zA-Z0-9_-]/g, '')};" src="${opt.image}" alt="${opt.title}" loading="lazy" onError="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'" />
+                      <div class="price-badge">${opt.price}</div>
+                      <button class="cover-detail-button" type="button" onclick="event.stopPropagation(); openDetail('${opt.id}')" aria-label="View details for ${opt.title}">Pogledaj detalje ↗</button>
+                    </div>
+                    <div class="card-body">
+                      ${noteHtml}
+                      <div class="card-header-row">
+                        <div class="checkbox-custom"></div>
+                        <a href="${opt.link}" target="_blank" class="card-title" onclick="event.stopPropagation()">${opt.title} ↗</a>
+                      </div>
+                      <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%;"></div></div>
+                      <div class="progress-info"><span>Broj glasova: ${votes}</span><span>${pct}%</span></div>
+                      ${creatorHtml}
+                      <div class="voters-container voters-list-row"><span>Glasali:</span> ${votersList}</div>
+                    </div>
+                `;
+            }
+
+            fragment.appendChild(cardEl);
+        });
+
+        container.appendChild(fragment);
+
+        // Remove deleted items
+        container.querySelectorAll('.option-card').forEach(card => {
+            if (!state.options.some(o => String(o.id) === String(card.dataset.id))) {
+                card.remove();
             }
         });
+    };
+
+    // Respect user motion preferences
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (typeof animateLayout === 'function' && !prefersReducedMotion) {
+        try {
+            await animateLayout(container, updateDOMNodes, {
+                type: "spring",
+                stiffness: 300,
+                damping: 30
+            });
+        } catch (e) {
+            console.warn('Motion layout animation fallback triggered:', e);
+            updateDOMNodes();
+        }
+    } else {
+        updateDOMNodes();
     }
 }
+
 function applyOptimisticVote(optionId, isAdding) {
     const targetOpt = state.options.find(o => String(o.id) === String(optionId));
     if (!targetOpt) return;
@@ -592,7 +462,7 @@ function applyOptimisticVote(optionId, isAdding) {
     updateDetailModalIfOpen(optionId);
 }
 
-function updateDetailModalIfOpen(optionId) {
+function updateDetailModalIfOpen() {
     if (activeDetailId === null) return;
     const detailOpt = state.options.find(o => String(o.id) === String(activeDetailId));
     if (detailOpt) {
@@ -635,7 +505,6 @@ async function toggleVote(optionId) {
     } catch (err) {
         console.error('Vote sync failed:', err);
         showToast('Glas nije spremljen. Vraćam stanje…', 'error');
-        // Rollback optimistic change on error
         applyOptimisticVote(optionId, !isAdding);
     }
 }
@@ -653,6 +522,71 @@ function showToast(message, kind = 'info') {
     toastTimer = setTimeout(() => toast.classList.remove('visible'), 2600);
 }
 
+function openDetail(optionId) {
+    const opt = state.options.find(item => String(item.id) === String(optionId));
+    if (!opt) return;
+    activeDetailId = opt.id;
+
+    const overlay = document.getElementById('detail-overlay');
+    const image = document.getElementById('detail-image');
+    const title = document.getElementById('detail-title');
+    const priceEl = document.getElementById('detail-price');
+    const votesEl = document.getElementById('detail-votes');
+    const noteEl = document.getElementById('detail-note');
+    const link = document.getElementById('detail-link');
+    const voteBtn = document.getElementById('detail-vote');
+
+    const safeImage = opt.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=85';
+    if (image) {
+        image.src = safeImage;
+        image.alt = opt.title || 'Accommodation';
+    }
+
+    if (votesEl) votesEl.textContent = `${opt.voters?.length || 0} glasova`;
+
+    if (voteBtn) {
+        voteBtn.textContent = state.selectedOptionIds.has(opt.id) ? 'Ukloni svoj glas' : 'Glasaj za ovaj smještaj';
+    }
+
+    const isCreator = Boolean(state.userEmail && opt.created_by && opt.created_by.toLowerCase() === state.userEmail.toLowerCase());
+    const editableSection = document.getElementById('detail-editable-section');
+    const readonlySection = document.getElementById('detail-readonly-section');
+
+    if (isCreator) {
+        if (readonlySection) readonlySection.style.display = 'none';
+        if (editableSection) editableSection.style.display = 'block';
+
+        const editTitle = document.getElementById('edit-detail-title');
+        const editPrice = document.getElementById('edit-detail-price');
+        const editImage = document.getElementById('edit-detail-image');
+        const editNote = document.getElementById('edit-detail-note');
+
+        if (editTitle) editTitle.value = opt.title || '';
+        if (editPrice) editPrice.value = opt.price || '';
+        if (editImage) editImage.value = opt.image || '';
+        if (editNote) editNote.value = opt.note || '';
+    } else {
+        if (editableSection) editableSection.style.display = 'none';
+        if (readonlySection) readonlySection.style.display = 'block';
+
+        if (title) title.textContent = opt.title || 'Smještaj';
+        if (priceEl) priceEl.textContent = opt.price || 'Cijena nije navedena';
+        if (noteEl) noteEl.textContent = opt.note || 'Nema dodatnih napomena za ovaj smještaj.';
+    }
+
+    if (link) {
+        link.href = opt.link || '#';
+        link.style.display = opt.link ? 'inline-flex' : 'none';
+    }
+
+    if (overlay) {
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden', 'false');
+    }
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.querySelector('.detail-close')?.focus({ preventScroll: true }), 80);
+}
+
 function closeDetail() {
     const overlay = document.getElementById('detail-overlay');
     if (overlay) {
@@ -668,6 +602,57 @@ async function voteFromDetail() {
     const id = activeDetailId;
     closeDetail();
     await toggleVote(id);
+}
+
+async function saveOptionDetails() {
+    if (!activeDetailId) return;
+
+    const opt = state.options.find(item => String(item.id) === String(activeDetailId));
+    if (!opt) return;
+
+    const isCreator = Boolean(state.userEmail && opt.created_by && opt.created_by.toLowerCase() === state.userEmail.toLowerCase());
+    if (!isCreator) {
+        showToast('Samo autor prijedloga može uređivati ove podatke.', 'error');
+        return;
+    }
+
+    const editTitle = document.getElementById('edit-detail-title')?.value.trim();
+    const editPrice = document.getElementById('edit-detail-price')?.value.trim();
+    const editImage = document.getElementById('edit-detail-image')?.value.trim();
+    const editNote = document.getElementById('edit-detail-note')?.value.trim();
+
+    if (!editTitle) {
+        showToast('Naziv smještaja ne može biti prazan.', 'error');
+        return;
+    }
+
+    const updates = {
+        title: editTitle,
+        price: editPrice || 'N/A',
+        image: editImage || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80',
+        note: editNote || ''
+    };
+
+    state.options = state.options.map(o => {
+        if (String(o.id) === String(activeDetailId)) {
+            return { ...o, ...updates };
+        }
+        return o;
+    });
+
+    renderOptions();
+    closeDetail();
+    showToast('Izmjene uspješno spremljene!');
+
+    try {
+        await updateOption(activeDetailId, updates);
+    } catch (err) {
+        console.error('Failed to save option edits:', err);
+        showToast('Greška pri spremanju izmjena. Osvježavam podatke…', 'error');
+        const { options } = await getPollData();
+        state.options = options;
+        renderOptions();
+    }
 }
 
 async function autoFetchMetadata() {
@@ -715,12 +700,10 @@ async function submitNewOption() {
 
     let hasError = false;
 
-    // Clear previous error states
     clearFieldError('input-link', 'error-input-link');
     clearFieldError('input-title', 'error-input-title');
     clearFieldError('input-image', 'error-input-image');
 
-    // 1. Link Validation (Must be a valid URL AND belong to Booking.com or Airbnb)
     if (!link) {
         showFieldError('input-link', 'error-input-link');
         const errEl = document.getElementById('error-input-link');
@@ -738,7 +721,6 @@ async function submitNewOption() {
         hasError = true;
     }
 
-    // 2. Title Validation
     if (!title) {
         showFieldError('input-title', 'error-input-title');
         const errEl = document.getElementById('error-input-title');
@@ -746,8 +728,7 @@ async function submitNewOption() {
         hasError = true;
     }
 
-    // 3. Image URL Validation (if user entered a custom image URL)
-    let finalImage = fallbackImage;
+    let finalImage = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80';
     if (rawImage) {
         if (!isValidUrl(rawImage)) {
             showFieldError('input-image', 'error-input-image');
@@ -761,7 +742,6 @@ async function submitNewOption() {
 
     if (hasError) return;
 
-    // 4. Duplicate Check
     const normalizedNewLink = normalizeUrl(link);
     const isDuplicate = state.options.some(opt => normalizeUrl(opt.link) === normalizedNewLink);
 
@@ -796,8 +776,6 @@ async function submitNewOption() {
 
     state.options = [newOption, ...state.options];
     renderOptions(true, tempId);
-
-    // SCROLL TO NEW CARD AUTOMATICALLY
     scrollToCardIfNeeded(tempId);
 
     try {
@@ -892,9 +870,9 @@ window.toggleVote = toggleVote;
 window.openDetail = openDetail;
 window.closeDetail = closeDetail;
 window.voteFromDetail = voteFromDetail;
+window.saveOptionDetails = saveOptionDetails;
 window.openAddModal = openAddModal;
 window.closeAddModal = closeAddModal;
 window.submitNewOption = submitNewOption;
 window.autoFetchMetadata = autoFetchMetadata;
 window.logoutUser = logoutUser;
-window.saveOptionDetails = saveOptionDetails;
