@@ -923,24 +923,47 @@
       addSheet.addEventListener('touchcancel', () => { tracking = false; }, { passive: true });
     }
 
+    
     async function autoFetchMetadata() {
-      const url = document.getElementById('input-link').value.trim();
+      const linkInput = document.getElementById('input-link');
+      const titleInput = document.getElementById('input-title');
+      const imageInput = document.getElementById('input-image');
+      const url = linkInput.value.trim();
+    
       if (!url) return;
-      clearFieldError('input-link', 'error-input-link');
+    
       try {
-        const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`);
-        const json = await res.json();
-        if (json.status === 'success' && json.data) {
-          if (json.data.title && !document.getElementById('input-title').value) {
-            document.getElementById('input-title').value = json.data.title;
-            clearFieldError('input-title', 'error-input-title');
-          }
-          if (json.data.image?.url && !document.getElementById('input-image').value) {
-            document.getElementById('input-image').value = json.data.image.url;
-          }
+        console.log('[Metadata] Fetching:', url);
+    
+        const endpoint = `https://api.microlink.io/?url=${encodeURIComponent(url)}`;
+        const response = await fetch(endpoint);
+        const result = await response.json();
+    
+        console.log('[Metadata] Microlink response:', result);
+    
+        if (!response.ok || result.status !== 'success' || !result.data) {
+          console.warn('[Metadata] No metadata returned:', result);
+          return;
         }
-      } catch (e) { console.warn('Metadata fetch skipped:', e); }
+    
+        if (result.data.title && !titleInput.value.trim()) {
+          titleInput.value = result.data.title;
+        }
+    
+        if (result.data.image?.url && !imageInput.value.trim()) {
+          // Serve the image through Microlink to help with hot-linking blocks.
+          imageInput.value =
+            `https://api.microlink.io/?url=${encodeURIComponent(url)}&embed=image.url`;
+    
+          console.log('[Metadata] Image found:', result.data.image.url);
+        } else {
+          console.warn('[Metadata] No image URL found in metadata.');
+        }
+      } catch (error) {
+        console.error('[Metadata] Fetch failed:', error);
+      }
     }
+
 
     async function submitNewOption() {
       const titleInput = document.getElementById('input-title');
