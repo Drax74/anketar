@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
   <!-- Open Graph / WhatsApp Preview Meta Tags -->
   <meta property="og:title" content="🇪🇸 Madrid Ekskurzija (03.12 – 06.12.2026)">
   <meta property="og:description" content="Glasajte za smještaj u Madridu!">
@@ -15,6 +16,7 @@
   <meta name="twitter:title" content="🇪🇸 Madrid Ekskurzija (03.12 – 06.12.2026)">
   <meta name="twitter:description" content="Glasajte za smještaj u Madridu!">
   <meta name="twitter:image" content="https://35milimetros.es/wp-content/uploads/2026/03/2b4013cc-60a9-4680-a9bd-f9f891d42a63_source-aspect-ratio_1600w_0.webp">
+
   <title>Madrid - Trkadzije &amp; Rumoljubi</title>
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text y='20' font-size='20'>🇪🇸</text></svg>">  
@@ -49,7 +51,9 @@
       --md-elevation-1: 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
       --md-elevation-2: 0 2px 6px 2px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
       
-      --transition-standard: 0.2s cubic-bezier(0.2, 0, 0, 1);
+      /* Spotify-like smooth spring/bezier easing curves */
+      --spotify-easing: cubic-bezier(0.16, 1, 0.3, 1);
+      --transition-standard: 0.35s var(--spotify-easing);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Google Sans', 'Inter', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -105,17 +109,19 @@
     .user-footer-details { display: flex; flex-direction: column; }
     .user-footer-name { font-size: 0.9rem; font-weight: 600; color: var(--md-sys-color-on-surface); }
 
-    /* MODAL & SELECT UI */
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; opacity: 0; pointer-events: none; transition: opacity var(--transition-standard); }
+    /* MODALS */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; opacity: 0; pointer-events: none; transition: opacity var(--transition-standard); }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
-    .modal { background: var(--md-sys-color-surface-container); border: 1px solid var(--md-sys-color-outline-variant); border-radius: var(--md-shape-corner-extra-large); padding: 28px 24px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; box-shadow: var(--md-elevation-2); }
+    
+    .modal { background: var(--md-sys-color-surface-container); border: 1px solid var(--md-sys-color-outline-variant); border-radius: var(--md-shape-corner-extra-large); padding: 28px 24px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; box-shadow: var(--md-elevation-2); transform: scale(0.92) translateY(12px); transition: transform var(--transition-standard), opacity var(--transition-standard); opacity: 0; }
+    .modal-overlay.active .modal { transform: scale(1) translateY(0); opacity: 1; }
     .modal h2 { font-size: 1.35rem; font-weight: 600; margin-bottom: 8px; color: var(--md-sys-color-on-surface); }
 
     .form-group { margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); font-weight: 500; }
 
     .select-wrapper { position: relative; width: 100%; }
-    .input-field { width: 100%; padding: 12px 16px; background: var(--md-sys-color-surface); border: 1px solid var(--md-sys-color-outline); border-radius: var(--md-shape-corner-medium); color: var(--md-sys-color-on-surface); font-size: 1rem; outline: none; appearance: none; transition: border-color var(--transition-standard); cursor: pointer; }
+    .input-field { width: 100%; padding: 12px 16px; background: var(--md-sys-color-surface); border: 1px solid var(--md-sys-color-outline); border-radius: var(--md-shape-corner-medium); color: var(--md-sys-color-on-surface); font-size: 1rem; outline: none; appearance: none; transition: border-color var(--transition-standard), transform 0.1s ease; cursor: pointer; }
     .input-field:focus { border-color: var(--md-sys-color-primary); border-width: 2px; padding: 11px 15px; }
     textarea.input-field { resize: vertical; min-height: 70px; }
     
@@ -132,24 +138,52 @@
       background: var(--md-sys-color-surface);
       border-radius: var(--md-shape-corner-small);
       border: 1px dashed var(--md-sys-color-outline-variant);
+      animation: fadeIn 0.3s var(--spotify-easing);
     }
 
-    .btn { width: 100%; padding: 14px 20px; border: none; border-radius: var(--md-shape-corner-medium); font-weight: 600; font-size: 0.95rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition-standard); }
+    .btn { width: 100%; padding: 14px 20px; border: none; border-radius: var(--md-shape-corner-medium); font-weight: 600; font-size: 0.95rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.15s ease, opacity var(--transition-standard), background-color var(--transition-standard); }
+    .btn:active { transform: scale(0.97); }
     .btn-primary { background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
     .btn-secondary { background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); border: 1px solid var(--md-sys-color-outline-variant); }
 
     .options-list { display: flex; flex-direction: column; gap: 16px; }
-    .option-card { background: var(--md-sys-color-surface); border: 2px solid var(--md-sys-color-outline-variant); border-radius: var(--md-shape-corner-large); overflow: hidden; transition: var(--transition-standard); cursor: pointer; box-shadow: var(--md-elevation-1); }
-    .option-card.selected { border-color: var(--md-sys-color-primary); background: var(--md-sys-color-surface-container); }
+
+    /* SPOTIFY FLUID CARD & SORTING ANIMATIONS */
+    .option-card { 
+      background: var(--md-sys-color-surface); 
+      border: 2px solid var(--md-sys-color-outline-variant); 
+      border-radius: var(--md-shape-corner-large); 
+      overflow: hidden; 
+      transition: transform 0.5s var(--spotify-easing), border-color var(--transition-standard), background-color var(--transition-standard), box-shadow var(--transition-standard); 
+      cursor: pointer; 
+      box-shadow: var(--md-elevation-1);
+      will-change: transform;
+    }
+
+    .option-card:active { transform: scale(0.98); }
+
+    .option-card.selected { 
+      border-color: var(--md-sys-color-primary); 
+      background: var(--md-sys-color-surface-container); 
+      box-shadow: 0 8px 24px rgba(168, 199, 250, 0.12);
+    }
+
+    @keyframes cardEntrance {
+      0% { opacity: 0; transform: translateY(-24px) scale(0.95); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .option-card.new-item { animation: cardEntrance 0.6s var(--spotify-easing) forwards; }
 
     .card-cover-container { width: 100%; height: 160px; position: relative; background: var(--md-sys-color-surface-container-high); overflow: hidden; }
-    .card-cover { width: 100%; height: 100%; object-fit: cover; }
+    .card-cover { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--spotify-easing); }
+    .option-card:hover .card-cover { transform: scale(1.04); }
+
     .price-badge { position: absolute; top: 12px; right: 12px; background: rgba(18, 19, 22, 0.85); backdrop-filter: blur(8px); padding: 6px 12px; border-radius: var(--md-shape-corner-small); font-size: 0.85rem; font-weight: 600; color: var(--md-sys-color-success); }
 
     .card-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
     
-    /* GOOGLE MATERIAL SYMBOLS NOTE BOX */
     .card-note-box {
       background: var(--md-sys-color-surface-container);
       border: 1px solid var(--md-sys-color-outline-variant);
@@ -171,16 +205,38 @@
     }
 
     .card-header-row { display: flex; align-items: center; gap: 12px; }
-    .checkbox-custom { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--md-sys-color-outline); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: var(--transition-standard); }
-    .option-card.selected .checkbox-custom { background: var(--md-sys-color-primary); border-color: var(--md-sys-color-primary); }
+    
+    .checkbox-custom { 
+      width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--md-sys-color-outline); 
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; 
+      transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s var(--spotify-easing); 
+    }
+    .option-card.selected .checkbox-custom { 
+      background: var(--md-sys-color-primary); 
+      border-color: var(--md-sys-color-primary); 
+      transform: scale(1.1);
+    }
     .option-card.selected .checkbox-custom::after { content: '✓'; color: var(--md-sys-color-on-primary); font-weight: bold; font-size: 0.85rem; }
 
     .card-title { font-size: 1.05rem; font-weight: 600; color: var(--md-sys-color-on-surface); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+    
     .progress-bar-bg { width: 100%; height: 8px; background: var(--md-sys-color-surface-container-high); border-radius: 4px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; background: var(--md-sys-color-primary); width: 0%; transition: width 0.4s ease-out; }
+    .progress-bar-fill { height: 100%; background: var(--md-sys-color-primary); width: 0%; transition: width 0.6s var(--spotify-easing); }
+    
     .progress-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); font-weight: 500; }
     .voters-container { font-size: 0.75rem; color: var(--md-sys-color-outline); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .voter-tag { background: var(--md-sys-color-surface-container-high); padding: 3px 10px; border-radius: 12px; color: var(--md-sys-color-on-surface-variant); font-weight: 500; }
+    
+    .voter-tag { 
+      background: var(--md-sys-color-surface-container-high); 
+      padding: 3px 10px; border-radius: 12px; 
+      color: var(--md-sys-color-on-surface-variant); font-weight: 500; 
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
 
     .spinner { width: 32px; height: 32px; border: 3px solid var(--md-sys-color-outline-variant); border-top-color: var(--md-sys-color-primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
     .btn-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #ffffff; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
@@ -494,22 +550,33 @@
       } catch (err) { console.error('Fetch poll failed:', err); }
     }
 
-    function renderOptions() {
+    // SPOTIFY FLIP ANIMATION ENGINE FOR SORTING
+    function renderOptions(isNewItemAdded = false, newItemId = null) {
       const container = document.getElementById('options-container');
       document.getElementById('options-count').innerText = state.options.length;
 
       const totalWhitelistCount = state.whitelistedUsers.length > 0 ? state.whitelistedUsers.length : 1;
+
+      // 1. FIRST: Record current bounding rects of existing cards on screen
+      const prevRects = new Map();
+      container.querySelectorAll('.option-card').forEach(card => {
+        prevRects.set(card.dataset.id, card.getBoundingClientRect());
+      });
+
+      // 2. LAST: Sort options by vote count descending
       const sorted = [...state.options].sort((a, b) => (b.voters?.length || 0) - (a.voters?.length || 0));
 
+      // Build new HTML markup
       container.innerHTML = sorted.map(opt => {
         const isSelected = state.selectedOptionIds.has(opt.id);
         const votes = opt.voters ? opt.voters.length : 0;
         const pct = Math.round((votes / totalWhitelistCount) * 100) || 0;
         const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>Nema glasova</em>';
         const noteHtml = opt.note ? `<div class="card-note-box"><span class="material-symbols-outlined">chat_bubble</span><span>${opt.note}</span></div>` : '';
+        const isBrandNew = isNewItemAdded && opt.id === newItemId;
 
         return `
-          <div class="option-card ${isSelected ? 'selected' : ''}" onclick="handleCardClick('${opt.id}')">
+          <div class="option-card ${isSelected ? 'selected' : ''} ${isBrandNew ? 'new-item' : ''}" data-id="${opt.id}" onclick="handleCardClick('${opt.id}')">
             <div class="card-cover-container">
               <img class="card-cover" src="${opt.image}" alt="${opt.title}" loading="lazy" onError="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'" />
               <div class="price-badge">${opt.price}</div>
@@ -527,6 +594,30 @@
           </div>
         `;
       }).join('');
+
+      // 3. INVERT & PLAY: Calculate delta transforms and animate elements smoothly like Spotify
+      if (!isNewItemAdded) {
+        container.querySelectorAll('.option-card').forEach(card => {
+          const id = card.dataset.id;
+          const prevRect = prevRects.get(id);
+          if (prevRect) {
+            const currentRect = card.getBoundingClientRect();
+            const deltaY = prevRect.top - currentRect.top;
+
+            if (deltaY !== 0) {
+              card.style.transform = `translateY(${deltaY}px)`;
+              card.style.transition = 'none';
+
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  card.style.transform = '';
+                  card.style.transition = 'transform 0.5s var(--spotify-easing), border-color var(--transition-standard), background-color var(--transition-standard), box-shadow var(--transition-standard)';
+                });
+              });
+            }
+          }
+        });
+      }
     }
 
     async function handleCardClick(optionId) {
@@ -617,9 +708,10 @@
         voters: []
       };
 
-      state.options.unshift(newOption);
-      renderOptions();
       closeAddModal();
+
+      state.options.unshift(newOption);
+      renderOptions(true, tempId);
 
       try {
         await fetch(GOOGLE_SCRIPT_URL, {
