@@ -242,6 +242,136 @@
     .spinner { width: 32px; height: 32px; border: 3px solid var(--md-sys-color-outline-variant); border-top-color: var(--md-sys-color-primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
     .btn-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #ffffff; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Native-feeling motion layer */
+    :root {
+      --motion-fast: 160ms;
+      --motion-base: 280ms;
+      --motion-slow: 460ms;
+      --motion-out: cubic-bezier(.2,.8,.2,1);
+      --motion-spring: cubic-bezier(.2,1.35,.4,1);
+      --motion-sheet: cubic-bezier(.22,1,.36,1);
+      --app-accent: #1ed760;
+    }
+    html { scroll-behavior: smooth; scroll-padding-top: 18px; }
+    body { padding-bottom: calc(94px + env(safe-area-inset-bottom)); }
+    .app-container { isolation: isolate; }
+    .header-card { animation: heroReveal 720ms var(--motion-sheet) both; transform-origin: 50% 30%; }
+    .header-card h1 { animation: titleReveal 620ms 100ms var(--motion-sheet) both; }
+    .header-card p { animation: titleReveal 620ms 180ms var(--motion-sheet) both; }
+    @keyframes heroReveal { from { opacity: 0; transform: translateY(14px) scale(.985); filter: saturate(.75); } to { opacity: 1; transform: translateY(0) scale(1); filter: saturate(1); } }
+    @keyframes titleReveal { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+    .app-footer { padding-bottom: env(safe-area-inset-bottom); background: rgba(30,31,36,.82); -webkit-backdrop-filter: blur(22px) saturate(1.25); backdrop-filter: blur(22px) saturate(1.25); transition: background var(--motion-base) ease, box-shadow var(--motion-base) ease; }
+    .app-footer-content { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+    .btn { position: relative; overflow: hidden; transform: translateZ(0); transition: transform 220ms var(--motion-spring), opacity 220ms ease, background-color 240ms ease, box-shadow 240ms ease; }
+    .btn:active { transform: scale(.965); }
+    .btn-primary { box-shadow: 0 5px 18px rgba(168,199,250,.12); }
+    .btn-primary:active { box-shadow: 0 2px 8px rgba(168,199,250,.08); }
+    .option-card { transform: translateZ(0); transition: transform 520ms var(--motion-sheet), border-color 280ms ease, background-color 280ms ease, box-shadow 320ms ease; backface-visibility: hidden; contain: layout style; }
+    .option-card.selected { box-shadow: 0 10px 30px rgba(168,199,250,.13), inset 0 0 0 1px rgba(168,199,250,.08); }
+    .option-card.selected .checkbox-custom { animation: checkPop 360ms var(--motion-spring); }
+    @keyframes checkPop { 0% { transform: scale(.72) rotate(-8deg); } 65% { transform: scale(1.18) rotate(2deg); } 100% { transform: scale(1.1) rotate(0); } }
+    .card-cover-container { isolation: isolate; }
+    .card-cover { transform: scale(1.001); will-change: transform; }
+    .option-card.selected .card-cover { transform: scale(1.035); }
+    .price-badge { transition: transform 320ms var(--motion-spring), background-color 240ms ease; }
+    .option-card.selected .price-badge { transform: translateY(-2px); background: rgba(18,19,22,.92); }
+    .progress-bar-fill { transition: width 650ms var(--motion-sheet); position: relative; border-radius: inherit; }
+    .progress-bar-fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent); transform: translateX(-100%); }
+    .option-card.selected .progress-bar-fill::after { animation: progressShimmer 850ms ease-out; }
+    @keyframes progressShimmer { to { transform: translateX(100%); } }
+    .voter-tag { animation: tagPop 360ms var(--motion-spring) both; }
+    @keyframes tagPop { from { opacity: 0; transform: translateY(5px) scale(.88); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .modal-overlay { align-items: flex-end; padding: 0; background: rgba(4,5,8,.0); transition: background 320ms ease, backdrop-filter 320ms ease; }
+    .modal-overlay.active { background: rgba(4,5,8,.68); }
+    .modal { max-width: 480px; border-radius: 28px 28px 0 0; border-bottom: 0; padding: 30px 24px calc(24px + env(safe-area-inset-bottom)); max-height: min(90dvh, 850px); transform: translateY(42px) scale(.985); transform-origin: bottom center; transition: transform 420ms var(--motion-sheet), opacity 280ms ease; opacity: 0; overscroll-behavior: contain; }
+    .modal::before { content: ''; display: block; width: 38px; height: 4px; border-radius: 99px; background: #777b86; opacity: .65; margin: -14px auto 22px; }
+    .modal-overlay.active .modal { transform: translateY(0) scale(1); opacity: 1; }
+    .modal-overlay.active .modal { animation: sheetSettle 460ms var(--motion-sheet) both; }
+    @keyframes sheetSettle { 0% { transform: translateY(48px) scale(.985); } 72% { transform: translateY(-3px) scale(1); } 100% { transform: translateY(0) scale(1); } }
+    .input-field { transition: border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease, transform 220ms var(--motion-spring); }
+    .input-field:focus { box-shadow: 0 0 0 3px rgba(168,199,250,.12); }
+    .user-chip-preview { animation: chipReveal 300ms var(--motion-sheet) both; }
+    @keyframes chipReveal { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .spinner, .btn-spinner { will-change: transform; }
+    @media (hover: hover) and (pointer: fine) {
+      .option-card:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,.24); }
+      .option-card:hover .card-cover { transform: scale(1.045); }
+    }
+    @media (max-width: 520px) {
+      body { padding: 10px 10px calc(96px + env(safe-area-inset-bottom)); }
+      .app-container { gap: 14px; }
+      .header-card { min-height: 205px; }
+      .card-cover-container { height: 190px; }
+      .modal-overlay { align-items: flex-end; }
+    }
+    /* Full motion system: native-feeling details, loading, and touch states */
+    :root { --motion-spring: cubic-bezier(.2, 1.35, .35, 1); --motion-enter: cubic-bezier(.16, 1, .3, 1); --motion-exit: cubic-bezier(.4, 0, 1, 1); }
+    body { overflow-x: clip; }
+    .header-card { isolation: isolate; animation: heroEnter 760ms var(--motion-enter) both; }
+    .header-card::before { content: ''; position: absolute; inset: -8%; z-index: -1; background: inherit; background-size: cover; animation: heroDrift 18s ease-in-out infinite alternate; transform-origin: center; }
+    .header-card h1, .header-card p { animation: textRise 650ms var(--motion-enter) both; }
+    .header-card p { animation-delay: 90ms; }
+    @keyframes heroEnter { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes heroDrift { from { transform: scale(1.02) translateY(0); } to { transform: scale(1.09) translateY(-1.5%); } }
+    @keyframes textRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .app-footer { background: rgba(30,31,36,.82); -webkit-backdrop-filter: blur(22px) saturate(145%); backdrop-filter: blur(22px) saturate(145%); padding-bottom: env(safe-area-inset-bottom); transition: background 250ms ease, box-shadow 250ms ease; }
+    .app-footer-content { min-height: 70px; }
+    .user-avatar { transition: transform 380ms var(--motion-spring), box-shadow 250ms ease; }
+    .user-avatar:active { transform: scale(.9); }
+    .btn { position: relative; overflow: hidden; isolation: isolate; transition: transform 220ms var(--motion-spring), opacity 220ms ease, background-color 240ms ease, box-shadow 240ms ease; }
+    .btn::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at var(--tap-x,50%) var(--tap-y,50%), rgba(255,255,255,.24), transparent 42%); opacity: 0; transition: opacity 320ms ease; z-index: -1; }
+    .btn:active { transform: scale(.965); }
+    .btn:active::after { opacity: 1; }
+    .option-card { transform-origin: center; touch-action: pan-y; }
+    .option-card:active { transform: scale(.988); }
+    .option-card .card-cover-container { cursor: zoom-in; }
+    .cover-detail-button { position:absolute; left:12px; bottom:12px; border:1px solid rgba(255,255,255,.22); border-radius:999px; padding:8px 12px; color:#fff; background:rgba(15,16,20,.58); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); font-size:.78rem; font-weight:600; cursor:pointer; opacity:0; transform:translateY(6px); transition:opacity 240ms ease, transform 300ms var(--motion-enter); }
+    .option-card:hover .cover-detail-button, .option-card:focus-within .cover-detail-button { opacity:1; transform:translateY(0); }
+    @media (hover:none) { .cover-detail-button { opacity:1; transform:none; } }
+    .modal-overlay { overscroll-behavior: contain; }
+    .modal { padding-top: 28px; }
+    .modal-overlay.active { isolation:isolate; }
+    .modal-overlay.active .modal { will-change: transform, opacity; }
+    .modal-overlay.is-closing { pointer-events:none; }
+    .options-list.is-loading { opacity:.72; }
+    .empty-state { text-align:center; padding:32px 20px; color:var(--md-sys-color-on-surface-variant); background:var(--md-sys-color-surface); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-shape-corner-large); }
+    @media (min-width: 700px) {
+      .modal-overlay { align-items:center; padding:22px; }
+      .modal { border-radius:28px; border-bottom:1px solid var(--md-sys-color-outline-variant); padding-bottom:28px; transform:translateY(18px) scale(.97); }
+      .modal::before { display:none; }
+      .modal-overlay.active .modal { animation: modalFloatIn 380ms var(--motion-enter) both; }
+      @keyframes modalFloatIn { from { opacity:0; transform:translateY(18px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+
+    /* Complete interaction layer: shared elements, gesture-ready sheets, and feedback */
+    :root { --motion-quick: cubic-bezier(.2,.75,.25,1); --motion-pop: cubic-bezier(.2,1.4,.4,1); }
+    .card-cover-container { cursor: zoom-in; }
+    .card-cover { transition: transform 650ms var(--motion-sheet), filter 350ms ease; }
+    .option-card:active { transform: scale(.988); }
+    .option-card.is-saving { opacity: .86; }
+    .option-card.is-saving::after { content: ''; position: absolute; top: 12px; left: 12px; width: 7px; height: 7px; border-radius: 50%; background: var(--app-accent); box-shadow: 0 0 0 4px rgba(30,215,96,.14); animation: savingPulse 1s ease-in-out infinite; }
+    @keyframes savingPulse { 50% { box-shadow: 0 0 0 8px rgba(30,215,96,0); opacity: .65; } }
+    .app-toast { position: fixed; z-index: 300; left: 50%; bottom: calc(94px + env(safe-area-inset-bottom)); transform: translate(-50%, 18px); opacity: 0; pointer-events: none; background: #28292e; color: #f4f4f6; border: 1px solid #44474f; box-shadow: 0 12px 35px #0006; border-radius: 999px; padding: 12px 17px; width: max-content; max-width: calc(100vw - 32px); font-size: .88rem; transition: opacity 220ms ease, transform 320ms var(--motion-sheet); }
+    .app-toast.visible { opacity: 1; transform: translate(-50%, 0); }
+    .app-toast[data-kind="error"] { border-color: rgba(242,184,181,.6); }
+    .detail-overlay { position: fixed; inset: 0; z-index: 120; background: rgba(8,9,12,.78); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); display: grid; place-items: center; padding: 18px; opacity: 0; visibility: hidden; transition: opacity 280ms ease, visibility 280ms; }
+    .detail-overlay.active { opacity: 1; visibility: visible; }
+    .detail-sheet { position: relative; width: min(100%, 520px); max-height: min(88dvh, 850px); overflow: auto; background: var(--md-sys-color-surface); border: 1px solid var(--md-sys-color-outline-variant); border-radius: 28px; transform: translateY(20px) scale(.98); transition: transform 420ms var(--motion-sheet); box-shadow: 0 24px 90px #0008; }
+    .detail-overlay.active .detail-sheet { transform: translateY(0) scale(1); }
+    .detail-image { display: block; width: 100%; height: clamp(220px, 38vh, 340px); object-fit: cover; background: var(--md-sys-color-surface-container-high); }
+    .detail-content { padding: 22px; display: grid; gap: 14px; }
+    .detail-close { position: absolute; top: 12px; right: 12px; width: 42px; height: 42px; border: 1px solid #ffffff30; border-radius: 50%; background: #101116b8; color: white; font-size: 1.4rem; cursor: pointer; backdrop-filter: blur(10px); }
+    .detail-title { font-size: 1.45rem; line-height: 1.2; }
+    .detail-note { color: var(--md-sys-color-on-surface-variant); line-height: 1.55; }
+    .detail-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .detail-pill { border-radius: 999px; padding: 7px 11px; background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface-variant); font-size: .82rem; }
+    .modal-overlay.active .modal { touch-action: pan-y; }
+    @media (max-width: 520px) { .detail-overlay { padding: 0; align-items: end; } .detail-sheet { width: 100%; border-radius: 28px 28px 0 0; max-height: 92dvh; padding-bottom: env(safe-area-inset-bottom); } .detail-image { height: 34vh; min-height: 210px; } }
   </style>
 </head>
 <body>
@@ -265,6 +395,8 @@
     </div>
   </div>
 
+  <div id="app-toast" class="app-toast" role="status" aria-live="polite"></div>
+
   <!-- FOOTER -->
   <footer class="app-footer">
     <div class="app-footer-content">
@@ -279,9 +411,9 @@
   </footer>
 
   <!-- AUTHENTICATION MODAL -->
-  <div id="auth-modal" class="modal-overlay">
+  <div id="auth-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="auth-title">
     <div class="modal">
-      <h2>Izaberi Svoj Profil</h2>
+      <h2 id="auth-title">Izaberi Svoj Profil</h2>
       <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 20px; line-height: 1.4;">
         Izaberi svog trkadziju ili rumoljuba iz liste da ti se posalje login kod.
       </p>
@@ -294,7 +426,7 @@
               <option value="" disabled selected>Loading trkadzije i rumoljube...</option>
             </select>
           </div>
-          <div class="error-message" id="error-user-select">Molimo izaberite profil s popisa.</div>
+          <div class="error-message" id="error-user-select">Izaberi svoj profil s popisa.</div>
           <div id="selected-chip-container" class="user-chip-preview" style="display: none;">
             <div class="user-avatar" id="preview-chip-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">--</div>
             <span id="preview-chip-name" style="font-size: 0.85rem; font-weight: 500;">Izaberi svog trkadziju ili rumoljuba</span>
@@ -310,7 +442,7 @@
         
         <div class="form-group" style="margin-bottom: 16px;">
           <input type="text" id="input-code" placeholder="----" maxlength="4" class="input-field" style="text-align: center; font-size: 1.5rem; letter-spacing: 8px;" oninput="clearFieldError('input-code', 'error-input-code')">
-          <div class="error-message" id="error-input-code" style="text-align: center;">Molimo unesite valjani 4-znamenkasti kod.</div>
+          <div class="error-message" id="error-input-code" style="text-align: center;">Unesi valjani 4-znamenkasti kod.</div>
         </div>
         
         <button class="btn btn-primary" onclick="verifyEnteredCode()">Potvrdi & Login</button>
@@ -319,13 +451,13 @@
   </div>
 
   <!-- ADD OPTION MODAL -->
-  <div id="add-modal" class="modal-overlay">
+  <div id="add-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="add-title">
     <div class="modal">
-      <h2>Dodaj Smjestaj</h2>
+      <h2 id="add-title">Dodaj Smjestaj</h2>
       <div class="form-group" style="margin-top: 12px;">
         <label for="input-link">Link</label>
         <input type="url" id="input-link" class="input-field" placeholder="https://..." onblur="autoFetchMetadata()" oninput="clearFieldError('input-link', 'error-input-link')" />
-        <div class="error-message" id="error-input-link">Unesite važeći URL smještaja.</div>
+        <div class="error-message" id="error-input-link">Unesi važeći URL smještaja.</div>
       </div>
       <div class="form-group">
         <label for="input-title">Ime</label>
@@ -351,6 +483,22 @@
     </div>
   </div>
 
+  <div id="detail-overlay" class="detail-overlay" aria-hidden="true" onclick="if(event.target===this) closeDetail()">
+    <article class="detail-sheet" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+      <button class="detail-close" type="button" aria-label="Close details" onclick="closeDetail()">×</button>
+      <img id="detail-image" class="detail-image" alt="" />
+      <div class="detail-content">
+        <div class="detail-meta"><span id="detail-price" class="detail-pill"></span><span id="detail-votes" class="detail-pill"></span></div>
+        <h2 id="detail-title" class="detail-title"></h2>
+        <p id="detail-note" class="detail-note"></p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button id="detail-vote" class="btn btn-primary" type="button" style="flex:1" onclick="voteFromDetail()">Glasaj za ovaj smještaj</button>
+          <a id="detail-link" class="btn btn-secondary" target="_blank" rel="noopener noreferrer" style="flex:1;text-decoration:none" href="#">Otvori smještaj ↗</a>
+        </div>
+      </div>
+    </article>
+  </div>
+
   <script>
     const GOOGLE_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
 
@@ -360,12 +508,29 @@
       selectedOptionIds: new Set(),
       options: [],
       whitelistedUsers: [],
-      cooldownTimer: null
+      cooldownTimer: null,
+      savingVotes: false
     };
+
+    // Native-like modal dismissal: tap the scrim or press Escape.
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', event => {
+        if (event.target !== overlay) return;
+        if (overlay.id === 'add-modal') closeAddModal();
+      });
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      const addModal = document.getElementById('add-modal');
+      const detail = document.getElementById('detail-overlay');
+      if (detail.classList.contains('active')) closeDetail();
+      else if (addModal.classList.contains('active')) closeAddModal();
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
       if (!state.email || !state.userName) {
         document.getElementById('auth-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
         fetchWhitelistedUsers();
       } else {
         updateUserUI();
@@ -459,7 +624,7 @@
         })
         .catch(err => {
           console.error('Request error:', err);
-          alert('Došlo je do mrežne greške.');
+          alert('Nekaj se sjebalo na mreži.');
           triggerBtn.innerText = 'Posalji Kod Na Moj Email';
           triggerBtn.disabled = false;
         });
@@ -506,6 +671,8 @@
           localStorage.setItem('poll_user_email', state.email);
           localStorage.setItem('poll_user_name', state.userName);
           document.getElementById('auth-modal').classList.remove('active');
+          document.body.style.overflow = '';
+          showToast('Dobrodošao natrag!');
           updateUserUI();
           fetchPollData();
         } else {
@@ -578,9 +745,10 @@
 
         return `
           <div class="option-card ${isSelected ? 'selected' : ''} ${isBrandNew ? 'new-item' : ''}" data-id="${opt.id}" onclick="handleCardClick('${opt.id}')">
-            <div class="card-cover-container">
-              <img class="card-cover" src="${opt.image}" alt="${opt.title}" loading="lazy" onError="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'" />
+            <div class="card-cover-container" onclick="event.stopPropagation(); openDetail('${opt.id}')">
+              <img class="card-cover" style="view-transition-name: cover-${String(opt.id).replace(/[^a-zA-Z0-9_-]/g, '')};" src="${opt.image}" alt="${opt.title}" loading="lazy" onError="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'" />
               <div class="price-badge">${opt.price}</div>
+              <button class="cover-detail-button" type="button" onclick="event.stopPropagation(); openDetail('${opt.id}')" aria-label="View details for ${opt.title}">Pogledaj detalje ↗</button>
             </div>
             <div class="card-body">
               ${noteHtml}
@@ -596,29 +764,29 @@
         `;
       }).join('');
 
-      // 3. INVERT & PLAY: Calculate delta transforms and animate elements smoothly like Spotify
-      if (!isNewItemAdded) {
-        container.querySelectorAll('.option-card').forEach(card => {
-          const id = card.dataset.id;
-          const prevRect = prevRects.get(id);
-          if (prevRect) {
-            const currentRect = card.getBoundingClientRect();
-            const deltaY = prevRect.top - currentRect.top;
-
-            if (deltaY !== 0) {
-              card.style.transform = `translateY(${deltaY}px)`;
-              card.style.transition = 'none';
-
-              requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                  card.style.transform = '';
-                  card.style.transition = 'transform 0.5s var(--spotify-easing), border-color var(--transition-standard), background-color var(--transition-standard), box-shadow var(--transition-standard)';
-                });
-              });
-            }
+      // 3. FLIP: preserve visual positions, then animate to the new layout.
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      container.querySelectorAll('.option-card').forEach((card, index) => {
+        const id = card.dataset.id;
+        const prevRect = prevRects.get(id);
+        if (prevRect && !reducedMotion) {
+          const nextRect = card.getBoundingClientRect();
+          const deltaY = prevRect.top - nextRect.top;
+          const deltaX = prevRect.left - nextRect.left;
+          if (Math.abs(deltaY) > 1 || Math.abs(deltaX) > 1) {
+            card.animate([
+              { transform: `translate(${deltaX}px, ${deltaY}px) scale(.985)` },
+              { transform: 'translate(0, 0) scale(1)' }
+            ], { duration: 520, easing: 'cubic-bezier(.2, 1.15, .3, 1)', fill: 'none' });
           }
-        });
-      }
+        } else if (!prevRect && !reducedMotion) {
+          card.animate([
+            { opacity: 0, transform: 'translateY(18px) scale(.975)' },
+            { opacity: 1, transform: 'translateY(-2px) scale(1.005)', offset: .76 },
+            { opacity: 1, transform: 'translateY(0) scale(1)' }
+          ], { duration: 540, delay: Math.min(index * 55, 220), easing: 'cubic-bezier(.16, 1, .3, 1)' });
+        }
+      });
     }
 
     async function handleCardClick(optionId) {
@@ -637,14 +805,19 @@
 
       // Re-render and sort options (triggers FLIP animation)
       renderOptions();
+      if (activeDetailId !== null) {
+        const detailOpt = state.options.find(o => String(o.id) === String(activeDetailId));
+        if (detailOpt) { document.getElementById('detail-votes').textContent = `${detailOpt.voters?.length || 0} glasova`; document.getElementById('detail-vote').textContent = state.selectedOptionIds.has(detailOpt.id) ? 'Ukloni svoj glas' : 'Glasaj za ovaj smještaj'; }
+      }
 
-      // Smoothly scroll to the card's new final position AFTER the FLIP animation completes (~450ms)
+      // Only auto-scroll when sorting moved the tapped card out of the comfortable viewport.
       setTimeout(() => {
         const cardEl = document.querySelector(`.option-card[data-id="${optionId}"]`);
-        if (cardEl) {
-          cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 450);
+        if (!cardEl) return;
+        const rect = cardEl.getBoundingClientRect();
+        const visible = rect.top >= 84 && rect.bottom <= window.innerHeight - 110;
+        if (!visible) cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 360);
 
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
@@ -660,11 +833,94 @@
         if (result.status !== 'success') throw new Error('Server rejected vote');
       } catch (err) {
         console.error('Vote sync failed:', err);
-        alert('Nekaj se sjebalo sa sejvanjem. Vracam nazad...');
-        if (isCurrentlySelected) state.selectedOptionIds.add(optionId);
-        else state.selectedOptionIds.delete(optionId);
+        showToast('Glas nije spremljen. Osvježavam potvrđene rezultate…', 'error');
         fetchPollData();
       }
+    }
+
+    let activeDetailId = null;
+    let toastTimer = null;
+    let pendingVoteSnapshot = null;
+
+    function showToast(message, kind = 'info') {
+      const toast = document.getElementById('app-toast');
+      toast.textContent = message;
+      toast.dataset.kind = kind;
+      toast.classList.add('visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('visible'), 2600);
+    }
+
+    function openDetail(optionId) {
+      const opt = state.options.find(item => String(item.id) === String(optionId));
+      if (!opt) return;
+      activeDetailId = opt.id;
+      const image = document.getElementById('detail-image');
+      const overlay = document.getElementById('detail-overlay');
+      const safeImage = opt.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=85';
+      image.src = safeImage;
+      image.alt = opt.title || 'Accommodation';
+      const title = document.getElementById('detail-title'); title.textContent = opt.title || 'Smještaj';
+      document.getElementById('detail-price').textContent = opt.price || 'Cijena nije navedena';
+      document.getElementById('detail-votes').textContent = `${opt.voters?.length || 0} glasova`;
+      document.getElementById('detail-note').textContent = opt.note || 'Nema dodatnih napomena za ovaj smještaj.';
+      const link = document.getElementById('detail-link');
+      link.href = opt.link || '#';
+      link.style.display = opt.link ? 'inline-flex' : 'none';
+      document.getElementById('detail-vote').textContent = state.selectedOptionIds.has(opt.id) ? 'Ukloni svoj glas' : 'Glasaj za ovaj smještaj';
+      overlay.classList.add('active');
+      overlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => document.querySelector('.detail-close')?.focus({ preventScroll: true }), 80);
+    }
+
+    function closeDetail() {
+      const overlay = document.getElementById('detail-overlay');
+      overlay.classList.remove('active');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      activeDetailId = null;
+    }
+
+    async function voteFromDetail() {
+      if (!activeDetailId) return;
+      const id = activeDetailId;
+      closeDetail();
+      await handleCardClick(id);
+    }
+
+    // Optional pull-down dismissal is limited to the Add modal's heading area.
+    // Form controls and the authentication modal are never gesture targets.
+    const addOverlay = document.getElementById('add-modal');
+    const addSheet = addOverlay?.querySelector('.modal');
+    if (addOverlay && addSheet) {
+      let startY = 0;
+      let startX = 0;
+      let tracking = false;
+
+      addSheet.addEventListener('touchstart', event => {
+        const touch = event.touches?.[0];
+        if (!touch) return;
+        const startedOnHeading = event.target instanceof Element &&
+          (event.target.closest('#add-title') || event.target === addSheet);
+        tracking = Boolean(startedOnHeading && addOverlay.classList.contains('active') && addSheet.scrollTop <= 0);
+        if (tracking) {
+          startY = touch.clientY;
+          startX = touch.clientX;
+        }
+      }, { passive: true });
+
+      addSheet.addEventListener('touchend', event => {
+        if (!tracking) return;
+        tracking = false;
+        const touch = event.changedTouches?.[0];
+        if (!touch || !addOverlay.classList.contains('active')) return;
+        const dy = touch.clientY - startY;
+        const dx = touch.clientX - startX;
+        if (dy > 90 && Math.abs(dx) < 70) closeAddModal();
+      }, { passive: true });
+
+      addSheet.addEventListener('touchcancel', () => { tracking = false; }, { passive: true });
     }
 
     async function autoFetchMetadata() {
@@ -747,15 +1003,21 @@
         });
       } catch (err) { 
         console.error('Background add option failed:', err);
-        alert('Došlo je do greške pri spremanju u bazu.');
+        showToast('Smještaj nije spremljen. Uklonjen je iz popisa.', 'error');
         state.options = state.options.filter(o => o.id !== tempId);
         renderOptions();
       }
     }
 
-    function openAddModal() { document.getElementById('add-modal').classList.add('active'); }
+    function openAddModal() {
+      const overlay = document.getElementById('add-modal');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => document.getElementById('input-link')?.focus({ preventScroll: true }), 120);
+    }
     function closeAddModal() { 
       document.getElementById('add-modal').classList.remove('active');
+      if (!document.getElementById('auth-modal').classList.contains('active') && !document.getElementById('detail-overlay').classList.contains('active')) document.body.style.overflow = ''; 
       document.getElementById('input-title').value = '';
       document.getElementById('input-link').value = '';
       document.getElementById('input-price').value = '';
