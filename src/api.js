@@ -55,7 +55,7 @@ export async function updateOption(id, fields) {
 export async function sendMagicLink(email) {
     const { error } = await supabase.auth.signInWithOtp({
         email: email,
-        options: { emailRedirectTo: window.location.origin }
+        options: { emailRedirectTo: `${window.location.origin}/anketar/` }
     });
     if (error) throw error;
 }
