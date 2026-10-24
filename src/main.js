@@ -2,7 +2,7 @@ import { supabase } from './supabase.js';
 import { getWhitelistedUsers, getPollData, addVote, removeVote, addOption, updateOption, sendMagicLink } from './api.js';
 import { normalizeUrl } from "./shared/helpers/url";
 import { isValidUrl, isBookingOrAirbnbUrl } from "./shared/helpers/validation.js";
-import { animateLayout } from "motion";
+import { animate, spring } from "motion";
 
 let state = {
     userEmail: localStorage.getItem('poll_user_email') || '',
@@ -22,8 +22,8 @@ function setupRealtimeSubscription() {
             const newVote = payload.new;
             const oldVote = payload.old;
             const eventUserEmail = newVote?.user_email || oldVote?.user_email;
+            const targetOptionId = newVote?.option_id || oldVote?.option_id;
 
-            // Ignore our own actions since we already handled them optimistically locally
             if (eventUserEmail && eventUserEmail === state.userEmail) {
                 return;
             }
@@ -58,7 +58,11 @@ function setupRealtimeSubscription() {
                 });
             }
 
-            renderOptions();
+            if (targetOptionId) {
+                updateCardSubelements(targetOptionId);
+            }
+            renderLeaderboardWithMotion();
+
             if (activeDetailId !== null) {
                 updateDetailModalIfOpen(activeDetailId);
             }
@@ -68,7 +72,6 @@ function setupRealtimeSubscription() {
             const oldOpt = payload.old;
             const eventCreator = newOpt?.created_by || oldOpt?.created_by;
 
-            // Ignore our own created options since we added them optimistically
             if (eventCreator && eventCreator === state.userEmail) {
                 return;
             }
@@ -84,7 +87,6 @@ function setupRealtimeSubscription() {
                     creatorName
                 };
 
-                // Check if already exists in state to avoid duplicates
                 if (!state.options.some(o => String(o.id) === String(newOpt.id))) {
                     state.options = [enrichedOpt, ...state.options];
                     renderOptions(true, newOpt.id);
@@ -202,6 +204,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         renderOptions();
+        renderLeaderboardWithMotion(false);
         const container = document.getElementById('options-container');
         if (container) container.classList.add('loaded');
 
@@ -306,131 +309,211 @@ async function logoutUser() {
     location.reload();
 }
 
+async function toggleManualSort() {
+    const container = document.getElementById('options-container');
+
+    const sortAction = () => {
+        state.options.sort((a, b) => {
+            const votesA = a.voters?.length || 0;
+            const votesB = b.voters?.length || 0;
+            if (votesB !== votesA) {
+                return votesB - votesA;
+            }
+            return String(a.title || '').localeCompare(String(b.title || ''));
+        });
+        renderOptions();
+    };
+
+    if (container && typeof animate === 'function') {
+        sortAction();
+    } else {
+        sortAction();
+    }
+
+    showToast('Smještaji sortirani po broju glasova!');
+}
+
 /**
- * Renders and animates option cards using Motion's animateLayout API.
- * Uses deterministic tie-breaking sorting and stable data-id identity tracking.
+ * MOTION-POWERED LEADERBOARD REORDERING WITH FLIP, Z-AXIS ELEVATION & ENTER/EXIT FADE
  */
+async function renderLeaderboardWithMotion(animateTransition = true) {
+    const container = document.getElementById('leaderboard-container');
+    if (!container) return;
+
+    const totalWhitelistCount = state.whitelistedUsers.length > 0 ? state.whitelistedUsers.length : 1;
+
+    const votedOptions = [...state.options]
+        .filter(opt => opt.voters && opt.voters.length > 0)
+        .sort((a, b) => b.voters.length - a.voters.length)
+        .slice(0, 3);
+
+    // 1. Capture old element bounding boxes for FLIP layout calculation if animating
+    const oldRects = new Map();
+    if (animateTransition) {
+        container.querySelectorAll('.leaderboard-item').forEach(el => {
+            oldRects.set(el.dataset.id, el.getBoundingClientRect());
+        });
+    }
+
+    if (votedOptions.length === 0) {
+        if (container.children.length > 0 && animateTransition) {
+            // Fade out current items using Motion
+            const existingItems = container.querySelectorAll('.leaderboard-item');
+            if (existingItems.length > 0 && typeof animate === 'function') {
+                await Promise.all(
+                    Array.from(existingItems).map(el => animate(el, { opacity: 0, scale: 0.95 }, { duration: 0.2 }))
+                );
+            }
+        }
+        container.innerHTML = `<div class="leaderboard-empty">Još nema glasova. Budi prvi koji će pokrenuti ljestvicu! 🗳️</div>`;
+        if (animateTransition && typeof animate === 'function') {
+            animate(container.firstElementChild, { opacity: [0, 1], y: [10, 0] }, { duration: 0.3 });
+        }
+        return;
+    }
+
+    // Render new DOM structure
+    let html = '';
+    votedOptions.forEach((opt, index) => {
+        const votes = opt.voters.length;
+        const pct = Math.min(100, Math.round((votes / totalWhitelistCount) * 100)) || 0;
+        const rank = index + 1;
+        // Higher rank gets greater z-index elevation so it glides OVER lower items cleanly in 3D z-space
+        const zIndexVal = 10 - index;
+
+        html += `
+            <div class="leaderboard-item" data-id="${opt.id}" style="z-index: ${zIndexVal}; position: relative;">
+                <div class="leaderboard-rank">${rank}</div>
+                <div class="leaderboard-info">
+                    <span class="leaderboard-item-title" onclick="openDetail('${opt.id}')">${opt.title}</span>
+                    <div class="leaderboard-bar-bg">
+                        <div class="leaderboard-bar-fill" style="width: ${pct}%;"></div>
+                    </div>
+                </div>
+                <div class="leaderboard-votes-count">${votes} glas${votes === 1 ? '' : 'a'}</div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+
+    // 2. Apply Motion FLIP and Enter/Exit animations
+    if (animateTransition && typeof animate === 'function') {
+        container.querySelectorAll('.leaderboard-item').forEach(newEl => {
+            const id = newEl.dataset.id;
+            const oldRect = oldRects.get(id);
+            const newRect = newEl.getBoundingClientRect();
+
+            if (oldRect) {
+                // FLIP Animation: Item existed before, animate position delta (Delta X & Delta Y) with spring physics
+                const dx = oldRect.left - newRect.left;
+                const dy = oldRect.top - newRect.top;
+
+                if (dx !== 0 || dy !== 0) {
+                    animate(
+                        newEl,
+                        { transform: [`translate(${dx}px, ${dy}px)`, 'none'] },
+                        { type: spring, stiffness: 350, damping: 28 }
+                    );
+                }
+            } else {
+                // Enter Animation: New item entering the leaderboard podium
+                animate(
+                    newEl,
+                    { opacity: [0, 1], y: [20, 0], scale: [0.95, 1] },
+                    { duration: 0.35, easing: 'ease-out' }
+                );
+            }
+        });
+    }
+}
+
 async function renderOptions(isNewItemAdded = false, newItemId = null) {
     const container = document.getElementById('options-container');
     const countEl = document.getElementById('options-count');
     if (countEl) countEl.innerText = state.options.length;
     if (!container) return;
 
-    // Purge loading indicator on initial data render
     container.querySelectorAll('.loading-card').forEach(el => el.remove());
+    renderLeaderboardWithMotion(false);
 
     const totalWhitelistCount = state.whitelistedUsers.length > 0 ? state.whitelistedUsers.length : 1;
 
-    // Deterministic sort: Primary by vote count descending, secondary tie-breaker by title / ID
-    const sorted = [...state.options].sort((a, b) => {
-        const votesA = a.voters?.length || 0;
-        const votesB = b.voters?.length || 0;
-        if (votesB !== votesA) {
-            return votesB - votesA;
-        }
-        return String(a.title || '').localeCompare(String(b.title || ''));
+    container.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+
+    state.options.forEach(opt => {
+        const isSelected = state.selectedOptionIds.has(opt.id);
+        const votes = opt.voters ? opt.voters.length : 0;
+        const pct = Math.min(100, Math.round((votes / totalWhitelistCount) * 100)) || 0;
+        const isBrandNew = isNewItemAdded && opt.id === newItemId;
+
+        const cardEl = document.createElement('div');
+        cardEl.className = `option-card ${isSelected ? 'selected' : ''} ${isBrandNew ? 'new-item' : ''}`;
+        cardEl.dataset.id = opt.id;
+        cardEl.setAttribute('onclick', `toggleVote('${opt.id}')`);
+
+        const creatorUser = state.whitelistedUsers.find(u => u.email === opt.created_by);
+        const creatorName = creatorUser ? creatorUser.name : (opt.created_by || 'Nepoznato');
+        const creatorHtml = `<div class="voters-container" style="margin-bottom: 4px;"><span>Dodao:</span> <span class="voter-tag" style="background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);">${creatorName}</span></div>`;
+        const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>Nema glasova</em>';
+        const noteHtml = opt.note ? `<div class="card-note-box"><span class="material-symbols-outlined">chat_bubble</span><span>${opt.note}</span></div>` : '';
+
+        cardEl.innerHTML = `
+            <div class="card-cover-container" onclick="event.stopPropagation(); openDetail('${opt.id}')">
+              <img class="card-cover" src="${opt.image}" alt="${opt.title}" loading="lazy" onError="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'" />
+              <div class="price-badge">${opt.price}</div>
+              <button class="cover-detail-button" type="button" onclick="event.stopPropagation(); openDetail('${opt.id}')" aria-label="View details for ${opt.title}">Pogledaj detalje ↗</button>
+            </div>
+            <div class="card-body">
+              ${noteHtml}
+              <div class="card-header-row">
+                <div class="checkbox-custom"></div>
+                <a href="${opt.link}" target="_blank" class="card-title" onclick="event.stopPropagation()">${opt.title} ↗</a>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%;"></div></div>
+              <div class="progress-info"><span>Broj glasova: ${votes}</span><span>${pct}%</span></div>
+              ${creatorHtml}
+              <div class="voters-container voters-list-row"><span>Glasali:</span> ${votersList}</div>
+            </div>
+        `;
+        fragment.appendChild(cardEl);
     });
 
-    const existingCardsMap = new Map();
-    container.querySelectorAll('.option-card').forEach(card => {
-        existingCardsMap.set(card.dataset.id, card);
-    });
+    container.appendChild(fragment);
+}
 
-    const updateDOMNodes = () => {
-        const fragment = document.createDocumentFragment();
+function updateCardSubelements(optionId) {
+    const opt = state.options.find(o => String(o.id) === String(optionId));
+    if (!opt) return;
 
-        sorted.forEach(opt => {
-            const isSelected = state.selectedOptionIds.has(opt.id);
-            const votes = opt.voters ? opt.voters.length : 0;
-            const pct = Math.round((votes / totalWhitelistCount) * 100) || 0;
-            const isBrandNew = isNewItemAdded && opt.id === newItemId;
+    const cardEl = document.querySelector(`.option-card[data-id="${optionId}"]`);
+    if (!cardEl) return;
 
-            let cardEl = existingCardsMap.get(String(opt.id));
+    const isSelected = state.selectedOptionIds.has(opt.id);
+    const votes = opt.voters ? opt.voters.length : 0;
+    const totalWhitelistCount = state.whitelistedUsers.length > 0 ? state.whitelistedUsers.length : 1;
+    const pct = Math.min(100, Math.round((votes / totalWhitelistCount) * 100)) || 0;
 
-            if (cardEl) {
-                // In-place patch to protect sub-elements and avoid flicker
-                cardEl.classList.toggle('selected', isSelected);
-                if (isBrandNew) cardEl.classList.add('new-item');
+    cardEl.classList.toggle('selected', isSelected);
 
-                const fillEl = cardEl.querySelector('.progress-bar-fill');
-                if (fillEl && fillEl.style.width !== `${pct}%`) {
-                    fillEl.style.width = `${pct}%`;
-                }
+    const fillEl = cardEl.querySelector('.progress-bar-fill');
+    if (fillEl) fillEl.style.width = `${pct}%`;
 
-                const progressInfoEl = cardEl.querySelector('.progress-info');
-                if (progressInfoEl) {
-                    progressInfoEl.innerHTML = `<span>Broj glasova: ${votes}</span><span>${pct}%</span>`;
-                }
-
-                const votersListContainer = cardEl.querySelector('.voters-list-row');
-                if (votersListContainer) {
-                    const votersListHtml = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>Nema glasova</em>';
-                    votersListContainer.innerHTML = `<span>Glasali:</span> ${votersListHtml}`;
-                }
-            } else {
-                // Create brand-new node with data-layout for Motion animation tracking
-                cardEl = document.createElement('div');
-                cardEl.className = `option-card ${isSelected ? 'selected' : ''} ${isBrandNew ? 'new-item' : ''}`;
-                cardEl.dataset.id = opt.id;
-                cardEl.setAttribute('data-layout', '');
-                cardEl.setAttribute('onclick', `toggleVote('${opt.id}')`);
-
-                const creatorUser = state.whitelistedUsers.find(u => u.email === opt.created_by);
-                const creatorName = creatorUser ? creatorUser.name : (opt.created_by || 'Nepoznato');
-                const creatorHtml = `<div class="voters-container" style="margin-bottom: 4px;"><span>Dodao:</span> <span class="voter-tag" style="background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);">${creatorName}</span></div>`;
-                const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>Nema glasova</em>';
-                const noteHtml = opt.note ? `<div class="card-note-box"><span class="material-symbols-outlined">chat_bubble</span><span>${opt.note}</span></div>` : '';
-
-                cardEl.innerHTML = `
-                    <div class="card-cover-container" onclick="event.stopPropagation(); openDetail('${opt.id}')">
-                      <img class="card-cover" style="view-transition-name: cover-${String(opt.id).replace(/[^a-zA-Z0-9_-]/g, '')};" src="${opt.image}" alt="${opt.title}" loading="lazy" onError="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'" />
-                      <div class="price-badge">${opt.price}</div>
-                      <button class="cover-detail-button" type="button" onclick="event.stopPropagation(); openDetail('${opt.id}')" aria-label="View details for ${opt.title}">Pogledaj detalje ↗</button>
-                    </div>
-                    <div class="card-body">
-                      ${noteHtml}
-                      <div class="card-header-row">
-                        <div class="checkbox-custom"></div>
-                        <a href="${opt.link}" target="_blank" class="card-title" onclick="event.stopPropagation()">${opt.title} ↗</a>
-                      </div>
-                      <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%;"></div></div>
-                      <div class="progress-info"><span>Broj glasova: ${votes}</span><span>${pct}%</span></div>
-                      ${creatorHtml}
-                      <div class="voters-container voters-list-row"><span>Glasali:</span> ${votersList}</div>
-                    </div>
-                `;
-            }
-
-            fragment.appendChild(cardEl);
-        });
-
-        container.appendChild(fragment);
-
-        // Remove deleted items
-        container.querySelectorAll('.option-card').forEach(card => {
-            if (!state.options.some(o => String(o.id) === String(card.dataset.id))) {
-                card.remove();
-            }
-        });
-    };
-
-    // Respect user motion preferences
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (typeof animateLayout === 'function' && !prefersReducedMotion) {
-        try {
-            await animateLayout(container, updateDOMNodes, {
-                type: "spring",
-                stiffness: 300,
-                damping: 30
-            });
-        } catch (e) {
-            console.warn('Motion layout animation fallback triggered:', e);
-            updateDOMNodes();
-        }
-    } else {
-        updateDOMNodes();
+    const progressInfoEl = cardEl.querySelector('.progress-info');
+    if (progressInfoEl) {
+        progressInfoEl.innerHTML = `<span>Broj glasova: ${votes}</span><span>${pct}%</span>`;
     }
+
+    const votersListContainer = cardEl.querySelector('.voters-list-row');
+    if (votersListContainer) {
+        const votersListHtml = opt.voters?.length
+            ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('')
+            : '<em>Nema glasova</em>';
+        votersListContainer.innerHTML = `<span>Glasali:</span> ${votersListHtml}`;
+    }
+
+    renderLeaderboardWithMotion();
 }
 
 function applyOptimisticVote(optionId, isAdding) {
@@ -458,7 +541,7 @@ function applyOptimisticVote(optionId, isAdding) {
         state.votes = state.votes.filter(v => !(String(v.option_id) === String(optionId) && v.user_email === state.userEmail));
     }
 
-    renderOptions();
+    updateCardSubelements(optionId);
     updateDetailModalIfOpen(optionId);
 }
 
@@ -876,3 +959,4 @@ window.closeAddModal = closeAddModal;
 window.submitNewOption = submitNewOption;
 window.autoFetchMetadata = autoFetchMetadata;
 window.logoutUser = logoutUser;
+window.toggleManualSort = toggleManualSort;
