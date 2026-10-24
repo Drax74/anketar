@@ -636,6 +636,12 @@
 
       renderOptions();
 
+      // Smoothly scroll to track the card if it moves position or gets voted
+      const cardEl = document.querySelector(`.option-card[data-id="${optionId}"]`);
+      if (cardEl) {
+        cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
@@ -710,8 +716,17 @@
 
       closeAddModal();
 
+      // Add to state and render (it will sort correctly based on votes)
       state.options.unshift(newOption);
       renderOptions(true, tempId);
+
+      // Smoothly scroll directly to the newly added card wherever it landed in the list
+      setTimeout(() => {
+        const newCardEl = document.querySelector(`.option-card[data-id="${tempId}"]`);
+        if (newCardEl) {
+          newCardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100); // Tiny timeout ensures DOM has rendered the new element before querying
 
       try {
         await fetch(GOOGLE_SCRIPT_URL, {
