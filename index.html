@@ -638,15 +638,13 @@
       // Re-render and sort options (triggers FLIP animation)
       renderOptions();
 
-      // Smoothly glide and center the viewport onto the voting card in sync with the animation
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const cardEl = document.querySelector(`.option-card[data-id="${optionId}"]`);
-          if (cardEl) {
-            cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        });
-      });
+      // Smoothly scroll to the card's new final position AFTER the FLIP animation completes (~450ms)
+      setTimeout(() => {
+        const cardEl = document.querySelector(`.option-card[data-id="${optionId}"]`);
+        if (cardEl) {
+          cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 450);
 
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
