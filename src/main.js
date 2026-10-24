@@ -1,144 +1,100 @@
-import { supabase } from './supabase.js';
-import { getWhitelistedUsers, getPollData, addVote, removeVote, addOption, updateOption, sendMagicLink } from './api.js';
-import { normalizeUrl } from "./shared/helpers/url";
-import { isValidUrl, isBookingOrAirbnbUrl } from "./shared/helpers/validation.js";
-import { animate, spring } from "motion";
+import { state } from './state.js';
+import { getPollData } from './services/api.js';
+import { setupRealtimeSubscription } from './services/realtime.js';
+import { renderOptions, scrollToCardIfNeeded, updateCardSubelements } from './components/cards.js';
+import { openDetail, closeDetail, saveOptionDetails, openAddModal, closeAddModal, submitNewOption, requestMagicLink, showToast } from './components/modals.js';
+import { addVote, removeVote } from './services/api.js';
 
-let state = {
-    userEmail: localStorage.getItem('poll_user_email') || '',
-    userName: localStorage.getItem('poll_user_name') || '',
-    selectedOptionIds: new Set(),
-    options: [],
-    votes: [],
-    whitelistedUsers: [],
-    cooldownTimer: null,
-    savingVotes: false
-};
+async function toggleVote(optionId) {
+    if (!state.userEmail) {
+        showToast('Molimo odaberite korisnika za glasovanje.', 'error');
+        return;
+    }
 
-// SURGICAL REALTIME SUBSCRIPTION WITH IMMUTABLE STATE PATCHING & SELF-ECHO FILTERING
-function setupRealtimeSubscription() {
-    supabase.channel('public-poll-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'votes' }, payload => {
-            const newVote = payload.new;
-            const oldVote = payload.old;
-            const eventUserEmail = newVote?.user_email || oldVote?.user_email;
-            const targetOptionId = newVote?.option_id || oldVote?.option_id;
+    const isAdding = !state.selectedOptionIds.has(optionId);
+    applyOptimisticVote(optionId, isAdding);
+    scrollToCardIfNeeded(optionId);
 
-            if (eventUserEmail && eventUserEmail === state.userEmail) {
-                return;
-            }
-
-            if (payload.eventType === 'INSERT' && newVote) {
-                state.votes = [...state.votes, newVote];
-
-                state.options = state.options.map(opt => {
-                    if (String(opt.id) === String(newVote.option_id)) {
-                        const voterEmails = [...(opt.voterEmails || []), newVote.user_email];
-                        const whitelistedUser = state.whitelistedUsers.find(u => u.email === newVote.user_email);
-                        const voterName = whitelistedUser ? whitelistedUser.name : newVote.user_email;
-                        const voters = [...(opt.voters || []), voterName];
-                        return { ...opt, voterEmails, voters };
-                    }
-                    return opt;
-                });
-            } else if (payload.eventType === 'DELETE' && oldVote) {
-                state.votes = state.votes.filter(v =>
-                    !(String(v.option_id) === String(oldVote.option_id) && v.user_email === oldVote.user_email)
-                );
-
-                state.options = state.options.map(opt => {
-                    if (String(opt.id) === String(oldVote.option_id)) {
-                        const voterEmails = (opt.voterEmails || []).filter(e => e !== oldVote.user_email);
-                        const whitelistedUser = state.whitelistedUsers.find(u => u.email === oldVote.user_email);
-                        const voterName = whitelistedUser ? whitelistedUser.name : oldVote.user_email;
-                        const voters = (opt.voters || []).filter(n => n !== voterName && n !== oldVote.user_email);
-                        return { ...opt, voterEmails, voters };
-                    }
-                    return opt;
-                });
-            }
-
-            if (targetOptionId) {
-                updateCardSubelements(targetOptionId);
-            }
-            renderLeaderboardWithMotion();
-
-            if (activeDetailId !== null) {
-                updateDetailModalIfOpen(activeDetailId);
-            }
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'options' }, payload => {
-            const newOpt = payload.new;
-            const oldOpt = payload.old;
-            const eventCreator = newOpt?.created_by || oldOpt?.created_by;
-
-            if (eventCreator && eventCreator === state.userEmail) {
-                return;
-            }
-
-            if (payload.eventType === 'INSERT' && newOpt) {
-                const creatorUser = state.whitelistedUsers.find(u => u.email === newOpt.created_by);
-                const creatorName = creatorUser ? creatorUser.name : (newOpt.created_by || 'Nepoznato');
-
-                const enrichedOpt = {
-                    ...newOpt,
-                    voterEmails: [],
-                    voters: [],
-                    creatorName
-                };
-
-                if (!state.options.some(o => String(o.id) === String(newOpt.id))) {
-                    state.options = [enrichedOpt, ...state.options];
-                    renderOptions(true, newOpt.id);
-                }
-            } else if (payload.eventType === 'UPDATE' && newOpt) {
-                state.options = state.options.map(opt => {
-                    if (String(opt.id) === String(newOpt.id)) {
-                        const creatorUser = state.whitelistedUsers.find(u => u.email === newOpt.created_by);
-                        const creatorName = creatorUser ? creatorUser.name : (newOpt.created_by || 'Nepoznato');
-                        return {
-                            ...opt,
-                            ...newOpt,
-                            creatorName
-                        };
-                    }
-                    return opt;
-                });
-                renderOptions();
-            } else if (payload.eventType === 'DELETE' && oldOpt) {
-                state.options = state.options.filter(opt => String(opt.id) !== String(oldOpt.id));
-                if (activeDetailId && String(activeDetailId) === String(oldOpt.id)) {
-                    closeDetail();
-                }
-                renderOptions();
-            }
-        })
-        .subscribe();
+    try {
+        if (isAdding) await addVote(state.userEmail, optionId);
+        else await removeVote(state.userEmail, optionId);
+    } catch (err) {
+        console.error('Vote sync failed:', err);
+        showToast('Glas nije spremljen. Vraćam stanje…', 'error');
+        applyOptimisticVote(optionId, !isAdding);
+    }
 }
 
-// Native-like modal dismissal: tap the scrim or press Escape.
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', event => {
-        if (event.target !== overlay) return;
-        if (overlay.id === 'add-modal') closeAddModal();
-    });
-});
-document.addEventListener('keydown', event => {
-    if (event.key !== 'Escape') return;
-    const addModal = document.getElementById('add-modal');
-    const detail = document.getElementById('detail-overlay');
-    if (detail.classList.contains('active')) closeDetail();
-    else if (addModal.classList.contains('active')) closeAddModal();
-});
+function applyOptimisticVote(optionId, isAdding) {
+    const targetOpt = state.options.find(o => String(o.id) === String(optionId));
+    if (!targetOpt) return;
 
-// UNIFIED INITIALIZATION: Fetch everything once on page load
+    if (!targetOpt.voterEmails) targetOpt.voterEmails = [];
+    if (!targetOpt.voters) targetOpt.voters = [];
+
+    if (isAdding) {
+        state.selectedOptionIds.add(optionId);
+        if (!targetOpt.voterEmails.includes(state.userEmail)) targetOpt.voterEmails.push(state.userEmail);
+        if (!targetOpt.voters.includes(state.userName)) targetOpt.voters.push(state.userName);
+        state.votes.push({ user_email: state.userEmail, option_id: optionId });
+    } else {
+        state.selectedOptionIds.delete(optionId);
+        targetOpt.voterEmails = targetOpt.voterEmails.filter(e => e !== state.userEmail);
+        targetOpt.voters = targetOpt.voters.filter(n => n !== state.userName && n !== state.userEmail);
+        state.votes = state.votes.filter(v => !(String(v.option_id) === String(optionId) && v.user_email === state.userEmail));
+    }
+
+    updateCardSubelements(optionId);
+}
+
+async function toggleManualSort() {
+    state.options.sort((a, b) => {
+        const votesA = a.voters?.length || 0;
+        const votesB = b.voters?.length || 0;
+        if (votesB !== votesA) return votesB - votesA;
+        return String(a.title || '').localeCompare(String(b.title || ''));
+    });
+    await renderOptions(false, null, true);
+    showToast('Smještaji sortirani po broju glasova!');
+}
+
+async function voteFromDetail() {
+    if (!state.activeDetailId) return;
+    const id = state.activeDetailId;
+    closeDetail();
+    await toggleVote(id);
+}
+
+function onUserSelected() {
+    const selectEl = document.getElementById('user-select');
+    const user = state.whitelistedUsers.find(u => u.email === selectEl?.value);
+    if (user) {
+        state.userEmail = user.email;
+        state.userName = user.name;
+        localStorage.setItem('poll_user_email', user.email);
+        localStorage.setItem('poll_user_name', user.name);
+
+        document.getElementById('auth-modal')?.classList.remove('active');
+        document.body.style.overflow = '';
+        showToast(`Dobrodošao, ${user.name}!`);
+        updateUserUI();
+    }
+}
+
+function updateUserUI() {
+    const nameEl = document.getElementById('footer-user-name');
+    const avatarEl = document.getElementById('user-avatar-initials');
+    if (nameEl) nameEl.innerText = state.userName;
+    if (avatarEl) avatarEl.innerText = state.userName.substring(0, 2).toUpperCase();
+}
+
+async function logoutUser() {
+    localStorage.clear();
+    location.reload();
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session && session.user) {
-            state.userEmail = session.user.email;
-        }
-
         const { whitelist, options, votes } = await getPollData();
         state.whitelistedUsers = whitelist;
         state.votes = votes;
@@ -157,799 +113,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.options = options.map(opt => {
             const optVotes = votes.filter(v => v.option_id === opt.id);
             const voterEmails = optVotes.map(v => v.user_email);
-            const voterNames = optVotes
-                .map(v => {
-                    const user = state.whitelistedUsers.find(u => u.email === v.user_email);
-                    return user ? user.name : v.user_email;
-                })
-                .filter(Boolean);
-
-            const creatorUser = state.whitelistedUsers.find(u => u.email === opt.created_by);
-            const creatorName = creatorUser ? creatorUser.name : (opt.created_by || 'Nepoznato');
-
-            return {
-                ...opt,
-                voterEmails,
-                voters: voterNames,
-                creatorName
-            };
+            const voterNames = optVotes.map(v => whitelist.find(u => u.email === v.user_email)?.name || v.user_email);
+            const creator = whitelist.find(u => u.email === opt.created_by);
+            return { ...opt, voterEmails, voters: voterNames, creatorName: creator ? creator.name : 'Nepoznato' };
         });
 
-        const authModal = document.getElementById('auth-modal');
         if (state.userEmail) {
-            const matchedUser = state.whitelistedUsers.find(u => u.email === state.userEmail);
-            state.userName = matchedUser ? matchedUser.name : state.userEmail;
-
-            state.selectedOptionIds.clear();
+            const user = whitelist.find(u => u.email === state.userEmail);
+            state.userName = user ? user.name : state.userEmail;
             state.options.forEach(opt => {
-                if (opt.voterEmails && opt.voterEmails.includes(state.userEmail)) {
-                    state.selectedOptionIds.add(opt.id);
-                }
+                if (opt.voterEmails?.includes(state.userEmail)) state.selectedOptionIds.add(opt.id);
             });
-
-            if (authModal) {
-                authModal.classList.remove('active');
-                authModal.setAttribute('aria-hidden', 'true');
-            }
+            document.getElementById('auth-modal')?.classList.remove('active');
             updateUserUI();
         } else {
-            if (authModal) {
-                authModal.classList.add('active');
-                authModal.removeAttribute('aria-hidden');
-            }
-            document.body.style.overflow = 'hidden';
-            setTimeout(() => {
-                if (selectEl) selectEl.focus({ preventScroll: true });
-            }, 100);
+            document.getElementById('auth-modal')?.classList.add('active');
         }
 
-        renderOptions();
-        renderLeaderboardWithMotion(false);
-        const container = document.getElementById('options-container');
-        if (container) container.classList.add('loaded');
-
+        await renderOptions(false, null, false);
         setupRealtimeSubscription();
     } catch (err) {
-        console.error('Initialization failed:', err);
-        showToast('Greška pri učitavanju aplikacije.', 'error');
+        console.error('Initialization error:', err);
     }
 });
 
-// AUTH STATE CHANGE
-supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session && session.user) {
-        state.userEmail = session.user.email;
-
-        if (state.whitelistedUsers.length === 0) {
-            try {
-                state.whitelistedUsers = await getWhitelistedUsers();
-            } catch (err) {
-                console.error('Failed to fetch whitelist on sign in:', err);
-            }
-        }
-
-        const matchedUser = state.whitelistedUsers.find(u => u.email === state.userEmail);
-        state.userName = matchedUser ? matchedUser.name : (localStorage.getItem('poll_user_name') || session.user.email);
-
-        localStorage.setItem('poll_user_email', state.userEmail);
-        localStorage.setItem('poll_user_name', state.userName);
-
-        const authModal = document.getElementById('auth-modal');
-        if (authModal) {
-            authModal.classList.remove('active');
-            authModal.setAttribute('aria-hidden', 'true');
-        }
-        document.body.style.overflow = '';
-        showToast(`Dobrodošao, ${state.userName}!`);
-        updateUserUI();
-    }
-});
-
-function getInitials(name) {
-    if (!name) return 'U';
-    const parts = name.trim().split(' ');
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-    return name.substring(0, 2).toUpperCase();
-}
-
-function onUserSelected() {
-    const selectEl = document.getElementById('user-select');
-    const selectedEmail = selectEl.value;
-    const user = state.whitelistedUsers.find(u => u.email === selectedEmail);
-
-    if (user) {
-        clearFieldError('user-select', 'error-user-select');
-        state.userEmail = user.email;
-        state.userName = user.name;
-
-        localStorage.setItem('poll_user_email', user.email);
-        localStorage.setItem('poll_user_name', user.name);
-
-        const authModal = document.getElementById('auth-modal');
-        if (authModal) {
-            authModal.classList.remove('active');
-            authModal.setAttribute('aria-hidden', 'true');
-        }
-        document.body.style.overflow = '';
-        showToast(`Dobrodošao, ${user.name}!`);
-        updateUserUI();
-    }
-}
-
-function showFieldError(inputId, errorId) {
-    const field = document.getElementById(inputId);
-    const error = document.getElementById(errorId);
-    if (field) field.classList.add('error');
-    if (error) error.classList.add('visible');
-}
-
-function clearFieldError(inputId, errorId) {
-    const field = document.getElementById(inputId);
-    const error = document.getElementById(errorId);
-    if (field) field.classList.remove('error');
-    if (error) error.classList.remove('visible');
-}
-
-function updateUserUI() {
-    const nameEl = document.getElementById('footer-user-name');
-    const avatarEl = document.getElementById('user-avatar-initials');
-    if (nameEl) nameEl.innerText = state.userName;
-    if (avatarEl) avatarEl.innerText = getInitials(state.userName);
-}
-
-async function logoutUser() {
-    try {
-        await supabase.auth.signOut();
-    } catch (err) {
-        console.error('Supabase sign out error:', err);
-    }
-
-    localStorage.removeItem('poll_user_email');
-    localStorage.removeItem('poll_user_name');
-    location.reload();
-}
-
-async function toggleManualSort() {
-    const container = document.getElementById('options-container');
-
-    const sortAction = () => {
-        state.options.sort((a, b) => {
-            const votesA = a.voters?.length || 0;
-            const votesB = b.voters?.length || 0;
-            if (votesB !== votesA) {
-                return votesB - votesA;
-            }
-            return String(a.title || '').localeCompare(String(b.title || ''));
-        });
-        renderOptions();
-    };
-
-    if (container && typeof animate === 'function') {
-        sortAction();
-    } else {
-        sortAction();
-    }
-
-    showToast('Smještaji sortirani po broju glasova!');
-}
-
-/**
- * MOTION-POWERED LEADERBOARD REORDERING WITH FLIP, Z-AXIS ELEVATION & ENTER/EXIT FADE
- */
-async function renderLeaderboardWithMotion(animateTransition = true) {
-    const container = document.getElementById('leaderboard-container');
-    if (!container) return;
-
-    const totalWhitelistCount = state.whitelistedUsers.length > 0 ? state.whitelistedUsers.length : 1;
-
-    const votedOptions = [...state.options]
-        .filter(opt => opt.voters && opt.voters.length > 0)
-        .sort((a, b) => b.voters.length - a.voters.length)
-        .slice(0, 3);
-
-    // 1. Capture old element bounding boxes for FLIP layout calculation if animating
-    const oldRects = new Map();
-    if (animateTransition) {
-        container.querySelectorAll('.leaderboard-item').forEach(el => {
-            oldRects.set(el.dataset.id, el.getBoundingClientRect());
-        });
-    }
-
-    if (votedOptions.length === 0) {
-        if (container.children.length > 0 && animateTransition) {
-            // Fade out current items using Motion
-            const existingItems = container.querySelectorAll('.leaderboard-item');
-            if (existingItems.length > 0 && typeof animate === 'function') {
-                await Promise.all(
-                    Array.from(existingItems).map(el => animate(el, { opacity: 0, scale: 0.95 }, { duration: 0.2 }))
-                );
-            }
-        }
-        container.innerHTML = `<div class="leaderboard-empty">Još nema glasova. Budi prvi koji će pokrenuti ljestvicu! 🗳️</div>`;
-        if (animateTransition && typeof animate === 'function') {
-            animate(container.firstElementChild, { opacity: [0, 1], y: [10, 0] }, { duration: 0.3 });
-        }
-        return;
-    }
-
-    // Render new DOM structure
-    let html = '';
-    votedOptions.forEach((opt, index) => {
-        const votes = opt.voters.length;
-        const pct = Math.min(100, Math.round((votes / totalWhitelistCount) * 100)) || 0;
-        const rank = index + 1;
-        // Higher rank gets greater z-index elevation so it glides OVER lower items cleanly in 3D z-space
-        const zIndexVal = 10 - index;
-
-        html += `
-            <div class="leaderboard-item" data-id="${opt.id}" style="z-index: ${zIndexVal}; position: relative;">
-                <div class="leaderboard-rank">${rank}</div>
-                <div class="leaderboard-info">
-                    <span class="leaderboard-item-title" onclick="openDetail('${opt.id}')">${opt.title}</span>
-                    <div class="leaderboard-bar-bg">
-                        <div class="leaderboard-bar-fill" style="width: ${pct}%;"></div>
-                    </div>
-                </div>
-                <div class="leaderboard-votes-count">${votes} glas${votes === 1 ? '' : 'a'}</div>
-            </div>
-        `;
-    });
-
-    container.innerHTML = html;
-
-    // 2. Apply Motion FLIP and Enter/Exit animations
-    if (animateTransition && typeof animate === 'function') {
-        container.querySelectorAll('.leaderboard-item').forEach(newEl => {
-            const id = newEl.dataset.id;
-            const oldRect = oldRects.get(id);
-            const newRect = newEl.getBoundingClientRect();
-
-            if (oldRect) {
-                // FLIP Animation: Item existed before, animate position delta (Delta X & Delta Y) with spring physics
-                const dx = oldRect.left - newRect.left;
-                const dy = oldRect.top - newRect.top;
-
-                if (dx !== 0 || dy !== 0) {
-                    animate(
-                        newEl,
-                        { transform: [`translate(${dx}px, ${dy}px)`, 'none'] },
-                        { type: spring, stiffness: 350, damping: 28 }
-                    );
-                }
-            } else {
-                // Enter Animation: New item entering the leaderboard podium
-                animate(
-                    newEl,
-                    { opacity: [0, 1], y: [20, 0], scale: [0.95, 1] },
-                    { duration: 0.35, easing: 'ease-out' }
-                );
-            }
-        });
-    }
-}
-
-async function renderOptions(isNewItemAdded = false, newItemId = null) {
-    const container = document.getElementById('options-container');
-    const countEl = document.getElementById('options-count');
-    if (countEl) countEl.innerText = state.options.length;
-    if (!container) return;
-
-    container.querySelectorAll('.loading-card').forEach(el => el.remove());
-    renderLeaderboardWithMotion(false);
-
-    const totalWhitelistCount = state.whitelistedUsers.length > 0 ? state.whitelistedUsers.length : 1;
-
-    container.innerHTML = '';
-    const fragment = document.createDocumentFragment();
-
-    state.options.forEach(opt => {
-        const isSelected = state.selectedOptionIds.has(opt.id);
-        const votes = opt.voters ? opt.voters.length : 0;
-        const pct = Math.min(100, Math.round((votes / totalWhitelistCount) * 100)) || 0;
-        const isBrandNew = isNewItemAdded && opt.id === newItemId;
-
-        const cardEl = document.createElement('div');
-        cardEl.className = `option-card ${isSelected ? 'selected' : ''} ${isBrandNew ? 'new-item' : ''}`;
-        cardEl.dataset.id = opt.id;
-        cardEl.setAttribute('onclick', `toggleVote('${opt.id}')`);
-
-        const creatorUser = state.whitelistedUsers.find(u => u.email === opt.created_by);
-        const creatorName = creatorUser ? creatorUser.name : (opt.created_by || 'Nepoznato');
-        const creatorHtml = `<div class="voters-container" style="margin-bottom: 4px;"><span>Dodao:</span> <span class="voter-tag" style="background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);">${creatorName}</span></div>`;
-        const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>Nema glasova</em>';
-        const noteHtml = opt.note ? `<div class="card-note-box"><span class="material-symbols-outlined">chat_bubble</span><span>${opt.note}</span></div>` : '';
-
-        cardEl.innerHTML = `
-            <div class="card-cover-container" onclick="event.stopPropagation(); openDetail('${opt.id}')">
-              <img class="card-cover" src="${opt.image}" alt="${opt.title}" loading="lazy" onError="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'" />
-              <div class="price-badge">${opt.price}</div>
-              <button class="cover-detail-button" type="button" onclick="event.stopPropagation(); openDetail('${opt.id}')" aria-label="View details for ${opt.title}">Pogledaj detalje ↗</button>
-            </div>
-            <div class="card-body">
-              ${noteHtml}
-              <div class="card-header-row">
-                <div class="checkbox-custom"></div>
-                <a href="${opt.link}" target="_blank" class="card-title" onclick="event.stopPropagation()">${opt.title} ↗</a>
-              </div>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%;"></div></div>
-              <div class="progress-info"><span>Broj glasova: ${votes}</span><span>${pct}%</span></div>
-              ${creatorHtml}
-              <div class="voters-container voters-list-row"><span>Glasali:</span> ${votersList}</div>
-            </div>
-        `;
-        fragment.appendChild(cardEl);
-    });
-
-    container.appendChild(fragment);
-}
-
-function updateCardSubelements(optionId) {
-    const opt = state.options.find(o => String(o.id) === String(optionId));
-    if (!opt) return;
-
-    const cardEl = document.querySelector(`.option-card[data-id="${optionId}"]`);
-    if (!cardEl) return;
-
-    const isSelected = state.selectedOptionIds.has(opt.id);
-    const votes = opt.voters ? opt.voters.length : 0;
-    const totalWhitelistCount = state.whitelistedUsers.length > 0 ? state.whitelistedUsers.length : 1;
-    const pct = Math.min(100, Math.round((votes / totalWhitelistCount) * 100)) || 0;
-
-    cardEl.classList.toggle('selected', isSelected);
-
-    const fillEl = cardEl.querySelector('.progress-bar-fill');
-    if (fillEl) fillEl.style.width = `${pct}%`;
-
-    const progressInfoEl = cardEl.querySelector('.progress-info');
-    if (progressInfoEl) {
-        progressInfoEl.innerHTML = `<span>Broj glasova: ${votes}</span><span>${pct}%</span>`;
-    }
-
-    const votersListContainer = cardEl.querySelector('.voters-list-row');
-    if (votersListContainer) {
-        const votersListHtml = opt.voters?.length
-            ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('')
-            : '<em>Nema glasova</em>';
-        votersListContainer.innerHTML = `<span>Glasali:</span> ${votersListHtml}`;
-    }
-
-    renderLeaderboardWithMotion();
-}
-
-function applyOptimisticVote(optionId, isAdding) {
-    const targetOpt = state.options.find(o => String(o.id) === String(optionId));
-    if (!targetOpt) return;
-
-    if (!targetOpt.voterEmails) targetOpt.voterEmails = [];
-    if (!targetOpt.voters) targetOpt.voters = [];
-
-    if (isAdding) {
-        state.selectedOptionIds.add(optionId);
-        if (!targetOpt.voterEmails.includes(state.userEmail)) {
-            targetOpt.voterEmails.push(state.userEmail);
-        }
-        if (!targetOpt.voters.includes(state.userName)) {
-            targetOpt.voters.push(state.userName);
-        }
-        state.votes.push({ user_email: state.userEmail, option_id: optionId });
-    } else {
-        state.selectedOptionIds.delete(optionId);
-        targetOpt.voterEmails = targetOpt.voterEmails.filter(email => email !== state.userEmail);
-        targetOpt.voters = targetOpt.voters.filter(nameOrEmail =>
-            nameOrEmail !== state.userName && nameOrEmail !== state.userEmail
-        );
-        state.votes = state.votes.filter(v => !(String(v.option_id) === String(optionId) && v.user_email === state.userEmail));
-    }
-
-    updateCardSubelements(optionId);
-    updateDetailModalIfOpen(optionId);
-}
-
-function updateDetailModalIfOpen() {
-    if (activeDetailId === null) return;
-    const detailOpt = state.options.find(o => String(o.id) === String(activeDetailId));
-    if (detailOpt) {
-        const votesEl = document.getElementById('detail-votes');
-        const voteBtn = document.getElementById('detail-vote');
-        if (votesEl) votesEl.textContent = `${detailOpt.voters?.length || 0} glasova`;
-        if (voteBtn) voteBtn.textContent = state.selectedOptionIds.has(detailOpt.id)
-            ? 'Ukloni svoj glas'
-            : 'Glasaj za ovaj smještaj';
-    }
-}
-
-function scrollToCardIfNeeded(optionId) {
-    setTimeout(() => {
-        const cardEl = document.querySelector(`.option-card[data-id="${optionId}"]`);
-        if (!cardEl) return;
-        const rect = cardEl.getBoundingClientRect();
-        const visible = rect.top >= 84 && rect.bottom <= window.innerHeight - 110;
-        if (!visible) cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 360);
-}
-
-async function toggleVote(optionId) {
-    if (!state.userEmail) {
-        showToast('Molimo odaberite korisnika za glasovanje.', 'error');
-        return;
-    }
-
-    const isAdding = !state.selectedOptionIds.has(optionId);
-
-    applyOptimisticVote(optionId, isAdding);
-    scrollToCardIfNeeded(optionId);
-
-    try {
-        if (isAdding) {
-            await addVote(state.userEmail, optionId);
-        } else {
-            await removeVote(state.userEmail, optionId);
-        }
-    } catch (err) {
-        console.error('Vote sync failed:', err);
-        showToast('Glas nije spremljen. Vraćam stanje…', 'error');
-        applyOptimisticVote(optionId, !isAdding);
-    }
-}
-
-let activeDetailId = null;
-let toastTimer = null;
-
-function showToast(message, kind = 'info') {
-    const toast = document.getElementById('app-toast');
-    if (!toast) return;
-    toast.textContent = message;
-    toast.dataset.kind = kind;
-    toast.classList.add('visible');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('visible'), 2600);
-}
-
-function openDetail(optionId) {
-    const opt = state.options.find(item => String(item.id) === String(optionId));
-    if (!opt) return;
-    activeDetailId = opt.id;
-
-    const overlay = document.getElementById('detail-overlay');
-    const image = document.getElementById('detail-image');
-    const title = document.getElementById('detail-title');
-    const priceEl = document.getElementById('detail-price');
-    const votesEl = document.getElementById('detail-votes');
-    const noteEl = document.getElementById('detail-note');
-    const link = document.getElementById('detail-link');
-    const voteBtn = document.getElementById('detail-vote');
-
-    const safeImage = opt.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=85';
-    if (image) {
-        image.src = safeImage;
-        image.alt = opt.title || 'Accommodation';
-    }
-
-    if (votesEl) votesEl.textContent = `${opt.voters?.length || 0} glasova`;
-
-    if (voteBtn) {
-        voteBtn.textContent = state.selectedOptionIds.has(opt.id) ? 'Ukloni svoj glas' : 'Glasaj za ovaj smještaj';
-    }
-
-    const isCreator = Boolean(state.userEmail && opt.created_by && opt.created_by.toLowerCase() === state.userEmail.toLowerCase());
-    const editableSection = document.getElementById('detail-editable-section');
-    const readonlySection = document.getElementById('detail-readonly-section');
-
-    if (isCreator) {
-        if (readonlySection) readonlySection.style.display = 'none';
-        if (editableSection) editableSection.style.display = 'block';
-
-        const editTitle = document.getElementById('edit-detail-title');
-        const editPrice = document.getElementById('edit-detail-price');
-        const editImage = document.getElementById('edit-detail-image');
-        const editNote = document.getElementById('edit-detail-note');
-
-        if (editTitle) editTitle.value = opt.title || '';
-        if (editPrice) editPrice.value = opt.price || '';
-        if (editImage) editImage.value = opt.image || '';
-        if (editNote) editNote.value = opt.note || '';
-    } else {
-        if (editableSection) editableSection.style.display = 'none';
-        if (readonlySection) readonlySection.style.display = 'block';
-
-        if (title) title.textContent = opt.title || 'Smještaj';
-        if (priceEl) priceEl.textContent = opt.price || 'Cijena nije navedena';
-        if (noteEl) noteEl.textContent = opt.note || 'Nema dodatnih napomena za ovaj smještaj.';
-    }
-
-    if (link) {
-        link.href = opt.link || '#';
-        link.style.display = opt.link ? 'inline-flex' : 'none';
-    }
-
-    if (overlay) {
-        overlay.classList.add('active');
-        overlay.setAttribute('aria-hidden', 'false');
-    }
-    document.body.style.overflow = 'hidden';
-    setTimeout(() => document.querySelector('.detail-close')?.focus({ preventScroll: true }), 80);
-}
-
-function closeDetail() {
-    const overlay = document.getElementById('detail-overlay');
-    if (overlay) {
-        overlay.classList.remove('active');
-        overlay.setAttribute('aria-hidden', 'true');
-    }
-    document.body.style.overflow = '';
-    activeDetailId = null;
-}
-
-async function voteFromDetail() {
-    if (!activeDetailId) return;
-    const id = activeDetailId;
-    closeDetail();
-    await toggleVote(id);
-}
-
-async function saveOptionDetails() {
-    if (!activeDetailId) return;
-
-    const opt = state.options.find(item => String(item.id) === String(activeDetailId));
-    if (!opt) return;
-
-    const isCreator = Boolean(state.userEmail && opt.created_by && opt.created_by.toLowerCase() === state.userEmail.toLowerCase());
-    if (!isCreator) {
-        showToast('Samo autor prijedloga može uređivati ove podatke.', 'error');
-        return;
-    }
-
-    const editTitle = document.getElementById('edit-detail-title')?.value.trim();
-    const editPrice = document.getElementById('edit-detail-price')?.value.trim();
-    const editImage = document.getElementById('edit-detail-image')?.value.trim();
-    const editNote = document.getElementById('edit-detail-note')?.value.trim();
-
-    if (!editTitle) {
-        showToast('Naziv smještaja ne može biti prazan.', 'error');
-        return;
-    }
-
-    const updates = {
-        title: editTitle,
-        price: editPrice || 'N/A',
-        image: editImage || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80',
-        note: editNote || ''
-    };
-
-    state.options = state.options.map(o => {
-        if (String(o.id) === String(activeDetailId)) {
-            return { ...o, ...updates };
-        }
-        return o;
-    });
-
-    renderOptions();
-    closeDetail();
-    showToast('Izmjene uspješno spremljene!');
-
-    try {
-        await updateOption(activeDetailId, updates);
-    } catch (err) {
-        console.error('Failed to save option edits:', err);
-        showToast('Greška pri spremanju izmjena. Osvježavam podatke…', 'error');
-        const { options } = await getPollData();
-        state.options = options;
-        renderOptions();
-    }
-}
-
-async function autoFetchMetadata() {
-    const linkInput = document.getElementById('input-link');
-    const titleInput = document.getElementById('input-title');
-    const imageInput = document.getElementById('input-image');
-    if (!linkInput) return;
-    const url = linkInput.value.trim();
-
-    if (!url) return;
-
-    try {
-        const endpoint = `https://api.microlink.io/?url=${encodeURIComponent(url)}`;
-        const response = await fetch(endpoint);
-        const result = await response.json();
-
-        if (!response.ok || result.status !== 'success' || !result.data) {
-            return;
-        }
-
-        if (result.data.title && titleInput && !titleInput.value.trim()) {
-            titleInput.value = result.data.title;
-        }
-
-        if (result.data.image?.url && imageInput && !imageInput.value.trim()) {
-            imageInput.value = `https://api.microlink.io/?url=${encodeURIComponent(url)}&embed=image.url`;
-        }
-    } catch (error) {
-        console.error('[Metadata] Fetch failed:', error);
-    }
-}
-
-async function submitNewOption() {
-    const titleInput = document.getElementById('input-title');
-    const linkInput = document.getElementById('input-link');
-    const priceInput = document.getElementById('input-price');
-    const imageInput = document.getElementById('input-image');
-    const noteInput = document.getElementById('input-note');
-
-    const title = titleInput?.value.trim() || '';
-    const link = linkInput?.value.trim() || '';
-    const price = priceInput?.value.trim() || 'N/A';
-    const rawImage = imageInput?.value.trim() || '';
-    const note = noteInput?.value.trim() || '';
-
-    let hasError = false;
-
-    clearFieldError('input-link', 'error-input-link');
-    clearFieldError('input-title', 'error-input-title');
-    clearFieldError('input-image', 'error-input-image');
-
-    if (!link) {
-        showFieldError('input-link', 'error-input-link');
-        const errEl = document.getElementById('error-input-link');
-        if (errEl) errEl.textContent = 'Link je obavezan.';
-        hasError = true;
-    } else if (!isValidUrl(link)) {
-        showFieldError('input-link', 'error-input-link');
-        const errEl = document.getElementById('error-input-link');
-        if (errEl) errEl.textContent = 'Unesite valjani URL link.';
-        hasError = true;
-    } else if (!isBookingOrAirbnbUrl(link)) {
-        showFieldError('input-link', 'error-input-link');
-        const errEl = document.getElementById('error-input-link');
-        if (errEl) errEl.textContent = 'Dozvoljeni su isključivo Booking.com i Airbnb linkovi!';
-        hasError = true;
-    }
-
-    if (!title) {
-        showFieldError('input-title', 'error-input-title');
-        const errEl = document.getElementById('error-input-title');
-        if (errEl) errEl.textContent = 'Naziv smještaja je obavezan.';
-        hasError = true;
-    }
-
-    let finalImage = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80';
-    if (rawImage) {
-        if (!isValidUrl(rawImage)) {
-            showFieldError('input-image', 'error-input-image');
-            const imgErrEl = document.getElementById('error-input-image');
-            if (imgErrEl) imgErrEl.textContent = 'Unesite valjani URL slike.';
-            hasError = true;
-        } else {
-            finalImage = rawImage.startsWith('http') ? rawImage : `https://${rawImage}`;
-        }
-    }
-
-    if (hasError) return;
-
-    const normalizedNewLink = normalizeUrl(link);
-    const isDuplicate = state.options.some(opt => normalizeUrl(opt.link) === normalizedNewLink);
-
-    if (isDuplicate) {
-        showFieldError('input-link', 'error-input-link');
-        const errEl = document.getElementById('error-input-link');
-        if (errEl) errEl.textContent = 'Ovaj smještaj (link) je već dodan na popis!';
-        showToast('Smještaj već postoji na popisu.', 'error');
-        return;
-    }
-
-    const tempId = 'opt_' + Date.now();
-    const formattedLink = link.startsWith('http') ? link : `https://${link}`;
-
-    const creatorUser = state.whitelistedUsers.find(u => u.email === state.userEmail);
-    const creatorName = creatorUser ? creatorUser.name : (state.userEmail || 'Nepoznato');
-
-    const newOption = {
-        id: tempId,
-        title: title,
-        link: formattedLink,
-        price: price,
-        image: finalImage,
-        note: note,
-        created_by: state.userEmail,
-        creatorName: creatorName,
-        voterEmails: [],
-        voters: []
-    };
-
-    closeAddModal();
-
-    state.options = [newOption, ...state.options];
-    renderOptions(true, tempId);
-    scrollToCardIfNeeded(tempId);
-
-    try {
-        await addOption({
-            id: tempId,
-            title,
-            link: formattedLink,
-            price,
-            image: finalImage,
-            note,
-            created_by: state.userEmail
-        });
-    } catch (err) {
-        console.error('Background add option failed:', err);
-        showToast('Smještaj nije spremljen. Uklonjen je iz popisa.', 'error');
-        state.options = state.options.filter(o => o.id !== tempId);
-        renderOptions();
-    }
-}
-
-function openAddModal() {
-    const overlay = document.getElementById('add-modal');
-    if (overlay) overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    setTimeout(() => document.getElementById('input-link')?.focus({ preventScroll: true }), 120);
-}
-
-function closeAddModal() {
-    const overlay = document.getElementById('add-modal');
-    if (overlay) overlay.classList.remove('active');
-
-    const authModal = document.getElementById('auth-modal');
-    const detailOverlay = document.getElementById('detail-overlay');
-    if (authModal && !authModal.classList.contains('active') && detailOverlay && !detailOverlay.classList.contains('active')) {
-        document.body.style.overflow = '';
-    }
-
-    const titleInput = document.getElementById('input-title');
-    const linkInput = document.getElementById('input-link');
-    const priceInput = document.getElementById('input-price');
-    const imageInput = document.getElementById('input-image');
-    const noteInput = document.getElementById('input-note');
-
-    if (titleInput) titleInput.value = '';
-    if (linkInput) linkInput.value = '';
-    if (priceInput) priceInput.value = '';
-    if (imageInput) imageInput.value = '';
-    if (noteInput) noteInput.value = '';
-
-    clearFieldError('input-link', 'error-input-link');
-    clearFieldError('input-title', 'error-input-title');
-}
-
-async function requestMagicLink() {
-    const selectEl = document.getElementById('user-select');
-    const selectedEmail = selectEl.value;
-
-    if (!selectedEmail) {
-        showFieldError('user-select', 'error-user-select');
-        return;
-    }
-
-    const user = state.whitelistedUsers.find(u => u.email === selectedEmail);
-    if (!user) return;
-
-    const triggerBtn = document.getElementById('btn-verify-trigger');
-    triggerBtn.innerText = 'Šaljem Magic Link...';
-    triggerBtn.disabled = true;
-
-    try {
-        await sendMagicLink(selectedEmail);
-
-        state.userEmail = selectedEmail;
-        state.userName = user.name;
-
-        document.getElementById('auth-step-1').style.display = 'none';
-        document.getElementById('auth-step-2').style.display = 'block';
-        showToast('Magic link poslan na vaš email!');
-    } catch (err) {
-        console.error('Magic link error:', err);
-        showToast('Greška pri slanju linka. Pokušajte ponovno.', 'error');
-        triggerBtn.innerText = 'Pošalji Mi Magic Link Na Email';
-        triggerBtn.disabled = false;
-    }
-}
-
-// Expose necessary global actions for HTML inline bindings
-window.onUserSelected = onUserSelected;
-window.clearFieldError = clearFieldError;
-window.requestMagicLink = requestMagicLink;
+// Expose globals for HTML inline listeners
 window.toggleVote = toggleVote;
+window.toggleManualSort = toggleManualSort;
 window.openDetail = openDetail;
 window.closeDetail = closeDetail;
 window.voteFromDetail = voteFromDetail;
@@ -957,6 +147,6 @@ window.saveOptionDetails = saveOptionDetails;
 window.openAddModal = openAddModal;
 window.closeAddModal = closeAddModal;
 window.submitNewOption = submitNewOption;
-window.autoFetchMetadata = autoFetchMetadata;
+window.requestMagicLink = requestMagicLink;
+window.onUserSelected = onUserSelected;
 window.logoutUser = logoutUser;
-window.toggleManualSort = toggleManualSort;
