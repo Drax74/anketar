@@ -634,13 +634,18 @@
         }
       }
 
+      // Re-render and sort options
       renderOptions();
 
-      // Smoothly scroll to track the card if it moves position or gets voted
-      const cardEl = document.querySelector(`.option-card[data-id="${optionId}"]`);
-      if (cardEl) {
-        cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
+      // Smoothly scroll to track the card to its new sorted position during animation
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const cardEl = document.querySelector(`.option-card[data-id="${optionId}"]`);
+          if (cardEl) {
+            cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }, 50); // Small buffer ensures FLIP layout calculations have finished
+      });
 
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
