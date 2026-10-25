@@ -30,32 +30,41 @@
 </head>
 <body>
 
-<div class="app-container">
-  <header class="header-card">
-    <h1>🇪🇸 Madrid</h1>
-    <p>03.12 – 06.12.2026</p>
+<div class="app-scroll-container">
+  <!-- SPOTIFY-INSPIRED COLLAPSING HERO -->
+  <header class="header-card hero-header">
+    <div class="hero-bg-parallax"></div>
+    <div class="hero-content-inner">
+      <h1>🇪🇸 Madrid</h1>
+      <p>03.12 – 06.12.2026</p>
+    </div>
   </header>
 
-  <!-- LEADERBOARD PODIUM (TOP 3) -->
-  <div id="leaderboard-section" class="leaderboard-section">
-    <div class="leaderboard-header">
-      <span class="leaderboard-title"><span class="material-symbols-outlined" style="font-size: 1.1rem; vertical-align: middle; color: #ffd700;">trophy</span> Top 3 Favorita</span>
+  <!-- STICKY HEADER WRAPPER (LEADERBOARD + CONTROLS) -->
+  <div class="sticky-header-wrapper">
+    <!-- LEADERBOARD PODIUM (TOP 3) -->
+    <div id="leaderboard-section" class="leaderboard-section">
+      <div class="leaderboard-header">
+        <span class="leaderboard-title">Top 3 Favorita</span>
+      </div>
+      <div id="leaderboard-container" class="leaderboard-container">
+        <div class="leaderboard-empty">Još nema glasova. Budi prvi koji će pokrenuti ljestvicu! 🗳️</div>
+      </div>
     </div>
-    <div id="leaderboard-container" class="leaderboard-container">
-      <div class="leaderboard-empty">Još nema glasova. Budi prvi koji će pokrenuti ljestvicu! 🗳️</div>
+
+    <!-- CONTROLS ROW -->
+    <div class="controls-row">
+      <span style="font-size: 1rem; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">Smjestaji (<span id="options-count">0</span>)</span>
+      <div style="display: flex; gap: 8px;">
+        <button id="btn-manual-sort" class="btn btn-secondary" style="width: auto; padding: 8px 12px; font-size: 0.85rem;" onclick="toggleManualSort()" title="Poredaj po broju glasova">
+          <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">swap_vert</span> Poredaj
+        </button>
+        <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; font-size: 0.85rem;" onclick="openAddModal()">+ Dodaj Smjestaj</button>
+      </div>
     </div>
   </div>
 
-  <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px; gap: 8px;">
-    <span style="font-size: 1rem; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">Smjestaji (<span id="options-count">0</span>)</span>
-    <div style="display: flex; gap: 8px;">
-      <button id="btn-manual-sort" class="btn btn-secondary" style="width: auto; padding: 8px 12px; font-size: 0.85rem;" onclick="toggleManualSort()" title="Poredaj po broju glasova">
-        <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">swap_vert</span> Poredaj
-      </button>
-      <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; font-size: 0.85rem;" onclick="openAddModal()">+ Dodaj Smjestaj</button>
-    </div>
-  </div>
-
+  <!-- ACCOMMODATION CARDS CONTAINER -->
   <div id="options-container" class="options-list" data-layout>
     <div class="loading-card" style="padding: 40px 20px; text-align: center;">
       <div class="spinner" style="margin: 0 auto 12px auto;"></div>

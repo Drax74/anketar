@@ -1,9 +1,11 @@
 import { state } from './state.js';
 import { getPollData } from './services/api.js';
 import { setupRealtimeSubscription } from './services/realtime.js';
+import { initAuthListener, checkInitialSession, logoutUserSession } from './services/auth.js';
 import { renderOptions, scrollToCardIfNeeded, updateCardSubelements } from './components/cards.js';
 import { openDetail, closeDetail, saveOptionDetails, openAddModal, closeAddModal, submitNewOption, requestMagicLink, showToast } from './components/modals.js';
 import { addVote, removeVote } from './services/api.js';
+import { initHeroScrollAnimations } from './animations/hero-scroll.js';
 
 async function toggleVote(optionId) {
     if (!state.userEmail) {
@@ -88,13 +90,11 @@ function updateUserUI() {
     if (avatarEl) avatarEl.innerText = state.userName.substring(0, 2).toUpperCase();
 }
 
-async function logoutUser() {
-    localStorage.clear();
-    location.reload();
-}
-
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        // Check initial Supabase token session on boot
+        await checkInitialSession();
+
         const { whitelist, options, votes } = await getPollData();
         state.whitelistedUsers = whitelist;
         state.votes = votes;
@@ -131,6 +131,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         await renderOptions(false, null, false);
+
+        // Initialize GSAP Spotify-inspired collapsing hero scroll trigger
+        initHeroScrollAnimations();
+
+        // Initialize background auth state observer
+        initAuthListener(() => updateUserUI());
+
         setupRealtimeSubscription();
     } catch (err) {
         console.error('Initialization error:', err);
@@ -149,4 +156,4 @@ window.closeAddModal = closeAddModal;
 window.submitNewOption = submitNewOption;
 window.requestMagicLink = requestMagicLink;
 window.onUserSelected = onUserSelected;
-window.logoutUser = logoutUser;
+window.logoutUser = logoutUserSession;
