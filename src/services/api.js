@@ -38,6 +38,7 @@ export async function addOption(option) {
     const { error } = await supabase.from('options').insert([option]);
     if (error) throw error;
 }
+
 export async function updateOption(id, fields) {
     const { data, error } = await supabase
         .from('options')

@@ -8,7 +8,7 @@ window.openDetail = openDetail;
 export async function renderOptions(isNewItemAdded = false, newItemId = null, animateIn = true) {
     const container = document.getElementById('options-container');
     const countEl = document.getElementById('options-count');
-    if (countEl) countEl.innerText = state.options.length;
+    if (countEl) countEl.innerText = String(state.options.length);
     if (!container) return;
 
     container.querySelectorAll('.loading-card').forEach(el => el.remove());
@@ -35,19 +35,26 @@ export async function renderOptions(isNewItemAdded = false, newItemId = null, an
             const creatorName = creatorUser ? creatorUser.name : (opt.created_by || 'Nepoznato');
             const creatorHtml = `<div class="voters-container" style="margin-bottom: 4px;"><span>Dodao:</span> <span class="voter-tag" style="background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);">${creatorName}</span></div>`;
             const votersList = opt.voters?.length ? opt.voters.map(v => `<span class="voter-tag">${v}</span>`).join('') : '<em>Nema glasova</em>';
+
+            // Ensure price displays a euro sign if missing
+            const displayPrice = opt.price && !opt.price.includes('€') ? `${opt.price}€` : (opt.price || 'N/A');
+            const descriptionHtml = opt.description ? `<div class="card-description-text">${opt.description}</div>` : '';
             const noteHtml = opt.note ? `<div class="card-note-box"><span class="material-symbols-outlined">chat_bubble</span><span>${opt.note}</span></div>` : '';
 
             cardEl.innerHTML = `
                 <div class="card-cover-container" onclick="event.stopPropagation(); openDetail('${opt.id}')">
                   <img class="card-cover" src="${opt.image}" alt="${opt.title}" loading="lazy" onError="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'" />
-                  <div class="price-badge">${opt.price}</div>
+                  <div class="price-badge">${displayPrice}</div>
                   <button class="cover-detail-button" type="button" onclick="event.stopPropagation(); openDetail('${opt.id}')" aria-label="View details">Pogledaj detalje ↗</button>
                 </div>
                 <div class="card-body">
                   ${noteHtml}
                   <div class="card-header-row">
                     <div class="checkbox-custom"></div>
-                    <a href="${opt.link}" target="_blank" class="card-title" onclick="event.stopPropagation()">${opt.title} ↗</a>
+                    <div style="display: flex; flex-direction: column; min-width: 0; flex: 1;">
+                      <a href="${opt.link}" target="_blank" class="card-title" onclick="event.stopPropagation()">${opt.title} ↗</a>
+                      ${descriptionHtml}
+                    </div>
                   </div>
                   <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%;"></div></div>
                   <div class="progress-info"><span>Broj glasova: ${votes}</span><span>${pct}%</span></div>
@@ -63,7 +70,6 @@ export async function renderOptions(isNewItemAdded = false, newItemId = null, an
     };
 
     if (animateIn && !isNewItemAdded) {
-        // Use smooth physics for manual sorting reorder
         await animateLayoutTransition(container, renderDOM, {
             selector: '.option-card',
             stiffness: 190,

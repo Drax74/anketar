@@ -1,3 +1,4 @@
+import { supabase } from '../supabase.js';
 import { state } from '../state.js';
 import { addOption, updateOption, sendMagicLink } from '../services/api.js';
 import { renderOptions } from './cards.js';
@@ -5,6 +6,14 @@ import { normalizeUrl } from '../shared/helpers/url.js';
 import { isValidUrl, isBookingOrAirbnbUrl } from '../shared/helpers/validation.js';
 
 let toastTimer = null;
+
+let pendingScrapedData = {
+    scrapedSuccessfully: false,
+    title: '',
+    image: '',
+    description: '',
+    link: ''
+};
 
 export function showToast(message, kind = 'info') {
     const toast = document.getElementById('app-toast');
@@ -16,6 +25,219 @@ export function showToast(message, kind = 'info') {
     toastTimer = setTimeout(() => toast.classList.remove('visible'), 2600);
 }
 
+export function openAddModal() {
+    resetAddModalStep();
+    const overlay = document.getElementById('add-modal');
+    if (overlay) overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+export function closeAddModal() {
+    const overlay = document.getElementById('add-modal');
+    if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+export function resetAddModalStep() {
+    pendingScrapedData = {
+        scrapedSuccessfully: false,
+        title: '',
+        image: '',
+        description: '',
+        link: ''
+    };
+
+    const step1 = document.getElementById('add-step-1');
+    const step2 = document.getElementById('add-step-2');
+    const skeleton = document.getElementById('add-skeleton-loading');
+
+    if (step1) step1.style.display = 'block';
+    if (step2) step2.style.display = 'none';
+    if (skeleton) skeleton.style.display = 'none';
+
+    const linkInput = document.getElementById('input-link');
+    const titleInput = document.getElementById('input-title');
+    const priceInput = document.getElementById('input-price');
+    const imageInput = document.getElementById('input-image');
+    const noteInput = document.getElementById('input-note');
+
+    if (linkInput) linkInput.value = '';
+    if (titleInput) titleInput.value = '';
+    if (priceInput) priceInput.value = '';
+    if (imageInput) imageInput.value = '';
+    if (noteInput) noteInput.value = '';
+}
+
+export async function submitLinkAndFetch() {
+    const linkInput = document.getElementById('input-link');
+    if (!linkInput) return;
+
+    const rawLink = linkInput.value.trim();
+    if (!rawLink || !isValidUrl(rawLink) || !isBookingOrAirbnbUrl(rawLink)) {
+        showToast('Dozvoljeni su isključivo valjani Booking.com i Airbnb linkovi!', 'error');
+        return;
+    }
+
+    const formattedLink = rawLink.startsWith('http') ? rawLink : `https://${rawLink}`;
+    const normalizedNewLink = normalizeUrl(formattedLink);
+    const isDuplicate = state.options.some(opt => normalizeUrl(opt.link) === normalizedNewLink);
+
+    if (isDuplicate) {
+        showToast('Ovaj smještaj (link) je već dodan na popis!', 'error');
+        return;
+    }
+
+    pendingScrapedData.link = formattedLink;
+
+    const step1 = document.getElementById('add-step-1');
+    const skeleton = document.getElementById('add-skeleton-loading');
+    if (step1) step1.style.display = 'none';
+    if (skeleton) skeleton.style.display = 'block';
+
+    try {
+        const { data, error } = await supabase.functions.invoke('scraper', {
+            body: { url: formattedLink }
+        });
+
+        if (error || !data) {
+            console.warn('[Metadata Scraper] Function error:', error?.message);
+            showToast('Automatsko dohvaćanje nije uspjelo. Unesite podatke ručno.', 'error');
+            pendingScrapedData.scrapedSuccessfully = false;
+            renderAddModalStep2(false);
+            return;
+        }
+
+        const { title, image, description, providerUsed } = data;
+        console.log(`[Scraper] Successfully fetched using provider: ${providerUsed}`);
+
+        pendingScrapedData.scrapedSuccessfully = true;
+        pendingScrapedData.title = title ? title.split(' - ')[0].trim() : 'Smještaj';
+        pendingScrapedData.image = image || '';
+        pendingScrapedData.description = description ? description.trim() : '';
+
+        showToast('Podaci o smještaju uspješno dohvaćeni!');
+        renderAddModalStep2(true);
+    } catch (networkError) {
+        console.warn('[Metadata Scraper] Network/Execution failed:', networkError);
+        showToast('Automatsko dohvaćanje nije uspjelo. Unesite podatke ručno.', 'error');
+        pendingScrapedData.scrapedSuccessfully = false;
+        renderAddModalStep2(false);
+    }
+}
+
+function renderAddModalStep2(scrapedSuccessfully) {
+    const skeleton = document.getElementById('add-skeleton-loading');
+    const step2 = document.getElementById('add-step-2');
+    if (skeleton) skeleton.style.display = 'none';
+    if (step2) step2.style.display = 'block';
+
+    const successPreview = document.getElementById('scraper-success-preview');
+    const groupTitle = document.getElementById('group-title');
+    const groupImage = document.getElementById('group-image');
+    const previewTitle = document.getElementById('preview-title');
+    const previewDesc = document.getElementById('preview-desc');
+    const previewImg = document.getElementById('add-preview-img');
+    const imagePlaceholder = document.getElementById('add-image-placeholder');
+
+    if (scrapedSuccessfully) {
+        if (successPreview) successPreview.style.display = 'block';
+        if (groupTitle) groupTitle.style.display = 'none';
+        if (groupImage) groupImage.style.display = 'none';
+
+        if (previewTitle) previewTitle.textContent = pendingScrapedData.title;
+        if (previewDesc) previewDesc.textContent = pendingScrapedData.description || 'Opis nije dostupan.';
+
+        if (pendingScrapedData.image && previewImg && imagePlaceholder) {
+            previewImg.src = pendingScrapedData.image;
+            previewImg.style.display = 'block';
+            imagePlaceholder.style.display = 'none';
+        } else {
+            if (previewImg) previewImg.style.display = 'none';
+            if (imagePlaceholder) imagePlaceholder.style.display = 'flex';
+        }
+    } else {
+        if (successPreview) successPreview.style.display = 'none';
+        if (groupTitle) groupTitle.style.display = 'block';
+        if (groupImage) groupImage.style.display = 'block';
+
+        if (previewImg) {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+        }
+        if (imagePlaceholder) {
+            imagePlaceholder.style.display = 'flex';
+        }
+    }
+}
+
+export async function submitNewOption() {
+    let finalTitle = '';
+    let finalImage = '';
+    let finalDescription = '';
+
+    if (pendingScrapedData.scrapedSuccessfully) {
+        finalTitle = pendingScrapedData.title;
+        finalImage = pendingScrapedData.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80';
+        finalDescription = pendingScrapedData.description;
+    } else {
+        finalTitle = document.getElementById('input-title')?.value.trim() || '';
+        const manualImage = document.getElementById('input-image')?.value.trim() || '';
+        finalImage = manualImage || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80';
+        finalDescription = '';
+    }
+
+    let rawPrice = document.getElementById('input-price')?.value.trim() || 'N/A';
+    const finalPrice = rawPrice !== 'N/A' && !rawPrice.includes('€') ? `${rawPrice}€` : rawPrice;
+
+    const note = document.getElementById('input-note')?.value.trim() || '';
+
+    if (!finalTitle) {
+        showToast('Naziv smještaja je obavezan.', 'error');
+        return;
+    }
+
+    const tempId = 'opt_' + Date.now();
+    const creatorUser = state.whitelistedUsers.find(u => u.email === state.userEmail);
+    const creatorName = creatorUser ? creatorUser.name : (state.userEmail || 'Nepoznato');
+
+    const newOption = {
+        id: tempId,
+        title: finalTitle,
+        link: pendingScrapedData.link,
+        price: finalPrice,
+        image: finalImage,
+        description: finalDescription,
+        note,
+        created_by: state.userEmail,
+        creatorName,
+        voterEmails: [],
+        voters: []
+    };
+
+    closeAddModal();
+    state.options = [newOption, ...state.options];
+    renderOptions(true, tempId);
+
+    try {
+        const dbPayload = {
+            id: tempId,
+            title: finalTitle,
+            link: pendingScrapedData.link,
+            price: finalPrice,
+            image: finalImage,
+            description: finalDescription,
+            note,
+            created_by: state.userEmail
+        };
+        await addOption(dbPayload);
+    } catch (err) {
+        console.error('Add failed:', err);
+        state.options = state.options.filter(o => o.id !== tempId);
+        renderOptions();
+        showToast('Greška pri dodavanju smještaja.', 'error');
+    }
+}
+
 export function openDetail(optionId) {
     const opt = state.options.find(item => String(item.id) === String(optionId));
     if (!opt) return;
@@ -24,6 +246,7 @@ export function openDetail(optionId) {
     const overlay = document.getElementById('detail-overlay');
     const image = document.getElementById('detail-image');
     const title = document.getElementById('detail-title');
+    const descriptionEl = document.getElementById('detail-description');
     const priceEl = document.getElementById('detail-price');
     const votesEl = document.getElementById('detail-votes');
     const noteEl = document.getElementById('detail-note');
@@ -63,6 +286,10 @@ export function openDetail(optionId) {
         if (readonlySection) readonlySection.style.display = 'block';
 
         if (title) title.textContent = opt.title || 'Smještaj';
+        if (descriptionEl) {
+            descriptionEl.textContent = opt.description || '';
+            descriptionEl.style.display = opt.description ? 'block' : 'none';
+        }
         if (priceEl) priceEl.textContent = opt.price || 'Cijena nije navedena';
         if (noteEl) noteEl.textContent = opt.note || 'Nema dodatnih napomena.';
     }
@@ -109,7 +336,8 @@ export async function saveOptionDetails() {
     if (!opt) return;
 
     const editTitle = document.getElementById('edit-detail-title')?.value.trim();
-    const editPrice = document.getElementById('edit-detail-price')?.value.trim();
+    let rawPrice = document.getElementById('edit-detail-price')?.value.trim();
+    const editPrice = rawPrice && !rawPrice.includes('€') ? `${rawPrice}€` : (rawPrice || 'N/A');
     const editImage = document.getElementById('edit-detail-image')?.value.trim();
     const editNote = document.getElementById('edit-detail-note')?.value.trim();
 
@@ -120,7 +348,7 @@ export async function saveOptionDetails() {
 
     const updates = {
         title: editTitle,
-        price: editPrice || 'N/A',
+        price: editPrice,
         image: editImage || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80',
         note: editNote || ''
     };
@@ -141,75 +369,6 @@ export async function saveOptionDetails() {
     } catch (err) {
         console.error('Failed to save option edits:', err);
         showToast('Greška pri spremanju izmjena.', 'error');
-    }
-}
-
-export function openAddModal() {
-    const overlay = document.getElementById('add-modal');
-    if (overlay) overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-export function closeAddModal() {
-    const overlay = document.getElementById('add-modal');
-    if (overlay) overlay.classList.remove('active');
-    document.body.style.overflow = '';
-}
-
-export async function submitNewOption() {
-    const title = document.getElementById('input-title')?.value.trim() || '';
-    const link = document.getElementById('input-link')?.value.trim() || '';
-    const price = document.getElementById('input-price')?.value.trim() || 'N/A';
-    const rawImage = document.getElementById('input-image')?.value.trim() || '';
-    const note = document.getElementById('input-note')?.value.trim() || '';
-
-    if (!link || !isValidUrl(link) || !isBookingOrAirbnbUrl(link)) {
-        showToast('Dozvoljeni su isključivo valjani Booking.com i Airbnb linkovi!', 'error');
-        return;
-    }
-
-    if (!title) {
-        showToast('Naziv smještaja je obavezan.', 'error');
-        return;
-    }
-
-    const formattedLink = link.startsWith('http') ? link : `https://${link}`;
-    const normalizedNewLink = normalizeUrl(formattedLink);
-    const isDuplicate = state.options.some(opt => normalizeUrl(opt.link) === normalizedNewLink);
-
-    if (isDuplicate) {
-        showToast('Ovaj smještaj (link) je već dodan na popis!', 'error');
-        return;
-    }
-
-    const tempId = 'opt_' + Date.now();
-    const creatorUser = state.whitelistedUsers.find(u => u.email === state.userEmail);
-    const creatorName = creatorUser ? creatorUser.name : (state.userEmail || 'Nepoznato');
-
-    const newOption = {
-        id: tempId,
-        title,
-        link: formattedLink,
-        price,
-        image: rawImage || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80',
-        note,
-        created_by: state.userEmail,
-        creatorName,
-        voterEmails: [],
-        voters: []
-    };
-
-    closeAddModal();
-    state.options = [newOption, ...state.options];
-    renderOptions(true, tempId);
-
-    try {
-        await addOption(newOption);
-    } catch (err) {
-        console.error('Add failed:', err);
-        state.options = state.options.filter(o => o.id !== tempId);
-        renderOptions();
-        showToast('Greška pri dodavanju smještaja.', 'error');
     }
 }
 
@@ -250,3 +409,7 @@ export async function requestMagicLink() {
         }
     }
 }
+
+window.submitLinkAndFetch = submitLinkAndFetch;
+window.submitNewOption = submitNewOption;
+window.resetAddModalStep = resetAddModalStep;
