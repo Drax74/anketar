@@ -125,7 +125,7 @@ body {
     inset: 0;
     z-index: -1;
     background: linear-gradient(rgba(18, 19, 22, 0.15), rgba(18, 19, 22, 0.35)),
-    url('https://35milimetros.es/wp-content/uploads/2026/03/2b4013cc-60a9-4680-a9bd-f9f891d42a63_source-aspect-ratio_1600w_0.webp') center 12% / cover no-repeat;
+    url('/anketar/hero-cover-image.webp') center 12% / cover no-repeat;
     will-change: transform;
 }
 

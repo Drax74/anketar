@@ -11,7 +11,7 @@ export default defineConfig({
     plugins: [
         webfontDownload([
             'https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap',
-            'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0'
+            'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap'
         ]),
         VitePWA({
             registerType: 'autoUpdate',
@@ -21,7 +21,8 @@ export default defineConfig({
                 'pwa-192x192.png',
                 'pwa-512x512.png',
                 'app-preview.png',
-                'app-preview-wide.png'
+                'app-preview-wide.png',
+                'hero-cover-image.webp'
             ],
             manifest: {
                 id: '/anketar/',
