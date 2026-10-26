@@ -39,7 +39,7 @@ export default defineConfig({
                 screenshots: [
                     {
                         src: 'app-preview-wide.png',
-                        sizes: '2874x1748',
+                        sizes: '2916x1748',
                         type: 'image/jpeg',
                         form_factor: 'wide',
                         label: 'Madrid Voting Desktop Dashboard'
