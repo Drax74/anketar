@@ -1,15 +1,15 @@
 import { state } from './state.js';
 import { getPollData } from './services/api.js';
 import { setupRealtimeSubscription } from './services/realtime.js';
-import { initAuthListener, checkInitialSession, logoutUserSession } from './services/auth.js';
+import { initAuthListener, checkInitialSession, logoutUserSession, loginWithGoogle } from './services/auth.js';
 import { renderOptions, scrollToCardIfNeeded, updateCardSubelements } from './components/cards.js';
-import { openDetail, closeDetail, saveOptionDetails, openAddModal, closeAddModal, submitNewOption, requestMagicLink, showToast } from './components/modals.js';
+import { openDetail, closeDetail, saveOptionDetails, openAddModal, closeAddModal, submitNewOption, showToast } from './components/modals.js';
 import { addVote, removeVote } from './services/api.js';
 import { initHeroScrollAnimations } from './animations/hero-scroll.js';
 
 async function toggleVote(optionId) {
     if (!state.userEmail) {
-        showToast('Molimo odaberite korisnika za glasovanje.', 'error');
+        showToast('Molimo prijavite se za glasovanje.', 'error');
         return;
     }
 
@@ -67,27 +67,12 @@ async function voteFromDetail() {
     await toggleVote(id);
 }
 
-function onUserSelected() {
-    const selectEl = document.getElementById('user-select');
-    const user = state.whitelistedUsers.find(u => u.email === selectEl?.value);
-    if (user) {
-        state.userEmail = user.email;
-        state.userName = user.name;
-        localStorage.setItem('poll_user_email', user.email);
-        localStorage.setItem('poll_user_name', user.name);
-
-        document.getElementById('auth-modal')?.classList.remove('active');
-        document.body.style.overflow = '';
-        showToast(`Dobrodošao, ${user.name}!`);
-        updateUserUI();
-    }
-}
-
 function updateUserUI() {
     const nameEl = document.getElementById('footer-user-name');
     const avatarEl = document.getElementById('user-avatar-initials');
-    if (nameEl) nameEl.innerText = state.userName;
-    if (avatarEl) avatarEl.innerText = state.userName.substring(0, 2).toUpperCase();
+    const displayName = state.userName || state.userEmail || 'Korisnik';
+    if (nameEl) nameEl.innerText = displayName;
+    if (avatarEl) avatarEl.innerText = displayName.substring(0, 2).toUpperCase();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -99,17 +84,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.whitelistedUsers = whitelist;
         state.votes = votes;
 
-        const selectEl = document.getElementById('user-select');
-        if (selectEl) {
-            selectEl.innerHTML = '<option value="" disabled selected>-- Izaberi svoje ime --</option>';
-            whitelist.forEach(u => {
-                const opt = document.createElement('option');
-                opt.value = u.email;
-                opt.innerText = u.name;
-                selectEl.appendChild(opt);
-            });
-        }
-
         state.options = options.map(opt => {
             const optVotes = votes.filter(v => v.option_id === opt.id);
             const voterEmails = optVotes.map(v => v.user_email);
@@ -120,7 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (state.userEmail) {
             const user = whitelist.find(u => u.email === state.userEmail);
-            state.userName = user ? user.name : state.userEmail;
+            state.userName = user ? user.name : (state.userName || state.userEmail);
             state.options.forEach(opt => {
                 if (opt.voterEmails?.includes(state.userEmail)) state.selectedOptionIds.add(opt.id);
             });
@@ -136,7 +110,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         initHeroScrollAnimations();
 
         // Initialize background auth state observer
-        initAuthListener(() => updateUserUI());
+        initAuthListener(() => {
+            if (state.userEmail) {
+                const user = state.whitelistedUsers.find(u => u.email === state.userEmail);
+                state.userName = user ? user.name : (state.userName || state.userEmail);
+            }
+            updateUserUI();
+        });
 
         setupRealtimeSubscription();
     } catch (err) {
@@ -154,6 +134,5 @@ window.saveOptionDetails = saveOptionDetails;
 window.openAddModal = openAddModal;
 window.closeAddModal = closeAddModal;
 window.submitNewOption = submitNewOption;
-window.requestMagicLink = requestMagicLink;
-window.onUserSelected = onUserSelected;
+window.loginWithGoogle = loginWithGoogle;
 window.logoutUser = logoutUserSession;

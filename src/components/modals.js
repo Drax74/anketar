@@ -1,6 +1,6 @@
 import { supabase } from '../supabase.js';
 import { state } from '../state.js';
-import { addOption, updateOption, sendMagicLink } from '../services/api.js';
+import { addOption, updateOption } from '../services/api.js';
 import { renderOptions } from './cards.js';
 import { normalizeUrl } from '../shared/helpers/url.js';
 import { isValidUrl, isBookingOrAirbnbUrl } from '../shared/helpers/validation.js';
@@ -376,44 +376,6 @@ export async function saveOptionDetails() {
     } catch (err) {
         console.error('Failed to save option edits:', err);
         showToast('Greška pri spremanju izmjena.', 'error');
-    }
-}
-
-export async function requestMagicLink() {
-    const selectEl = document.getElementById('user-select');
-    const selectedEmail = selectEl?.value;
-
-    if (!selectedEmail) {
-        showToast('Molimo odaberite korisnika.', 'error');
-        return;
-    }
-
-    const user = state.whitelistedUsers.find(u => u.email === selectedEmail);
-    if (!user) return;
-
-    const triggerBtn = document.getElementById('btn-verify-trigger');
-    if (triggerBtn) {
-        triggerBtn.innerText = 'Šaljem Magic Link...';
-        triggerBtn.disabled = true;
-    }
-
-    try {
-        await sendMagicLink(selectedEmail);
-        state.userEmail = selectedEmail;
-        state.userName = user.name;
-
-        const step1 = document.getElementById('auth-step-1');
-        const step2 = document.getElementById('auth-step-2');
-        if (step1) step1.style.display = 'none';
-        if (step2) step2.style.display = 'block';
-        showToast('Magic link poslan na vaš email!');
-    } catch (err) {
-        console.error('Magic link error:', err);
-        showToast('Greška pri slanju linka.', 'error');
-        if (triggerBtn) {
-            triggerBtn.innerText = 'Pošalji Mi Magic Link Na Email';
-            triggerBtn.disabled = false;
-        }
     }
 }
 

@@ -90,31 +90,14 @@
 
 <!-- AUTHENTICATION MODAL (Standard Centered Modal) -->
 <div id="auth-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-  <div class="modal">
-    <h2 id="auth-title">Izaberi Svoj Profil</h2>
-
-    <div id="auth-step-1">
-      <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 20px; line-height: 1.4;">
-        Izaberi svog trkadziju ili rumoljuba iz liste da ti se pošalje secure login link na email.
-      </p>
-      <div class="form-group">
-        <label for="user-select">Tko si ti?</label>
-        <div class="select-wrapper">
-          <select id="user-select" class="input-field" onchange="clearFieldError('user-select', 'error-user-select')">
-            <option value="" disabled selected>Loading trkadzije i rumoljube...</option>
-          </select>
-        </div>
-        <div class="error-message" id="error-user-select">Izaberi svoj profil s popisa.</div>
-      </div>
-      <button class="btn btn-primary" id="btn-verify-trigger" onclick="requestMagicLink()">Pošalji Mi Magic Link Na Email</button>
-    </div>
-
-    <div id="auth-step-2" style="display: none; text-align: center;">
-      <p style="font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 16px; line-height: 1.5;">
-        📩 Poslali smo vam magic link na vašu email adresu vezanu uz profil. Kliknite na link u emailu da biste automatski ušli u aplikaciju!
-      </p>
-      <button class="btn btn-secondary" onclick="location.reload()">Natrag na odabir profila</button>
-    </div>
+  <div class="modal" style="text-align: center; padding: 32px 24px;">
+    <h2 id="auth-title" style="margin-bottom: 12px;">Dragi Trkadzijo i Rumoljubu</h2>
+    <p style="font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 24px; line-height: 1.5;">
+      Prijavi se svojim Google računom kako bi pristupio aplikaciji i glasovao
+    </p>
+    <button class="btn btn-primary" onclick="loginWithGoogle()" style="width: 100%; padding: 12px; font-size: 1rem;">
+      Prijava s Google računom
+    </button>
   </div>
 </div>
 
@@ -128,7 +111,7 @@
       <!-- STEP 1: LINK SUBMISSION -->
       <div id="add-step-1">
         <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-top: 8px; margin-bottom: 16px; line-height: 1.4;">
-          Unesite link smještaja s Booking.com ili Airbnb-a. Nakon potvrde linka, pokušat ćemo automatski dohvatiti podatke o smještaju. Ako dohvaćanje ne uspije, moći ćete ih unijeti ručno.
+          Unesi link smještaja s Booking.com ili Airbnb-a. Nakon potvrde linka, pokušat ću automatski dohvatiti podatke o smještaju. Ako dohvaćanje ne uspije, moći ćeš ih unijeti ručno.
         </p>
         <div class="form-group">
           <label for="input-link">Link smještaja</label>

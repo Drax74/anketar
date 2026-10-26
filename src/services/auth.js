@@ -1,17 +1,30 @@
 import { supabase } from '../supabase.js';
 import { state } from '../state.js';
 
+const REDIRECT_URL = `${window.location.origin}/anketar/`;
+
+export async function loginWithGoogle() {
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: REDIRECT_URL,
+            queryParams: {
+                prompt: 'select_account'
+            }
+        }
+    });
+
+    if (error) {
+        console.error('Error initiating Google login:', error.message);
+        alert(`Login failed: ${error.message}`);
+    }
+}
+
 export function initAuthListener(onAuthSuccess) {
     supabase.auth.onAuthStateChange(async (event, session) => {
         if (session && session.user && session.user.email) {
             state.userEmail = session.user.email;
-
-            if (state.whitelistedUsers.length > 0) {
-                const matched = state.whitelistedUsers.find(u => u.email === state.userEmail);
-                state.userName = matched ? matched.name : state.userEmail;
-            } else {
-                state.userName = localStorage.getItem('poll_user_name') || state.userEmail;
-            }
+            state.userName = session.user.user_metadata?.full_name || session.user.email;
 
             localStorage.setItem('poll_user_email', state.userEmail);
             localStorage.setItem('poll_user_name', state.userName);
@@ -31,7 +44,9 @@ export async function checkInitialSession() {
         const { data: { session } } = await supabase.auth.getSession();
         if (session && session.user && session.user.email) {
             state.userEmail = session.user.email;
+            state.userName = session.user.user_metadata?.full_name || session.user.email;
             localStorage.setItem('poll_user_email', state.userEmail);
+            localStorage.setItem('poll_user_name', state.userName);
             return true;
         }
     } catch (err) {
