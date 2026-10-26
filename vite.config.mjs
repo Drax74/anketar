@@ -10,7 +10,7 @@ export default defineConfig({
     plugins: [
         VitePWA({
             registerType: 'autoUpdate',
-            includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'pwa-192x192.png', 'pwa-512x512.png', 'app-preview.png'],
+            includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'pwa-192x192.png', 'pwa-512x512.png', 'app-preview.png', 'app-preview-wide.png'],
             manifest: {
                 id: '/anketar/',
                 name: 'Madrid Ekskurzija - Trkadzije & Rumoljubi',
@@ -38,9 +38,17 @@ export default defineConfig({
                 ],
                 screenshots: [
                     {
+                        src: 'app-preview-wide.png',
+                        sizes: '2874x1748',
+                        type: 'image/jpeg',
+                        form_factor: 'wide',
+                        label: 'Madrid Voting Desktop Dashboard'
+                    },
+                    {
                         src: 'app-preview.png',
                         sizes: '687x1024',
                         type: 'image/png',
+                        form_factor: 'narrow',
                         label: 'Madrid Voting Dashboard'
                     }
                 ]
