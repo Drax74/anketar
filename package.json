@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-icons": "pwa-assets-generator --preset minimal public/android-chrome-512x512.png"
   },
   "repository": {
     "type": "git",
@@ -20,7 +21,9 @@
   },
   "homepage": "https://github.com/Drax74/anketar#readme",
   "devDependencies": {
-    "vite": "^8.3.5"
+    "@vite-pwa/assets-generator": "^2.0.0",
+    "vite": "^8.3.5",
+    "vite-plugin-pwa": "^2.0.0"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",

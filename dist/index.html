@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- Open Graph / WhatsApp Preview Meta Tags -->
+  <meta property="og:title" content="🇪🇸 Madrid Ekskurzija (03.12 – 06.12.2026)">
+  <meta property="og:description" content="Glasajte za smještaj u Madridu!">
+  <meta property="og:image" content="https://35milimetros.es/wp-content/uploads/2026/03/2b4013cc-60a9-4680-a9bd-f9f891d42a63_source-aspect-ratio_1600w_0.webp">
+  <meta property="og:url" content="https://drax74.github.io/anketar/">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="🇪🇸 Madrid Ekskurzija (03.12 – 06.12.2026)">
+  <meta name="twitter:description" content="Glasajte za smještaj u Madridu!">
+  <meta name="twitter:image" content="https://35milimetros.es/wp-content/uploads/2026/03/2b4013cc-60a9-4680-a9bd-f9f891d42a63_source-aspect-ratio_1600w_0.webp">
+
+  <title>Madrid - Trkadzije &amp; Rumoljubi</title>
+
+  <link rel="icon" href="/anketar/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/anketar/apple-touch-icon-180x180.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Google Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+  <script type="module" crossorigin src="/anketar/assets/index-CRfN6Il3.js"></script>
+  <link rel="stylesheet" crossorigin href="/anketar/assets/index-Bw3cyf9I.css">
+<link rel="manifest" href="/anketar/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/anketar/registerSW.js"></script></head>
+<body>
+
+<div class="app-scroll-container">
+  <!-- SPOTIFY-INSPIRED 3D-ELEVATED RECTANGULAR HERO HEADER -->
+  <header class="header-card hero-header" id="hero-header">
+    <div class="hero-bg-parallax"></div>
+    <div class="hero-overlay-gradient"></div>
+    <div class="hero-content-inner">
+      <h1>🇪🇸 Madrid</h1>
+      <p>03.12 – 06.12.2026</p>
+    </div>
+  </header>
+
+  <!-- STICKY HEADER WRAPPER (LEADERBOARD + CONTROLS) -->
+  <div class="sticky-header-wrapper">
+    <!-- LEADERBOARD PODIUM (TOP 3) -->
+    <div id="leaderboard-section" class="leaderboard-section">
+      <div class="leaderboard-header">
+        <span class="leaderboard-title">Top 3 Favorita</span>
+      </div>
+      <div id="leaderboard-container" class="leaderboard-container">
+        <div class="leaderboard-empty">Još nema glasova. Budi prvi koji će pokrenuti ljestvicu! 🗳️</div>
+      </div>
+    </div>
+
+    <!-- CONTROLS ROW -->
+    <div class="controls-row">
+      <span style="font-size: 1rem; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">Smjestaji (<span id="options-count">0</span>)</span>
+      <div style="display: flex; gap: 8px;">
+        <button id="btn-manual-sort" class="btn btn-secondary" style="width: auto; padding: 8px 12px; font-size: 0.85rem;" onclick="toggleManualSort()" title="Poredaj po broju glasova">
+          <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">swap_vert</span> Poredaj
+        </button>
+        <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; font-size: 0.85rem;" onclick="openAddModal()">+ Dodaj Smjestaj</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCOMMODATION CARDS CONTAINER -->
+  <div id="options-container" class="options-list" data-layout>
+    <div class="loading-card" style="padding: 40px 20px; text-align: center;">
+      <div class="spinner" style="margin: 0 auto 12px auto;"></div>
+      <p>Loading smjestaje...</p>
+    </div>
+  </div>
+</div>
+
+<div id="app-toast" class="app-toast" role="status" aria-live="polite"></div>
+
+<!-- FOOTER -->
+<footer class="app-footer">
+  <div class="app-footer-content">
+    <div class="user-profile-footer">
+      <div class="user-avatar" id="user-avatar-initials">U</div>
+      <div class="user-footer-details">
+        <span class="user-footer-name" id="footer-user-name">Loading...</span>
+      </div>
+    </div>
+    <button class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 0.75rem;" onclick="logoutUser()">Sign Out</button>
+  </div>
+</footer>
+
+<!-- AUTHENTICATION MODAL (Standard Centered Modal) -->
+<div id="auth-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+  <div class="modal">
+    <h2 id="auth-title">Izaberi Svoj Profil</h2>
+
+    <div id="auth-step-1">
+      <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 20px; line-height: 1.4;">
+        Izaberi svog trkadziju ili rumoljuba iz liste da ti se pošalje secure login link na email.
+      </p>
+      <div class="form-group">
+        <label for="user-select">Tko si ti?</label>
+        <div class="select-wrapper">
+          <select id="user-select" class="input-field" onchange="clearFieldError('user-select', 'error-user-select')">
+            <option value="" disabled selected>Loading trkadzije i rumoljube...</option>
+          </select>
+        </div>
+        <div class="error-message" id="error-user-select">Izaberi svoj profil s popisa.</div>
+      </div>
+      <button class="btn btn-primary" id="btn-verify-trigger" onclick="requestMagicLink()">Pošalji Mi Magic Link Na Email</button>
+    </div>
+
+    <div id="auth-step-2" style="display: none; text-align: center;">
+      <p style="font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 16px; line-height: 1.5;">
+        📩 Poslali smo vam magic link na vašu email adresu vezanu uz profil. Kliknite na link u emailu da biste automatski ušli u aplikaciju!
+      </p>
+      <button class="btn btn-secondary" onclick="location.reload()">Natrag na odabir profila</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD OPTION MODAL (Native Bottom Sheet) -->
+<div id="add-modal-overlay" class="native-sheet-overlay" role="dialog" aria-modal="true" aria-labelledby="add-title" onclick="if(event.target===this) closeAddModal()">
+  <div class="native-sheet-container">
+    <div class="native-sheet-handle"></div>
+    <div class="native-sheet-payload">
+      <h2 id="add-title">Dodaj Smjestaj</h2>
+
+      <!-- STEP 1: LINK SUBMISSION -->
+      <div id="add-step-1">
+        <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-top: 8px; margin-bottom: 16px; line-height: 1.4;">
+          Unesite link smještaja s Booking.com ili Airbnb-a. Nakon potvrde linka, pokušat ćemo automatski dohvatiti podatke o smještaju. Ako dohvaćanje ne uspije, moći ćete ih unijeti ručno.
+        </p>
+        <div class="form-group">
+          <label for="input-link">Link smještaja</label>
+          <input type="url" id="input-link" class="input-field" placeholder="Unesi Booking.com ili Airbnb link" oninput="clearFieldError('input-link', 'error-input-link')" />
+          <div class="error-message" id="error-input-link">Unesi važeći URL smještaja.</div>
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+          <button class="btn btn-secondary" onclick="closeAddModal()">Odustani</button>
+          <button class="btn btn-primary" id="btn-confirm-link" onclick="submitLinkAndFetch()">Potvrdi link</button>
+        </div>
+      </div>
+
+      <!-- SKELETON LOADING STATE -->
+      <div id="add-skeleton-loading" style="display: none; padding: 12px 0;">
+        <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 16px; text-align: center;">
+          Dohvaćam podatke o smještaju...
+        </p>
+        <div class="skeleton-box" style="height: 16px; width: 40%; margin-bottom: 8px;"></div>
+        <div class="skeleton-box" style="height: 48px; width: 100%; margin-bottom: 16px;"></div>
+        <div class="skeleton-box" style="height: 16px; width: 30%; margin-bottom: 8px;"></div>
+        <div class="skeleton-box" style="height: 40px; width: 100%; margin-bottom: 16px;"></div>
+        <div class="skeleton-box" style="height: 16px; width: 50%; margin-bottom: 8px;"></div>
+        <div class="skeleton-box" style="height: 60px; width: 100%; margin-bottom: 20px;"></div>
+      </div>
+
+      <!-- STEP 2: ADAPTIVE FORM FIELDS -->
+      <div id="add-step-2" style="display: none;">
+
+        <!-- IMAGE PREVIEW / PLACEHOLDER BOX -->
+        <div class="add-image-preview-box">
+          <img id="add-preview-img" src="" alt="Fetched Cover" style="display: none;" />
+          <div id="add-image-placeholder" class="add-image-placeholder-content">
+            <span class="material-symbols-outlined">photo</span>
+            <span>Nema slike (ručni unos)</span>
+          </div>
+        </div>
+
+        <!-- READ-ONLY SUCCESS PREVIEW -->
+        <div id="scraper-success-preview" class="read-only-preview" style="display: none;">
+          <div class="read-only-title" id="preview-title"></div>
+          <div class="read-only-desc" id="preview-desc"></div>
+        </div>
+
+        <!-- EDITABLE TITLE (Fallback when scraping fails) -->
+        <div class="form-group" id="group-title" style="display: none;">
+          <label for="input-title">Ime</label>
+          <input type="text" id="input-title" class="input-field" placeholder="Villa Horizon" oninput="clearFieldError('input-title', 'error-input-title')" />
+          <div class="error-message" id="error-input-title">Naziv smještaja je obavezno polje.</div>
+        </div>
+
+        <!-- EDITABLE PRICE -->
+        <div class="form-group">
+          <label for="input-price">Ukupna Cijena</label>
+          <input type="text" id="input-price" class="input-field" placeholder="450€ total" />
+        </div>
+
+        <!-- EDITABLE IMAGE URL (Fallback when scraping fails) -->
+        <div class="form-group" id="group-image" style="display: none;">
+          <label for="input-image">Image URL</label>
+          <input type="url" id="input-image" class="input-field" placeholder="https://..." />
+        </div>
+
+        <!-- EDITABLE NOTE -->
+        <div class="form-group">
+          <label for="input-note">Napomena (opcionalno)</label>
+          <textarea id="input-note" class="input-field" placeholder="Blizu centra, ima bazen..."></textarea>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+          <button class="btn btn-secondary" onclick="resetAddModalStep()">Natrag</button>
+          <button class="btn btn-primary" id="btn-add-submit" onclick="submitNewOption()">Dodaj Prijedlog</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAILS MODAL WITH CREATOR-ONLY EDITABLE FIELDS -->
+<div id="detail-overlay" class="detail-overlay" aria-hidden="true" onclick="if(event.target===this) closeDetail()">
+  <article class="detail-sheet" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+    <button class="detail-close" type="button" aria-label="Close details" onclick="closeDetail()">×</button>
+    <img id="detail-image" class="detail-image" alt="" />
+
+    <div class="detail-content">
+      <div class="detail-meta">
+        <span id="detail-votes" class="detail-pill"></span>
+      </div>
+
+      <!-- READ-ONLY SECTION (For all non-creators) -->
+      <div id="detail-readonly-section">
+        <div style="margin-bottom: 8px;">
+          <span id="detail-price" class="detail-pill" style="background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);"></span>
+        </div>
+        <h2 id="detail-title" class="detail-title"></h2>
+        <p id="detail-description" style="font-size: 0.88rem; color: var(--md-sys-color-on-surface-variant); margin-top: 4px; margin-bottom: 8px; line-height: 1.4;"></p>
+        <p id="detail-note" class="detail-note"></p>
+      </div>
+
+      <!-- EDITABLE SECTION (Exclusively shown to Option Creator) -->
+      <div id="detail-editable-section" style="display: none; margin-bottom: 16px;">
+        <div class="form-group">
+          <label for="edit-detail-title">Naziv smještaja</label>
+          <input type="text" id="edit-detail-title" class="input-field" />
+        </div>
+        <div class="form-group">
+          <label for="edit-detail-price">Cijena</label>
+          <input type="text" id="edit-detail-price" class="input-field" />
+        </div>
+        <div class="form-group">
+          <label for="edit-detail-image">Image URL</label>
+          <input type="url" id="edit-detail-image" class="input-field" />
+        </div>
+        <div class="form-group">
+          <label for="edit-detail-note">Napomena</label>
+          <textarea id="edit-detail-note" class="input-field" rows="3"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="saveOptionDetails()" style="margin-top: 8px;">Spremi Promjene</button>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top: 12px;">
+        <button id="detail-vote" class="btn btn-primary" type="button" style="flex:1" onclick="voteFromDetail()">Glasaj za ovaj smještaj</button>
+        <a id="detail-link" class="btn btn-secondary" target="_blank" rel="noopener noreferrer" style="flex:1; text-decoration:none;" href="#">Otvori smještaj ↗</a>
+      </div>
+    </div>
+  </article>
+</div>
+
+</body>
+</html>

@@ -19,7 +19,9 @@
 
   <title>Madrid - Trkadzije &amp; Rumoljubi</title>
 
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text y='20' font-size='20'>🇪🇸</text></svg>">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -89,7 +91,7 @@
   </div>
 </footer>
 
-<!-- AUTHENTICATION MODAL -->
+<!-- AUTHENTICATION MODAL (Standard Centered Modal) -->
 <div id="auth-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="auth-title">
   <div class="modal">
     <h2 id="auth-title">Izaberi Svoj Profil</h2>
@@ -119,89 +121,91 @@
   </div>
 </div>
 
-<!-- ADD OPTION MODAL (2-STEP WORKFLOW) -->
-<div id="add-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="add-title">
-  <div class="modal">
-    <h2 id="add-title">Dodaj Smjestaj</h2>
+<!-- ADD OPTION MODAL (Native Bottom Sheet) -->
+<div id="add-modal-overlay" class="native-sheet-overlay" role="dialog" aria-modal="true" aria-labelledby="add-title" onclick="if(event.target===this) closeAddModal()">
+  <div class="native-sheet-container">
+    <div class="native-sheet-handle"></div>
+    <div class="native-sheet-payload">
+      <h2 id="add-title">Dodaj Smjestaj</h2>
 
-    <!-- STEP 1: LINK SUBMISSION -->
-    <div id="add-step-1">
-      <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-top: 8px; margin-bottom: 16px; line-height: 1.4;">
-        Unesite link smještaja s Booking.com ili Airbnb-a. Nakon potvrde linka, pokušat ćemo automatski dohvatiti podatke o smještaju. Ako dohvaćanje ne uspije, moći ćete ih unijeti ručno.
-      </p>
-      <div class="form-group">
-        <label for="input-link">Link smještaja</label>
-        <input type="url" id="input-link" class="input-field" placeholder="Unesi Booking.com ili Airbnb link" oninput="clearFieldError('input-link', 'error-input-link')" />
-        <div class="error-message" id="error-input-link">Unesi važeći URL smještaja.</div>
-      </div>
-      <div style="display: flex; gap: 12px; margin-top: 20px;">
-        <button class="btn btn-secondary" onclick="closeAddModal()">Odustani</button>
-        <button class="btn btn-primary" id="btn-confirm-link" onclick="submitLinkAndFetch()">Potvrdi link</button>
-      </div>
-    </div>
-
-    <!-- SKELETON LOADING STATE -->
-    <div id="add-skeleton-loading" style="display: none; padding: 12px 0;">
-      <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 16px; text-align: center;">
-        Dohvaćam podatke o smještaju...
-      </p>
-      <div class="skeleton-box" style="height: 16px; width: 40%; margin-bottom: 8px;"></div>
-      <div class="skeleton-box" style="height: 48px; width: 100%; margin-bottom: 16px;"></div>
-      <div class="skeleton-box" style="height: 16px; width: 30%; margin-bottom: 8px;"></div>
-      <div class="skeleton-box" style="height: 40px; width: 100%; margin-bottom: 16px;"></div>
-      <div class="skeleton-box" style="height: 16px; width: 50%; margin-bottom: 8px;"></div>
-      <div class="skeleton-box" style="height: 60px; width: 100%; margin-bottom: 20px;"></div>
-    </div>
-
-    <!-- STEP 2: ADAPTIVE FORM FIELDS -->
-    <div id="add-step-2" style="display: none;">
-
-      <!-- IMAGE PREVIEW / PLACEHOLDER BOX -->
-      <div class="add-image-preview-box">
-        <img id="add-preview-img" src="" alt="Fetched Cover" style="display: none;" />
-        <div id="add-image-placeholder" class="add-image-placeholder-content">
-          <span class="material-symbols-outlined">photo</span>
-          <span>Nema slike (ručni unos)</span>
+      <!-- STEP 1: LINK SUBMISSION -->
+      <div id="add-step-1">
+        <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-top: 8px; margin-bottom: 16px; line-height: 1.4;">
+          Unesite link smještaja s Booking.com ili Airbnb-a. Nakon potvrde linka, pokušat ćemo automatski dohvatiti podatke o smještaju. Ako dohvaćanje ne uspije, moći ćete ih unijeti ručno.
+        </p>
+        <div class="form-group">
+          <label for="input-link">Link smještaja</label>
+          <input type="url" id="input-link" class="input-field" placeholder="Unesi Booking.com ili Airbnb link" oninput="clearFieldError('input-link', 'error-input-link')" />
+          <div class="error-message" id="error-input-link">Unesi važeći URL smještaja.</div>
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+          <button class="btn btn-secondary" onclick="closeAddModal()">Odustani</button>
+          <button class="btn btn-primary" id="btn-confirm-link" onclick="submitLinkAndFetch()">Potvrdi link</button>
         </div>
       </div>
 
-      <!-- READ-ONLY SUCCESS PREVIEW -->
-      <div id="scraper-success-preview" class="read-only-preview" style="display: none;">
-        <div class="read-only-title" id="preview-title"></div>
-        <div class="read-only-desc" id="preview-desc"></div>
+      <!-- SKELETON LOADING STATE -->
+      <div id="add-skeleton-loading" style="display: none; padding: 12px 0;">
+        <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 16px; text-align: center;">
+          Dohvaćam podatke o smještaju...
+        </p>
+        <div class="skeleton-box" style="height: 16px; width: 40%; margin-bottom: 8px;"></div>
+        <div class="skeleton-box" style="height: 48px; width: 100%; margin-bottom: 16px;"></div>
+        <div class="skeleton-box" style="height: 16px; width: 30%; margin-bottom: 8px;"></div>
+        <div class="skeleton-box" style="height: 40px; width: 100%; margin-bottom: 16px;"></div>
+        <div class="skeleton-box" style="height: 16px; width: 50%; margin-bottom: 8px;"></div>
+        <div class="skeleton-box" style="height: 60px; width: 100%; margin-bottom: 20px;"></div>
       </div>
 
-      <!-- EDITABLE TITLE (Fallback when scraping fails) -->
-      <div class="form-group" id="group-title" style="display: none;">
-        <label for="input-title">Ime</label>
-        <input type="text" id="input-title" class="input-field" placeholder="Villa Horizon" oninput="clearFieldError('input-title', 'error-input-title')" />
-        <div class="error-message" id="error-input-title">Naziv smještaja je obavezno polje.</div>
-      </div>
+      <!-- STEP 2: ADAPTIVE FORM FIELDS -->
+      <div id="add-step-2" style="display: none;">
 
-      <!-- EDITABLE PRICE -->
-      <div class="form-group">
-        <label for="input-price">Ukupna Cijena</label>
-        <input type="text" id="input-price" class="input-field" placeholder="450€ total" />
-      </div>
+        <!-- IMAGE PREVIEW / PLACEHOLDER BOX -->
+        <div class="add-image-preview-box">
+          <img id="add-preview-img" src="" alt="Fetched Cover" style="display: none;" />
+          <div id="add-image-placeholder" class="add-image-placeholder-content">
+            <span class="material-symbols-outlined">photo</span>
+            <span>Nema slike (ručni unos)</span>
+          </div>
+        </div>
 
-      <!-- EDITABLE IMAGE URL (Fallback when scraping fails) -->
-      <div class="form-group" id="group-image" style="display: none;">
-        <label for="input-image">Image URL</label>
-        <input type="url" id="input-image" class="input-field" placeholder="https://..." />
-      </div>
+        <!-- READ-ONLY SUCCESS PREVIEW -->
+        <div id="scraper-success-preview" class="read-only-preview" style="display: none;">
+          <div class="read-only-title" id="preview-title"></div>
+          <div class="read-only-desc" id="preview-desc"></div>
+        </div>
 
-      <!-- EDITABLE NOTE -->
-      <div class="form-group">
-        <label for="input-note">Napomena (opcionalno)</label>
-        <textarea id="input-note" class="input-field" placeholder="Blizu centra, ima bazen..."></textarea>
-      </div>
+        <!-- EDITABLE TITLE (Fallback when scraping fails) -->
+        <div class="form-group" id="group-title" style="display: none;">
+          <label for="input-title">Ime</label>
+          <input type="text" id="input-title" class="input-field" placeholder="Villa Horizon" oninput="clearFieldError('input-title', 'error-input-title')" />
+          <div class="error-message" id="error-input-title">Naziv smještaja je obavezno polje.</div>
+        </div>
 
-      <div style="display: flex; gap: 12px; margin-top: 20px;">
-        <button class="btn btn-secondary" onclick="resetAddModalStep()">Natrag</button>
-        <button class="btn btn-primary" id="btn-add-submit" onclick="submitNewOption()">Dodaj Prijedlog</button>
+        <!-- EDITABLE PRICE -->
+        <div class="form-group">
+          <label for="input-price">Ukupna Cijena</label>
+          <input type="text" id="input-price" class="input-field" placeholder="450€ total" />
+        </div>
+
+        <!-- EDITABLE IMAGE URL (Fallback when scraping fails) -->
+        <div class="form-group" id="group-image" style="display: none;">
+          <label for="input-image">Image URL</label>
+          <input type="url" id="input-image" class="input-field" placeholder="https://..." />
+        </div>
+
+        <!-- EDITABLE NOTE -->
+        <div class="form-group">
+          <label for="input-note">Napomena (opcionalno)</label>
+          <textarea id="input-note" class="input-field" placeholder="Blizu centra, ima bazen..."></textarea>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+          <button class="btn btn-secondary" onclick="resetAddModalStep()">Natrag</button>
+          <button class="btn btn-primary" id="btn-add-submit" onclick="submitNewOption()">Dodaj Prijedlog</button>
+        </div>
       </div>
     </div>
-
   </div>
 </div>
 

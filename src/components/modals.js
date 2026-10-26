@@ -27,15 +27,22 @@ export function showToast(message, kind = 'info') {
 
 export function openAddModal() {
     resetAddModalStep();
-    const overlay = document.getElementById('add-modal');
-    if (overlay) overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
+    const overlay = document.getElementById('add-modal-overlay');
+    if (overlay) {
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
 }
 
 export function closeAddModal() {
-    const overlay = document.getElementById('add-modal');
-    if (overlay) overlay.classList.remove('active');
+    const overlay = document.getElementById('add-modal-overlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+        overlay.setAttribute('aria-hidden', 'true');
+    }
     document.body.style.overflow = '';
+    resetAddModalStep();
 }
 
 export function resetAddModalStep() {

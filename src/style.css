@@ -1,6 +1,6 @@
 :root {
     --md-sys-color-background: #121316;
-    --md-sys-color-surface: #1e1f24;
+    --md-sys-color-surface: #121316;
     --md-sys-color-surface-container: #28292e;
     --md-sys-color-surface-container-high: #33343a;
     --md-sys-color-surface-variant: #28292e;
@@ -23,7 +23,6 @@
     --md-elevation-1: 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
     --md-elevation-2: 0 2px 6px 2px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
 
-    /* Spotify-like smooth spring/bezier easing curves */
     --spotify-easing: cubic-bezier(0.16, 1, 0.3, 1);
     --transition-standard: 0.35s var(--spotify-easing);
 
@@ -55,7 +54,7 @@ html {
     scroll-behavior: smooth;
     scroll-padding-top: 18px;
     background-color: var(--md-sys-color-background);
-    overscroll-behavior-y: none; /* Prevents background light leaks on overscroll */
+    overscroll-behavior-y: none;
 }
 
 body {
@@ -71,6 +70,7 @@ body {
 
 /* APP SCROLL CONTAINER */
 .app-scroll-container {
+    position: relative;
     width: 100%;
     max-width: 480px;
     min-height: 100vh;
@@ -112,7 +112,6 @@ body {
     isolation: isolate;
     transform-origin: 50% 30%;
 
-    /* Feathered mask to smoothly fade out left, right, and bottom edges */
     -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%),
     linear-gradient(to bottom, black 75%, transparent 100%);
     -webkit-mask-composite: intersect;
@@ -121,7 +120,6 @@ body {
     mask-composite: intersect;
 }
 
-/* Pure CSS Parallax Background (shifted lower to 12% to provide more headroom and prevent forehead cropping) */
 .hero-bg-parallax {
     position: absolute;
     inset: 0;
@@ -139,7 +137,6 @@ body {
     z-index: 1;
 }
 
-/* Bottom transition gradient fade into the page background */
 .hero-header::after {
     content: '';
     position: absolute;
@@ -190,9 +187,9 @@ body {
     will-change: transform;
 }
 
-/* LEADERBOARD PODIUM (FULL-WIDTH, NO CONTAINER BOX) */
+/* LEADERBOARD PODIUM */
 .leaderboard-section {
-    background: transparent;
+    background-color: var(--md-sys-color-background);
     border: none;
     border-radius: 0;
     padding: 0;
@@ -357,74 +354,113 @@ body {
 .user-footer-details { display: flex; flex-direction: column; }
 .user-footer-name { font-size: 0.9rem; font-weight: 600; color: var(--md-sys-color-on-surface); }
 
-/* MODALS & OVERLAYS */
+/* STANDARD CENTERED MODAL OVERLAYS (e.g. Auth) */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(4,5,8,.0);
     backdrop-filter: blur(6px);
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
-    padding: 0;
+    padding: 20px;
     z-index: 100;
     opacity: 0;
     pointer-events: none;
     transition: background 320ms ease, opacity var(--transition-standard), backdrop-filter 320ms ease;
-    overscroll-behavior: contain;
 }
 
 .modal-overlay.active {
     opacity: 1;
     pointer-events: auto;
-    background: rgba(4,5,8,.68);
+    background: rgba(4,5,8,.75);
     isolation: isolate;
 }
 
 .modal {
     background: var(--md-sys-color-surface-container);
     border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: 28px 28px 0 0;
-    border-bottom: 0;
-    padding: 28px 24px calc(24px + env(safe-area-inset-bottom));
+    border-radius: 20px;
+    padding: 28px 24px;
     width: 100%;
-    max-width: 480px;
-    max-height: min(90dvh, 850px);
-    overflow-y: auto;
-    box-shadow: var(--md-elevation-2);
-    transform: translateY(42px) scale(.985);
-    transform-origin: bottom center;
-    transition: transform 420ms var(--motion-sheet), opacity 280ms ease;
+    max-width: 440px;
+    box-shadow: var(--md-elevation-3);
+    transform: translateY(12px) scale(.98);
+    transition: transform 320ms var(--motion-sheet), opacity 240ms ease;
     opacity: 0;
-    overscroll-behavior: contain;
-}
-
-.modal::before {
-    content: '';
-    display: block;
-    width: 38px;
-    height: 4px;
-    border-radius: 99px;
-    background: #777b86;
-    opacity: .65;
-    margin: -14px auto 22px;
 }
 
 .modal-overlay.active .modal {
     transform: translateY(0) scale(1);
     opacity: 1;
-    will-change: transform, opacity;
-    animation: sheetSettle 460ms var(--motion-sheet) both;
-    touch-action: pan-y;
 }
 
-.modal-overlay.is-closing { pointer-events: none; }
 .modal h2 { font-size: 1.35rem; font-weight: 600; margin-bottom: 8px; color: var(--md-sys-color-on-surface); }
 
-@keyframes sheetSettle {
-    0% { transform: translateY(48px) scale(.985); }
-    72% { transform: translateY(-3px) scale(1); }
-    100% { transform: translateY(0) scale(1); }
+/* ==========================================
+   PURE NATIVE BOTTOM SHEET (NO LIBRARIES)
+   ========================================== */
+.native-sheet-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 5, 8, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 200;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 280ms ease, visibility 280ms ease;
+}
+
+.native-sheet-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.native-sheet-container {
+    width: 100%;
+    max-width: 480px;
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 28px 28px 0 0;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+    padding: 12px 20px calc(24px + env(safe-area-inset-bottom)) 20px;
+    box-sizing: border-box;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.native-sheet-overlay.active .native-sheet-container {
+    transform: translateY(0);
+}
+
+.native-sheet-handle {
+    background: var(--md-sys-color-outline);
+    opacity: 0.5;
+    width: 36px;
+    height: 4px;
+    border-radius: 99px;
+    margin: 4px auto 14px auto;
+    cursor: grab;
+}
+
+.native-sheet-payload {
+    display: block;
+    width: 100%;
+    background: transparent;
+}
+
+.native-sheet-payload h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--md-sys-color-on-surface);
 }
 
 /* FORM CONTROLS & SELECT INPUTS */
