@@ -20,7 +20,7 @@ export function initHeroScrollAnimations() {
             trigger: '.app-scroll-container',
             start: 'top top',
             end: '+=250',
-            scrub: true,
+            scrub: 0.6, // <-- CHANGED FROM true TO 0.6 (adds smooth lag smoothing)
             invalidateOnRefresh: true
         }
     });
