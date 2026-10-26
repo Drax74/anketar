@@ -5,7 +5,6 @@ import { initAuthListener, checkInitialSession, logoutUserSession, loginWithGoog
 import { renderOptions, scrollToCardIfNeeded, updateCardSubelements } from './components/cards.js';
 import { openDetail, closeDetail, saveOptionDetails, openAddModal, closeAddModal, submitNewOption, showToast } from './components/modals.js';
 import { addVote, removeVote } from './services/api.js';
-import { initHeroScrollAnimations } from './animations/hero-scroll.js';
 
 async function toggleVote(optionId) {
     if (!state.userEmail) {
@@ -105,9 +104,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         await renderOptions(false, null, false);
-
-        // Initialize GSAP Spotify-inspired collapsing hero scroll trigger
-        initHeroScrollAnimations();
 
         // Initialize background auth state observer
         initAuthListener(() => {

@@ -1,0 +1,181 @@
+#options-container {
+    opacity: 0;
+    transition: opacity 0.25s ease-in;
+}
+#options-container.loaded {
+    opacity: 1;
+}
+
+/* OPTIONS LIST & CARDS */
+.options-list { display: flex; flex-direction: column; gap: 16px; }
+
+.option-card {
+    background: var(--md-sys-color-surface);
+    border: 2px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-shape-corner-large);
+    overflow: hidden;
+    transition: transform 520ms var(--motion-sheet), border-color 280ms ease, background-color 280ms ease, box-shadow 320ms ease;
+    cursor: pointer;
+    box-shadow: var(--md-elevation-1);
+    will-change: transform;
+    transform: translateZ(0);
+    transform-origin: center;
+    touch-action: pan-y;
+    backface-visibility: hidden;
+    contain: layout style;
+}
+
+.option-card:active { transform: scale(.988); }
+
+.option-card.selected {
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-surface-container);
+    box-shadow: 0 10px 30px rgba(168,199,250,.13), inset 0 0 0 1px rgba(168,199,250,.08);
+}
+
+@keyframes cardEntrance {
+    0% { opacity: 0; transform: translateY(-24px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.option-card.new-item { animation: cardEntrance 0.6s var(--spotify-easing) forwards; }
+
+.card-cover-container {
+    width: 100%;
+    height: 160px;
+    position: relative;
+    background: var(--md-sys-color-surface-container-high);
+    overflow: hidden;
+    isolation: isolate;
+    cursor: zoom-in;
+}
+
+.card-cover {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    transition: transform 650ms var(--motion-sheet), filter 350ms ease;
+    transform: scale(1.001);
+    will-change: transform;
+}
+
+.option-card:hover .card-cover { transform: scale(1.04); }
+.option-card.selected .card-cover { transform: scale(1.035); }
+
+.cover-detail-button {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 999px;
+    padding: 8px 12px;
+    color: #fff;
+    background: rgba(15,16,20,.58);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    font-size: .78rem;
+    font-weight: 600;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 240ms ease, transform 300ms var(--motion-enter);
+}
+
+.option-card:hover .cover-detail-button,
+.option-card:focus-within .cover-detail-button {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (hover: none) { .cover-detail-button { opacity: 1; transform: none; } }
+
+.price-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(18, 19, 22, 0.85);
+    backdrop-filter: blur(8px);
+    padding: 6px 12px;
+    border-radius: var(--md-shape-corner-small);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--md-sys-color-success);
+    transition: transform 320ms var(--motion-spring), background-color 240ms ease;
+}
+
+.option-card.selected .price-badge { transform: translateY(-2px); background: rgba(18,19,22,.92); }
+
+.card-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+
+.card-note-box {
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-shape-corner-small);
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    color: var(--md-sys-color-on-surface-variant);
+    line-height: 1.45;
+    word-break: break-word;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.card-note-box .material-symbols-outlined {
+    font-size: 1.15rem;
+    color: var(--md-sys-color-primary);
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.card-header-row { display: flex; align-items: center; gap: 12px; }
+
+.checkbox-custom {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 2px solid var(--md-sys-color-outline);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s var(--spotify-easing);
+}
+
+.option-card.selected .checkbox-custom {
+    background: var(--md-sys-color-primary);
+    border-color: var(--md-sys-color-primary);
+    transform: scale(1.1);
+    animation: checkPop 360ms var(--motion-spring);
+}
+
+.option-card.selected .checkbox-custom::after { content: '✓'; color: var(--md-sys-color-on-primary); font-weight: bold; font-size: 0.85rem; }
+
+@keyframes checkPop { 0% { transform: scale(.72) rotate(-8deg); } 65% { transform: scale(1.18) rotate(2deg); } 100% { transform: scale(1.1) rotate(0); } }
+
+.card-title { font-size: 1.05rem; font-weight: 600; color: var(--md-sys-color-on-surface); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+
+.progress-bar-bg { width: 100%; height: 8px; background: var(--md-sys-color-surface-container-high); border-radius: 4px; overflow: hidden; }
+
+.progress-bar-fill {
+    height: 100%;
+    background: var(--md-sys-color-primary);
+    width: 0%;
+    transition: width 650ms var(--motion-sheet);
+    position: relative;
+    border-radius: inherit;
+}
+
+.progress-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); font-weight: 500; }
+.voters-container { font-size: 0.75rem; color: var(--md-sys-color-outline); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+.voter-tag {
+    background: var(--md-sys-color-surface-container-high);
+    padding: 3px 10px;
+    border-radius: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 500;
+    animation: tagPop 360ms var(--motion-spring) both;
+}
+
+@keyframes tagPop { from { opacity: 0; transform: translateY(5px) scale(.88); } to { opacity: 1; transform: translateY(0) scale(1); } }

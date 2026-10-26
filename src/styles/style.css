@@ -1,46 +1,10 @@
-:root {
-    --md-sys-color-background: #121316;
-    --md-sys-color-surface: #121316;
-    --md-sys-color-surface-container: #28292e;
-    --md-sys-color-surface-container-high: #33343a;
-    --md-sys-color-surface-variant: #28292e;
-    --md-sys-color-primary: #a8c7fa;
-    --md-sys-color-on-primary: #062e6f;
-    --md-sys-color-primary-container: #1d3a70;
-    --md-sys-color-on-primary-container: #d3e3fd;
-    --md-sys-color-outline: #8e9099;
-    --md-sys-color-outline-variant: #44474f;
-    --md-sys-color-on-surface: #e3e3e8;
-    --md-sys-color-on-surface-variant: #c4c6d0;
-    --md-sys-color-success: #6dd58c;
-    --md-sys-color-error: #f2b8b5;
-
-    --md-shape-corner-extra-large: 28px;
-    --md-shape-corner-large: 20px;
-    --md-shape-corner-medium: 12px;
-    --md-shape-corner-small: 8px;
-
-    --md-elevation-1: 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --md-elevation-2: 0 2px 6px 2px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-
-    --spotify-easing: cubic-bezier(0.16, 1, 0.3, 1);
-    --transition-standard: 0.35s var(--spotify-easing);
-
-    --motion-fast: 160ms;
-    --motion-base: 280ms;
-    --motion-slow: 460ms;
-    --motion-out: cubic-bezier(.2,.8,.2,1);
-    --motion-spring: cubic-bezier(.2,1.35,.4,1);
-    --motion-sheet: cubic-bezier(.22,1,.36,1);
-    --motion-quick: cubic-bezier(.2,.75,.25,1);
-    --motion-pop: cubic-bezier(.2,1.4,.4,1);
-    --motion-enter: cubic-bezier(.16, 1, .3, 1);
-    --motion-exit: cubic-bezier(.4, 0, 1, 1);
-    --app-accent: #1ed760;
-
-    --tap-x: 50%;
-    --tap-y: 50%;
-}
+@import './variables.css';
+@import './base.css';
+@import './hero.css';
+@import './leaderboard.css';
+@import './cards.css';
+@import './components.css';
+@import './modals.css';
 
 * {
     box-sizing: border-box;
