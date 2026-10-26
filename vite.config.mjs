@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { webfontDownload } from "vite-plugin-webfont-dl";
 
 export default defineConfig({
     base: '/anketar/',
@@ -8,9 +9,20 @@ export default defineConfig({
         assetsDir: 'assets',
     },
     plugins: [
+        webfontDownload([
+            'https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap',
+            'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0'
+        ]),
         VitePWA({
             registerType: 'autoUpdate',
-            includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'pwa-192x192.png', 'pwa-512x512.png', 'app-preview.png', 'app-preview-wide.png'],
+            includeAssets: [
+                'favicon.ico',
+                'apple-touch-icon-180x180.png',
+                'pwa-192x192.png',
+                'pwa-512x512.png',
+                'app-preview.png',
+                'app-preview-wide.png'
+            ],
             manifest: {
                 id: '/anketar/',
                 name: 'Madrid Ekskurzija - Trkadzije & Rumoljubi',
@@ -54,7 +66,7 @@ export default defineConfig({
                 ]
             },
             workbox: {
-                globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}']
+                globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,woff2}']
             }
         })
     ]

@@ -663,7 +663,7 @@ textarea.input-field { resize: vertical; min-height: 70px; }
 
 .card-cover {
     width: 100%;
-    height: 100%;
+    height: 160px;
     object-fit: cover;
     transition: transform 650ms var(--motion-sheet), filter 350ms ease;
     transform: scale(1.001);
