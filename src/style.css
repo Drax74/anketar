@@ -54,6 +54,8 @@
 html {
     scroll-behavior: smooth;
     scroll-padding-top: 18px;
+    background-color: var(--md-sys-color-background);
+    overscroll-behavior-y: none; /* Prevents background light leaks on overscroll */
 }
 
 body {
@@ -63,7 +65,8 @@ body {
     display: flex;
     justify-content: center;
     padding: 0;
-    overflow-x: clip;
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
 }
 
 /* APP SCROLL CONTAINER */
@@ -75,9 +78,10 @@ body {
     flex-direction: column;
     gap: 16px;
     isolation: isolate;
-    padding: 16px 12px calc(94px + env(safe-area-inset-bottom)) 12px;
+    padding: 0 12px calc(94px + env(safe-area-inset-bottom)) 12px;
     box-sizing: border-box;
     margin: 0 auto;
+    background-color: var(--md-sys-color-background);
 }
 
 #options-container {
@@ -88,32 +92,64 @@ body {
     opacity: 1;
 }
 
-/* SPOTIFY-INSPIRED HERO HEADER & PARALLAX */
+/* SPOTIFY-INSPIRED 3D-ELEVATED RECTANGULAR HERO HEADER */
 .hero-header {
     position: relative;
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--md-shape-corner-large);
-    padding: 64px 20px 48px 20px;
-    min-height: 220px;
+    border: none;
+    border-radius: 0;
+    margin-left: -12px;
+    margin-right: -12px;
+    width: calc(100% + 24px);
+    padding: 72px 20px 48px 20px;
+    min-height: 300px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
-    box-shadow: var(--md-elevation-1);
+    box-shadow: inset 0 8px 20px rgba(0, 0, 0, 0.6), inset 0 -8px 20px rgba(0, 0, 0, 0.6);
     overflow: hidden;
     isolation: isolate;
-    will-change: height, padding;
     transform-origin: 50% 30%;
+
+    /* Feathered mask to smoothly fade out left, right, and bottom edges */
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%),
+    linear-gradient(to bottom, black 75%, transparent 100%);
+    -webkit-mask-composite: intersect;
+    mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%),
+    linear-gradient(to bottom, black 75%, transparent 100%);
+    mask-composite: intersect;
 }
 
+/* Pure CSS Parallax Background (shifted lower to 12% to provide more headroom and prevent forehead cropping) */
 .hero-bg-parallax {
     position: absolute;
-    inset: -20px;
+    inset: 0;
     z-index: -1;
-    background: linear-gradient(rgba(18, 19, 22, 0.70), rgba(18, 19, 22, 0.85)),
-    url('https://35milimetros.es/wp-content/uploads/2026/03/2b4013cc-60a9-4680-a9bd-f9f891d42a63_source-aspect-ratio_1600w_0.webp') center top / cover no-repeat;
+    background: linear-gradient(rgba(18, 19, 22, 0.15), rgba(18, 19, 22, 0.35)),
+    url('https://35milimetros.es/wp-content/uploads/2026/03/2b4013cc-60a9-4680-a9bd-f9f891d42a63_source-aspect-ratio_1600w_0.webp') center 12% / cover no-repeat;
     will-change: transform;
+}
+
+.hero-overlay-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(18, 19, 22, 0.1), rgba(18, 19, 22, 0.45));
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Bottom transition gradient fade into the page background */
+.hero-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 54px;
+    background: linear-gradient(to bottom, transparent, var(--md-sys-color-background));
+    pointer-events: none;
+    z-index: 2;
 }
 
 .hero-content-inner {
@@ -121,6 +157,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    z-index: 3;
 }
 
 .header-card h1 {
@@ -153,21 +190,22 @@ body {
     will-change: transform;
 }
 
-/* LEADERBOARD PODIUM */
+/* LEADERBOARD PODIUM (FULL-WIDTH, NO CONTAINER BOX) */
 .leaderboard-section {
-    background: var(--md-sys-color-surface-container);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--md-shape-corner-large);
-    padding: 16px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    box-shadow: var(--md-elevation-1);
+    box-shadow: none;
 }
 .leaderboard-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 0 4px;
 }
 .leaderboard-title {
     font-size: 0.95rem;
