@@ -75,18 +75,23 @@
 
 <div id="app-toast" class="app-toast" role="status" aria-live="polite"></div>
 
-<!-- FOOTER -->
-<footer class="app-footer">
-  <div class="app-footer-content">
-    <div class="user-profile-footer">
-      <div class="user-avatar" id="user-avatar-initials">U</div>
-      <div class="user-footer-details">
-        <span class="user-footer-name" id="footer-user-name">Loading...</span>
-      </div>
+<!-- FLOATING USER AVATAR FAB (Bottom-Right or Top-Right) -->
+<div class="floating-user-container">
+  <button id="floating-avatar-btn" class="floating-fab-btn" onclick="toggleUserMenu()" aria-label="User Menu">
+    <div class="user-avatar" id="user-avatar-initials">U</div>
+  </button>
+
+  <!-- POPUP / POPOVER MENU -->
+  <div id="user-dropdown-menu" class="user-dropdown-menu">
+    <div class="dropdown-header">
+      <span class="dropdown-user-name" id="footer-user-name">Loading...</span>
+      <span class="dropdown-user-email" id="footer-user-email"></span>
     </div>
-    <button class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 0.75rem;" onclick="logoutUser()">Sign Out</button>
+    <button class="dropdown-logout-btn" onclick="logoutUser()">
+      <span class="material-symbols-outlined">logout</span> Sign Out
+    </button>
   </div>
-</footer>
+</div>
 
 <!-- AUTHENTICATION MODAL (Standard Centered Modal) -->
 <div id="auth-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="auth-title">

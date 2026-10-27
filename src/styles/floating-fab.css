@@ -1,0 +1,150 @@
+/* FLOATING USER FAB CONTAINER */
+.floating-user-container {
+    position: fixed;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    right: 20px;
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+/* FROSTED GLASS BORDERLESS FLOATING FAB WITH GLOW */
+.floating-fab-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(18, 19, 22, 0.55); /* Matches popup frosted glass */
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: none; /* Absolutely zero borders */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    animation: modernPulse 4s infinite ease-in-out;
+    transition: transform 250ms var(--motion-spring), background-color 250ms ease, box-shadow 250ms ease;
+    padding: 0;
+}
+
+.floating-fab-btn:hover {
+    background: rgba(28, 29, 34, 0.75);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 107, 107, 0.3);
+}
+
+.floating-fab-btn:active {
+    transform: scale(0.92);
+}
+
+.floating-fab-btn .user-avatar {
+    width: 44px;
+    height: 44px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    background: rgba(255, 107, 107, 0.12); /* Matches sign out button color tone */
+    color: #ff8b8b; /* Matches sign out button text color */
+    box-shadow: none;
+}
+
+/* MODERN SUBTLE GLOW KEYFRAMES */
+@keyframes modernPulse {
+    0% {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 0 0 rgba(255, 107, 107, 0.2);
+    }
+    50% {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.15), 0 0 0 8px rgba(255, 107, 107, 0);
+    }
+    100% {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 0 0 rgba(255, 107, 107, 0);
+    }
+}
+
+/* COMPACT, GLASSY, RIGHT-ALIGNED POPOVER MENU */
+.user-dropdown-menu {
+    position: absolute;
+    bottom: 60px;
+    right: 0;
+    width: 210px;
+    background: rgba(18, 19, 22, 0.55); /* Transparent frosted glass */
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: none; /* Zero borders */
+    border-radius: 16px;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px) scale(0.96);
+    transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 220ms cubic-bezier(0.16, 1, 0.3, 1), visibility 180ms ease;
+    text-align: right; /* Right-aligned text */
+}
+
+.user-dropdown-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.dropdown-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 4px;
+}
+
+.dropdown-user-name {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--md-sys-color-on-surface);
+    letter-spacing: -0.2px;
+}
+
+.dropdown-user-email {
+    font-size: 0.73rem;
+    color: var(--md-sys-color-outline);
+    word-break: break-all;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    width: 100%;
+    margin: 2px 0;
+}
+
+/* BORDERLESS, SLEEK, MODERN SIGN OUT BUTTON */
+.dropdown-logout-btn {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff8b8b;
+    border: none; /* Completely borderless */
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-weight: 500;
+    font-size: 0.78rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background-color 150ms ease, transform 150ms ease;
+    width: 100%;
+    letter-spacing: -0.2px;
+}
+
+.dropdown-logout-btn .material-symbols-outlined {
+    font-size: 0.95rem;
+}
+
+.dropdown-logout-btn:hover {
+    background: rgba(255, 107, 107, 0.18);
+}
+
+.dropdown-logout-btn:active {
+    background: rgba(255, 107, 107, 0.26);
+    transform: scale(0.98);
+}

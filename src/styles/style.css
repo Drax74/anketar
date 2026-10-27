@@ -5,6 +5,7 @@
 @import './cards.css';
 @import './components.css';
 @import './modals.css';
+@import './floating-fab.css';
 
 * {
     box-sizing: border-box;

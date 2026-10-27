@@ -120,6 +120,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+function toggleUserMenu() {
+    const menu = document.getElementById('user-dropdown-menu');
+    if (menu) {
+        menu.classList.toggle('active');
+    }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    const container = document.querySelector('.floating-user-container');
+    const menu = document.getElementById('user-dropdown-menu');
+    if (container && menu && !container.contains(e.target)) {
+        menu.classList.remove('active');
+    }
+});
+
 // Expose globals for HTML inline listeners
 window.toggleVote = toggleVote;
 window.toggleManualSort = toggleManualSort;
@@ -132,3 +148,4 @@ window.closeAddModal = closeAddModal;
 window.submitNewOption = submitNewOption;
 window.loginWithGoogle = loginWithGoogle;
 window.logoutUser = logoutUserSession;
+window.toggleUserMenu = toggleUserMenu;
