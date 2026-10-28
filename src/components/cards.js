@@ -104,13 +104,14 @@ export async function renderOptions(isNewItemAdded = false, newItemId = null, an
                 `;
             }
 
-            // Title is rendered as plain text/header without link inside the card
             cardEl.innerHTML = `
                 <div class="card-cover-container">
                   <button class="card-heart-btn ${isSelected ? 'voted' : ''}" type="button" 
                           aria-label="Glasaj za ovaj smještaj"
+                          aria-pressed="${isSelected}"
                           onclick="event.stopPropagation(); toggleVote('${opt.id}')">
                     <span class="material-symbols-outlined">favorite</span>
+                    <span class="vote-heart-particles" aria-hidden="true"></span>
                   </button>
                   <img class="card-cover" src="${opt.image}" alt="${opt.title}" loading="lazy" onError="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'" />
                   <div class="price-badge"><span class="material-symbols-outlined" style="font-size: 0.95rem; font-variation-settings: 'FILL' 1, 'wght' 500; vertical-align: -2px;">local_offer</span> ${displayPrice}</div>
@@ -162,6 +163,7 @@ export function updateCardSubelements(optionId) {
     const heartBtn = cardEl.querySelector('.card-heart-btn');
     if (heartBtn) {
         heartBtn.classList.toggle('voted', isSelected);
+        heartBtn.setAttribute('aria-pressed', String(isSelected));
     }
 
     const votersRow = cardEl.querySelector('.voters-row');

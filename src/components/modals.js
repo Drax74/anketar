@@ -15,16 +15,9 @@ let pendingScrapedData = {
     link: ''
 };
 
-// 8-color frosted avatar palette mapping (matching cards.js)
 const AVATAR_PALETTE = [
-    '#647FA8', // Slate Blue
-    '#648C79', // Sage Green
-    '#B87983', // Dusty Rose
-    '#B58A45', // Muted Amber
-    '#8A78B5', // Lavender
-    '#B97655', // Terracotta
-    '#4E9290', // Teal
-    '#858B98'  // Cool Gray
+    '#647FA8', '#648C79', '#B87983', '#B58A45',
+    '#8A78B5', '#B97655', '#4E9290', '#858B98'
 ];
 
 function getDeterministicAvatarColor(identifier = '') {
@@ -143,8 +136,6 @@ export async function submitLinkAndFetch() {
         }
 
         const { title, image, description, providerUsed } = data;
-        console.log(`[Scraper] Successfully fetched using provider: ${providerUsed}`);
-
         pendingScrapedData.scrapedSuccessfully = true;
         pendingScrapedData.title = title ? title.split(' - ')[0].trim() : 'Smještaj';
         pendingScrapedData.image = image || '';
@@ -223,7 +214,6 @@ export async function submitNewOption() {
 
     let rawPrice = document.getElementById('input-price')?.value.trim() || 'N/A';
     const finalPrice = rawPrice !== 'N/A' && !rawPrice.includes('€') ? `${rawPrice}€` : rawPrice;
-
     const note = document.getElementById('input-note')?.value.trim() || '';
 
     if (!finalTitle) {
@@ -291,7 +281,6 @@ export function openDetail(optionId) {
     const rawAmount = opt.price ? opt.price.replace('€', '').trim() : 'N/A';
     const displayPrice = rawAmount !== 'N/A' ? `${rawAmount}€` : 'N/A';
 
-    // Build Voters Stack HTML
     let votersHtml = '';
     if (voters.length > 0) {
         const maxVisible = 3;
@@ -325,7 +314,6 @@ export function openDetail(optionId) {
         `;
     }
 
-    // Determine platform link label
     let linkText = 'Pogledaj ponudu ↗';
     let isAirbnb = false;
     let isBooking = false;
@@ -347,22 +335,24 @@ export function openDetail(optionId) {
     const sheet = overlay.querySelector('.detail-sheet');
     if (sheet) {
         sheet.innerHTML = `
-            <div style="position: relative; width: 100%; height: clamp(220px, 38vh, 320px); background: #1B1C20; overflow: hidden; isolation: isolate;">
-                <!-- Top-Left Heart Vote Button -->
+            <div class="card-cover-container" style="height: clamp(220px, 38vh, 340px);">
+                <!-- Top-Left Heart Vote Button with Particle Layer & Clean toggleVote Handler -->
                 <button class="card-heart-btn ${isSelected ? 'voted' : ''}" type="button" 
                         aria-label="Glasaj"
-                        onclick="toggleVote('${opt.id}'); openDetail('${opt.id}')">
+                        aria-pressed="${isSelected}"
+                        onclick="toggleVote('${opt.id}')">
                     <span class="material-symbols-outlined">favorite</span>
+                    <span class="vote-heart-particles" aria-hidden="true"></span>
                 </button>
 
                 <!-- Top-Right Close Button -->
-                <button class="detail-close" type="button" onclick="closeDetail()" aria-label="Zatvori" style="position: absolute; top: 12px; right: 12px; width: 38px; height: 38px; border-radius: 50%; background: rgba(18, 19, 22, 0.72); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.18); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.25rem; cursor: pointer; z-index: 10;">&times;</button>
+                <button class="detail-close" type="button" onclick="closeDetail()" aria-label="Zatvori">&times;</button>
 
                 <!-- Property Cover Image -->
-                <img src="${safeImage}" alt="${opt.title}" style="width: 100%; height: 100%; object-fit: cover;" />
+                <img class="card-cover" src="${safeImage}" alt="${opt.title}" />
 
                 <!-- Bottom-Right Price Badge -->
-                <div class="price-badge" style="position: absolute; bottom: 12px; right: 12px; left: auto; top: auto; width: auto; max-width: max-content; background: rgba(18, 19, 22, 0.88); backdrop-filter: blur(8px); padding: 6px 12px; border-radius: var(--md-shape-corner-small); font-size: 0.85rem; font-weight: 600; color: #ffffff; border: 1px solid rgba(255,255,255,0.12); z-index: 5; box-sizing: border-box; display: inline-flex; align-items: center; gap: 5px;"><span class="material-symbols-outlined" style="font-size: 0.95rem; font-variation-settings: 'FILL' 1, 'wght' 500; vertical-align: -2px;">local_offer</span>${displayPrice}</div>
+                <div class="price-badge"><span class="material-symbols-outlined" style="font-size: 0.95rem; font-variation-settings: 'FILL' 1, 'wght' 500; vertical-align: -2px;">local_offer</span>${displayPrice}</div>
             </div>
             
             <div class="detail-content" style="padding: 24px; display: flex; flex-direction: column; gap: 8px;">
@@ -421,7 +411,57 @@ export function closeDetail() {
 
 export function updateDetailModalIfOpen() {
     if (state.activeDetailId === null) return;
-    openDetail(state.activeDetailId);
+    const opt = state.options.find(item => String(item.id) === String(state.activeDetailId));
+    if (!opt) return;
+
+    const overlay = document.getElementById('detail-overlay');
+    if (!overlay || !overlay.classList.contains('active')) return;
+
+    const isSelected = state.selectedOptionIds.has(opt.id);
+    const heartBtn = overlay.querySelector('.card-heart-btn');
+    if (heartBtn) {
+        heartBtn.classList.toggle('voted', isSelected);
+        heartBtn.setAttribute('aria-pressed', String(isSelected));
+    }
+
+    // Fully update the voters row inside the open detail modal
+    const votersRow = overlay.querySelector('.voters-row');
+    if (votersRow) {
+        const voters = opt.voters || [];
+        const voterEmails = opt.voterEmails || [];
+
+        if (voters.length > 0) {
+            const maxVisible = 3;
+            const visibleCount = Math.min(voters.length, maxVisible);
+            const remainingCount = voters.length - visibleCount;
+
+            let avatarCircles = '';
+            for (let i = 0; i < visibleCount; i++) {
+                const voterName = voters[i];
+                const voterEmail = voterEmails[i] || voterName;
+                const initials = getTwoInitials(voterName);
+                const color = getDeterministicAvatarColor(voterEmail);
+                avatarCircles += `<div class="voter-avatar" style="--avatar-color: ${color};" title="${voterName}">${initials}</div>`;
+            }
+
+            const moreCircle = remainingCount > 0
+                ? `<div class="voter-avatar more-count" title="+${remainingCount} još">+${remainingCount}</div>`
+                : '';
+
+            votersRow.innerHTML = `
+                <span class="voters-label">Glasali:</span>
+                <div class="voters-avatar-stack">
+                    ${avatarCircles}
+                    ${moreCircle}
+                </div>
+            `;
+        } else {
+            votersRow.innerHTML = `
+                <span class="voters-label">Glasali:</span>
+                <span class="voters-empty-text">Još nitko</span>
+            `;
+        }
+    }
 }
 
 export async function saveOptionDetails() {

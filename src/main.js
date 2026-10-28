@@ -4,7 +4,7 @@ import { setupRealtimeSubscription } from './services/realtime.js';
 import { initAuthListener, checkInitialSession, logoutUserSession, loginWithGoogle } from './services/auth.js';
 import { renderOptions, scrollToCardIfNeeded, updateCardSubelements } from './components/cards.js';
 import { renderLeaderboard } from './components/leaderboard.js';
-import { openDetail, closeDetail, saveOptionDetails, openAddModal, closeAddModal, submitNewOption, showToast } from './components/modals.js';
+import { openDetail, closeDetail, saveOptionDetails, openAddModal, closeAddModal, submitNewOption, showToast, updateDetailModalIfOpen } from './components/modals.js';
 import { addVote, removeVote } from './services/api.js';
 
 async function toggleVote(optionId) {
@@ -15,7 +15,6 @@ async function toggleVote(optionId) {
 
     const isAdding = !state.selectedOptionIds.has(optionId);
     applyOptimisticVote(optionId, isAdding);
-    // Automatic scrolling on vote is disabled as requested
 
     try {
         if (isAdding) await addVote(state.userEmail, optionId);
@@ -47,7 +46,58 @@ function applyOptimisticVote(optionId, isAdding) {
     }
 
     updateCardSubelements(optionId);
+    updateDetailModalIfOpen(); // Updates both heart button and voters stack row inside active detail modal!
     renderLeaderboard(true);
+
+    if (isAdding) {
+        triggerHeartAnimation(optionId);
+    }
+}
+
+function triggerHeartAnimation(optionId) {
+    const cardEl = document.querySelector(`.option-card[data-id="${optionId}"]`);
+    if (cardEl) {
+        animateHeartButton(cardEl.querySelector('.card-heart-btn'));
+    }
+
+    const detailOverlay = document.getElementById('detail-overlay');
+    if (detailOverlay && detailOverlay.classList.contains('active') && String(state.activeDetailId) === String(optionId)) {
+        animateHeartButton(detailOverlay.querySelector('.card-heart-btn'));
+    }
+}
+
+function animateHeartButton(btn) {
+    if (!btn) return;
+    const icon = btn.querySelector('.material-symbols-outlined');
+    if (!icon) return;
+
+    icon.getAnimations().forEach(a => a.cancel());
+    btn.classList.remove('is-popping');
+    void btn.offsetWidth;
+    btn.classList.add('is-popping');
+    setTimeout(() => btn.classList.remove('is-popping'), 450);
+
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const layer = btn.querySelector('.vote-heart-particles');
+        if (layer) {
+            layer.replaceChildren();
+            const colors = ['#FFC857', '#FF647F', '#F5F5F5', '#E8A1B0'];
+
+            for (let i = 0; i < 8; i++) {
+                const angle = (Math.PI * 2 * i) / 8;
+                const distance = 18 + (i % 3) * 5;
+                const particle = document.createElement('span');
+
+                particle.className = 'vote-heart-particle';
+                particle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
+                particle.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
+                particle.style.setProperty('--particle-color', colors[i % colors.length]);
+
+                layer.appendChild(particle);
+                particle.addEventListener('animationend', () => particle.remove(), { once: true });
+            }
+        }
+    }
 }
 
 async function toggleManualSort() {
@@ -72,7 +122,6 @@ function updateUserUI() {
     const displayName = state.userName || state.userEmail || 'Korisnik';
     const initials = displayName.substring(0, 2).toUpperCase();
 
-    // Mobile / Footer elements
     const nameEl = document.getElementById('footer-user-name');
     const avatarEl = document.getElementById('user-avatar-initials');
     const emailEl = document.getElementById('footer-user-email');
@@ -80,7 +129,6 @@ function updateUserUI() {
     if (avatarEl) avatarEl.innerText = initials;
     if (emailEl) emailEl.innerText = state.userEmail || '';
 
-    // Desktop top header avatar only
     const desktopAvatarEl = document.getElementById('desktop-user-avatar-initials');
     if (desktopAvatarEl) desktopAvatarEl.innerText = initials;
 }
@@ -132,7 +180,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Hook into submitNewOption to trigger card scroll on add
 export async function handleNewOptionSubmission() {
     const tempId = await submitNewOption();
     if (tempId) {

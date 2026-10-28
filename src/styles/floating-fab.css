@@ -119,11 +119,11 @@
     margin: 2px 0;
 }
 
-/* SIGN OUT BUTTON USING CONSISTENT DANGER TINT */
+/* SIGN OUT BUTTON MATCHING SECONDARY BUTTON STYLE */
 .dropdown-logout-btn {
-    background: rgba(244, 63, 94, 0.12);
-    color: var(--md-sys-color-error);
-    border: 1px solid rgba(244, 63, 94, 0.25);
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
     border-radius: var(--md-shape-corner-small);
     padding: 8px 12px;
     font-weight: 500;
@@ -133,7 +133,7 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+    transition: background-color 240ms ease, border-color 240ms ease, transform 150ms ease;
     width: 100%;
     letter-spacing: -0.2px;
 }
@@ -143,11 +143,9 @@
 }
 
 .dropdown-logout-btn:hover {
-    background: rgba(244, 63, 94, 0.22);
-    border-color: rgba(244, 63, 94, 0.4);
+    border-color: var(--md-sys-color-primary);
 }
 
 .dropdown-logout-btn:active {
-    background: rgba(244, 63, 94, 0.3);
     transform: scale(0.98);
 }
