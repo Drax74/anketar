@@ -45,7 +45,7 @@ body {
     position: fixed;
     bottom: 0; left: 0; right: 0;
     width: 100%;
-    background: rgba(30,31,36,.82);
+    background: rgba(27, 28, 32, 0.85);
     -webkit-backdrop-filter: blur(22px) saturate(145%);
     backdrop-filter: blur(22px) saturate(145%);
     border-top: 1px solid var(--md-sys-color-outline-variant);
@@ -80,7 +80,7 @@ body {
     justify-content: center;
     font-weight: 600;
     font-size: 0.9rem;
-    border: 1px solid rgba(168, 199, 250, 0.3);
+    border: 1px solid rgba(255, 200, 87, 0.3);
     transition: transform 380ms var(--motion-spring), box-shadow 250ms ease;
 }
 .user-avatar:active { transform: scale(.9); }

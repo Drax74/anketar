@@ -3,6 +3,7 @@ import { getPollData } from './services/api.js';
 import { setupRealtimeSubscription } from './services/realtime.js';
 import { initAuthListener, checkInitialSession, logoutUserSession, loginWithGoogle } from './services/auth.js';
 import { renderOptions, scrollToCardIfNeeded, updateCardSubelements } from './components/cards.js';
+import { renderLeaderboard } from './components/leaderboard.js';
 import { openDetail, closeDetail, saveOptionDetails, openAddModal, closeAddModal, submitNewOption, showToast } from './components/modals.js';
 import { addVote, removeVote } from './services/api.js';
 
@@ -14,7 +15,7 @@ async function toggleVote(optionId) {
 
     const isAdding = !state.selectedOptionIds.has(optionId);
     applyOptimisticVote(optionId, isAdding);
-    scrollToCardIfNeeded(optionId);
+    // Automatic scrolling on vote is disabled as requested
 
     try {
         if (isAdding) await addVote(state.userEmail, optionId);
@@ -46,6 +47,7 @@ function applyOptimisticVote(optionId, isAdding) {
     }
 
     updateCardSubelements(optionId);
+    renderLeaderboard(true);
 }
 
 async function toggleManualSort() {
@@ -67,16 +69,24 @@ async function voteFromDetail() {
 }
 
 function updateUserUI() {
+    const displayName = state.userName || state.userEmail || 'Korisnik';
+    const initials = displayName.substring(0, 2).toUpperCase();
+
+    // Mobile / Footer elements
     const nameEl = document.getElementById('footer-user-name');
     const avatarEl = document.getElementById('user-avatar-initials');
-    const displayName = state.userName || state.userEmail || 'Korisnik';
+    const emailEl = document.getElementById('footer-user-email');
     if (nameEl) nameEl.innerText = displayName;
-    if (avatarEl) avatarEl.innerText = displayName.substring(0, 2).toUpperCase();
+    if (avatarEl) avatarEl.innerText = initials;
+    if (emailEl) emailEl.innerText = state.userEmail || '';
+
+    // Desktop top header avatar only
+    const desktopAvatarEl = document.getElementById('desktop-user-avatar-initials');
+    if (desktopAvatarEl) desktopAvatarEl.innerText = initials;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Check initial Supabase token session on boot
         await checkInitialSession();
 
         const { whitelist, options, votes } = await getPollData();
@@ -104,8 +114,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         await renderOptions(false, null, false);
+        await renderLeaderboard(false);
 
-        // Initialize background auth state observer
         initAuthListener(() => {
             if (state.userEmail) {
                 const user = state.whitelistedUsers.find(u => u.email === state.userEmail);
@@ -117,8 +127,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupRealtimeSubscription();
     } catch (err) {
         console.error('Initialization error:', err);
+        await renderOptions(false, null, false);
+        await renderLeaderboard(false);
     }
 });
+
+// Hook into submitNewOption to trigger card scroll on add
+export async function handleNewOptionSubmission() {
+    const tempId = await submitNewOption();
+    if (tempId) {
+        scrollToCardIfNeeded(tempId);
+    }
+}
 
 function toggleUserMenu() {
     const menu = document.getElementById('user-dropdown-menu');
@@ -127,7 +147,6 @@ function toggleUserMenu() {
     }
 }
 
-// Close dropdown when clicking outside
 document.addEventListener('click', (e) => {
     const container = document.querySelector('.floating-user-container');
     const menu = document.getElementById('user-dropdown-menu');
@@ -136,7 +155,6 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Expose globals for HTML inline listeners
 window.toggleVote = toggleVote;
 window.toggleManualSort = toggleManualSort;
 window.openDetail = openDetail;

@@ -9,28 +9,32 @@
     align-items: flex-end;
 }
 
-/* FROSTED GLASS BORDERLESS FLOATING FAB WITH GLOW */
+/* Hide FAB on desktop screens since we use the top header bar */
+@media (min-width: 1024px) {
+    .floating-user-container {
+        display: none !important;
+    }
+}
+
+/* FLOATING FAB BUTTON MATCHING APP SURFACES */
 .floating-fab-btn {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: rgba(18, 19, 22, 0.55); /* Matches popup frosted glass */
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    border: none; /* Absolutely zero borders */
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-    animation: modernPulse 4s infinite ease-in-out;
-    transition: transform 250ms var(--motion-spring), background-color 250ms ease, box-shadow 250ms ease;
+    box-shadow: var(--md-elevation-1);
+    animation: goldPulse 4s infinite ease-in-out;
+    transition: transform 250ms var(--motion-spring), background-color 250ms ease, border-color 250ms ease;
     padding: 0;
 }
 
 .floating-fab-btn:hover {
-    background: rgba(28, 29, 34, 0.75);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 107, 107, 0.3);
+    border-color: var(--md-sys-color-primary);
 }
 
 .floating-fab-btn:active {
@@ -43,36 +47,34 @@
     font-size: 0.9rem;
     font-weight: 600;
     border: none;
-    background: rgba(255, 107, 107, 0.12); /* Matches sign out button color tone */
-    color: #ff8b8b; /* Matches sign out button text color */
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
     box-shadow: none;
 }
 
-/* MODERN SUBTLE GLOW KEYFRAMES */
-@keyframes modernPulse {
+/* GOLD PULSE KEYFRAMES */
+@keyframes goldPulse {
     0% {
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 0 0 rgba(255, 107, 107, 0.2);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px var(--md-sys-color-outline-variant), 0 0 0 0 rgba(255, 200, 87, 0.2);
     }
     50% {
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.15), 0 0 0 8px rgba(255, 107, 107, 0);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px var(--md-sys-color-outline-variant), 0 0 0 8px rgba(255, 200, 87, 0);
     }
     100% {
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 0 0 rgba(255, 107, 107, 0);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px var(--md-sys-color-outline-variant), 0 0 0 0 rgba(255, 200, 87, 0);
     }
 }
 
-/* COMPACT, GLASSY, RIGHT-ALIGNED POPOVER MENU */
+/* POPOVER MENU MATCHING MAIN CARD SURFACES */
 .user-dropdown-menu {
     position: absolute;
     bottom: 60px;
     right: 0;
     width: 210px;
-    background: rgba(18, 19, 22, 0.55); /* Transparent frosted glass */
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    border: none; /* Zero borders */
-    border-radius: 16px;
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-shape-corner-medium);
+    box-shadow: var(--md-elevation-2);
     padding: 12px;
     display: flex;
     flex-direction: column;
@@ -81,7 +83,7 @@
     visibility: hidden;
     transform: translateY(8px) scale(0.96);
     transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 220ms cubic-bezier(0.16, 1, 0.3, 1), visibility 180ms ease;
-    text-align: right; /* Right-aligned text */
+    text-align: right;
 }
 
 .user-dropdown-menu.active {
@@ -106,23 +108,23 @@
 
 .dropdown-user-email {
     font-size: 0.73rem;
-    color: var(--md-sys-color-outline);
+    color: var(--md-sys-color-on-surface-variant);
     word-break: break-all;
 }
 
 .dropdown-divider {
     height: 1px;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--md-sys-color-outline-variant);
     width: 100%;
     margin: 2px 0;
 }
 
-/* BORDERLESS, SLEEK, MODERN SIGN OUT BUTTON */
+/* SIGN OUT BUTTON USING CONSISTENT DANGER TINT */
 .dropdown-logout-btn {
-    background: rgba(255, 107, 107, 0.1);
-    color: #ff8b8b;
-    border: none; /* Completely borderless */
-    border-radius: 10px;
+    background: rgba(244, 63, 94, 0.12);
+    color: var(--md-sys-color-error);
+    border: 1px solid rgba(244, 63, 94, 0.25);
+    border-radius: var(--md-shape-corner-small);
     padding: 8px 12px;
     font-weight: 500;
     font-size: 0.78rem;
@@ -131,7 +133,7 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    transition: background-color 150ms ease, transform 150ms ease;
+    transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
     width: 100%;
     letter-spacing: -0.2px;
 }
@@ -141,10 +143,11 @@
 }
 
 .dropdown-logout-btn:hover {
-    background: rgba(255, 107, 107, 0.18);
+    background: rgba(244, 63, 94, 0.22);
+    border-color: rgba(244, 63, 94, 0.4);
 }
 
 .dropdown-logout-btn:active {
-    background: rgba(255, 107, 107, 0.26);
+    background: rgba(244, 63, 94, 0.3);
     transform: scale(0.98);
 }

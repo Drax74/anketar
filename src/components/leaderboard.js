@@ -16,11 +16,13 @@ export async function renderLeaderboard(animateTransition = true) {
         .slice(0, 3);
 
     const renderDOM = () => {
+        // STATE 2: EMPTY STATE
         if (votedOptions.length === 0) {
             container.innerHTML = `<div class="leaderboard-empty">Još nema glasova. Budi prvi koji će pokrenuti ljestvicu! 🗳️</div>`;
             return;
         }
 
+        // STATE 1: DATA LOADED STATE
         let html = '';
         votedOptions.forEach((opt, index) => {
             const votes = opt.voters.length;
@@ -37,7 +39,10 @@ export async function renderLeaderboard(animateTransition = true) {
                             <div class="leaderboard-bar-fill" style="width: ${pct}%;"></div>
                         </div>
                     </div>
-                    <div class="leaderboard-votes-count">${votes} glas${votes === 1 ? '' : 'a'}</div>
+                    <div class="leaderboard-votes-count" style="display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: var(--md-sys-color-on-surface-variant); font-variation-settings: 'FILL' 1, 'wght' 400; vertical-align: middle;">favorite</span>
+                        <span>${votes}</span>
+                    </div>
                 </div>
             `;
         });

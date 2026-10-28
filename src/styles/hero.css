@@ -31,7 +31,7 @@
     inset: 0;
     z-index: -1;
     background: linear-gradient(rgba(18, 19, 22, 0.15), rgba(18, 19, 22, 0.35)),
-    url('/anketar/hero-cover-image.webp') center 12% / cover no-repeat;
+    url('/anketar/hero-cover-image.webp') center 32% / cover no-repeat;
     will-change: transform;
 }
 
@@ -79,7 +79,42 @@
     font-weight: 500;
 }
 
-/* NATIVE GPU SCROLL-DRIVEN TIMELINE (Zero JS overhead, smooth momentum scroll) */
+/* DESKTOP CINEMATIC HERO EXPANSION */
+@media (min-width: 1024px) {
+    .hero-header {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        min-height: 550px !important;
+        height: 550px !important;
+        padding: 120px 32px 80px 32px;
+        border-radius: var(--md-shape-corner-large);
+
+        -webkit-mask-image: none !important;
+        mask-image: none !important;
+    }
+
+    .hero-header::after {
+        display: none !important;
+    }
+
+    .hero-bg-parallax {
+        inset: 0;
+        border-radius: var(--md-shape-corner-large);
+        background-position: center 50%;
+        background-size: cover;
+    }
+
+    .header-card h1 {
+        font-size: 3.6rem;
+    }
+
+    .header-card p {
+        font-size: 1.35rem;
+    }
+}
+
+/* NATIVE GPU SCROLL-DRIVEN PARALLAX TIMELINE */
 @keyframes heroScrollAnim {
     0% {
         transform: translateY(0) scale(1);
@@ -114,6 +149,6 @@
     .hero-header {
         animation: headerCollapseAnim linear both;
         animation-timeline: scroll(root);
-        animation-range: 0px 250px;
+        animation-range: 0 250px;
     }
 }

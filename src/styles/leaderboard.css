@@ -1,75 +1,77 @@
-/* STICKY HEADER WRAPPER (LEADERBOARD + CONTROLS) */
-.sticky-header-wrapper {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background-color: var(--md-sys-color-background);
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding-top: 4px;
-    padding-bottom: 4px;
-    will-change: transform;
-}
-
-/* LEADERBOARD PODIUM */
+/* LEADERBOARD CARD SURFACES & ITEMS */
 .leaderboard-section {
-    background-color: var(--md-sys-color-background);
-    border: none;
-    border-radius: 0;
-    padding: 0;
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-shape-corner-large);
+    padding: 16px 20px;
+    box-shadow: var(--md-elevation-1);
     display: flex;
     flex-direction: column;
     gap: 12px;
-    box-shadow: none;
 }
+
 .leaderboard-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 0 4px;
+    align-items: center;
 }
+
 .leaderboard-title {
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--md-sys-color-on-surface);
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    letter-spacing: -0.2px;
 }
+
 .leaderboard-container {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
+
 .leaderboard-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: var(--md-sys-color-surface);
-    border: 1px solid var(--md-sys-color-outline-variant);
+    padding: 8px 10px;
     border-radius: var(--md-shape-corner-medium);
-    padding: 10px 12px;
-    position: relative;
-    overflow: hidden;
-    transition: transform 300ms var(--motion-sheet);
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    transition: transform 250ms var(--motion-spring);
 }
+
+/* BASE RANK BADGE STYLE */
 .leaderboard-rank {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.82rem;
     font-weight: 700;
-    font-size: 0.85rem;
-    width: 24px;
-    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    background: var(--md-sys-color-surface-container-high);
-    color: var(--md-sys-color-on-surface-variant);
     flex-shrink: 0;
 }
-.leaderboard-item:nth-child(1) .leaderboard-rank { background: #ffd700; color: #121316; }
-.leaderboard-item:nth-child(2) .leaderboard-rank { background: #c0c0c0; color: #121316; }
-.leaderboard-item:nth-child(3) .leaderboard-rank { background: #cd7f32; color: #ffffff; }
+
+/* 1ST PLACE — GOLD (#FFC928 · Dark text) */
+.leaderboard-item:nth-child(1) .leaderboard-rank {
+    background: #FFC928;
+    color: #121316;
+}
+
+/* 2ND PLACE — SILVER (#C5CAD3 · Dark text) */
+.leaderboard-item:nth-child(2) .leaderboard-rank {
+    background: #C5CAD3;
+    color: #121316;
+}
+
+/* 3RD PLACE — BRONZE (#CD9568 · Dark text) */
+.leaderboard-item:nth-child(3) .leaderboard-rank {
+    background: #CD9568;
+    color: #121316;
+}
 
 .leaderboard-info {
     flex: 1;
@@ -78,6 +80,7 @@
     gap: 4px;
     min-width: 0;
 }
+
 .leaderboard-item-title {
     font-size: 0.88rem;
     font-weight: 600;
@@ -86,48 +89,38 @@
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
-    text-decoration: none;
 }
-.leaderboard-item-title:hover { text-decoration: underline; }
 
 .leaderboard-bar-bg {
     width: 100%;
     height: 5px;
-    background: var(--md-sys-color-surface-container-high);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 3px;
     overflow: hidden;
 }
+
+/* TOP LEADER BAR GETS SOFT GOLD FILL; OTHER RANKS USE WARM GRAY */
 .leaderboard-bar-fill {
     height: 100%;
-    background: var(--md-sys-color-primary);
+    background: #6B6D76;
     border-radius: inherit;
     transition: width 500ms var(--motion-sheet);
 }
+
+.leaderboard-item:nth-child(1) .leaderboard-bar-fill {
+    background: var(--md-sys-color-primary);
+}
+
 .leaderboard-votes-count {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 600;
     color: var(--md-sys-color-on-surface-variant);
     flex-shrink: 0;
 }
+
 .leaderboard-empty {
-    font-size: 0.85rem;
-    color: var(--md-sys-color-outline);
     text-align: center;
-    padding: 10px;
-    font-style: italic;
-}
-
-#btn-manual-sort.active {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-    border-color: var(--md-sys-color-primary);
-}
-
-/* CONTROLS ROW */
-.controls-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 4px;
-    gap: 8px;
+    padding: 16px;
+    font-size: 0.82rem;
+    color: var(--md-sys-color-on-surface-variant);
 }

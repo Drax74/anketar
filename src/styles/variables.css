@@ -1,28 +1,40 @@
 :root {
+    /* --- Foundation & Surface Colors (Warm Editorial Dark) --- */
     --md-sys-color-background: #121316;
-    --md-sys-color-surface: #121316;
-    --md-sys-color-surface-container: #28292e;
-    --md-sys-color-surface-container-high: #33343a;
-    --md-sys-color-surface-variant: #28292e;
-    --md-sys-color-primary: #a8c7fa;
-    --md-sys-color-on-primary: #062e6f;
-    --md-sys-color-primary-container: #1d3a70;
-    --md-sys-color-on-primary-container: #d3e3fd;
-    --md-sys-color-outline: #8e9099;
-    --md-sys-color-outline-variant: #44474f;
-    --md-sys-color-on-surface: #e3e3e8;
-    --md-sys-color-on-surface-variant: #c4c6d0;
-    --md-sys-color-success: #6dd58c;
-    --md-sys-color-error: #f2b8b5;
+    --md-sys-color-surface: #1B1C20;
+    --md-sys-color-surface-container: #1B1C20;
+    --md-sys-color-surface-container-high: #27272a;
+    --md-sys-color-surface-variant: #1B1C20;
 
+    /* --- Brand Accent (Soft Gold / Editorial Amber) --- */
+    --md-sys-color-primary: #FFC857;
+    --md-sys-color-on-primary: #121316;
+    --md-sys-color-primary-container: rgba(255, 200, 87, 0.15);
+    --md-sys-color-on-primary-container: #FFC857;
+
+    /* --- Borders & Outlines --- */
+    --md-sys-color-outline: #92939D;
+    --md-sys-color-outline-variant: rgba(146, 147, 157, 0.22);
+
+    /* --- Typography Colors --- */
+    --md-sys-color-on-surface: #E5E7EB;
+    --md-sys-color-on-surface-variant: #92939D;
+
+    /* --- Status & Financials --- */
+    --md-sys-color-success: #10b981;
+    --md-sys-color-error: #f43f5e;
+
+    /* --- Geometry & Shapes --- */
     --md-shape-corner-extra-large: 28px;
     --md-shape-corner-large: 20px;
-    --md-shape-corner-medium: 12px;
+    --md-shape-corner-medium: 14px;
     --md-shape-corner-small: 8px;
 
-    --md-elevation-1: 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --md-elevation-2: 0 2px 6px 2px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    /* --- Shadows --- */
+    --md-elevation-1: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(146, 147, 157, 0.18);
+    --md-elevation-2: 0 20px 45px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(146, 147, 157, 0.25);
 
+    /* --- Easing & Motion --- */
     --spotify-easing: cubic-bezier(0.16, 1, 0.3, 1);
     --transition-standard: 0.35s var(--spotify-easing);
 
@@ -36,7 +48,7 @@
     --motion-pop: cubic-bezier(.2,1.4,.4,1);
     --motion-enter: cubic-bezier(.16, 1, .3, 1);
     --motion-exit: cubic-bezier(.4, 0, 1, 1);
-    --app-accent: #1ed760;
+    --app-accent: #FFC857;
 
     --tap-x: 50%;
     --tap-y: 50%;

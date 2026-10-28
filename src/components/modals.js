@@ -1,7 +1,7 @@
 import { supabase } from '../supabase.js';
 import { state } from '../state.js';
 import { addOption, updateOption } from '../services/api.js';
-import { renderOptions } from './cards.js';
+import { renderOptions, updateCardSubelements } from './cards.js';
 import { normalizeUrl } from '../shared/helpers/url.js';
 import { isValidUrl, isBookingOrAirbnbUrl } from '../shared/helpers/validation.js';
 
@@ -14,6 +14,34 @@ let pendingScrapedData = {
     description: '',
     link: ''
 };
+
+// 8-color frosted avatar palette mapping (matching cards.js)
+const AVATAR_PALETTE = [
+    '#647FA8', // Slate Blue
+    '#648C79', // Sage Green
+    '#B87983', // Dusty Rose
+    '#B58A45', // Muted Amber
+    '#8A78B5', // Lavender
+    '#B97655', // Terracotta
+    '#4E9290', // Teal
+    '#858B98'  // Cool Gray
+];
+
+function getDeterministicAvatarColor(identifier = '') {
+    let hash = 0;
+    for (let i = 0; i < identifier.length; i++) {
+        hash = identifier.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % AVATAR_PALETTE.length;
+    return AVATAR_PALETTE[index];
+}
+
+function getTwoInitials(name = '') {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 export function showToast(message, kind = 'info') {
     const toast = document.getElementById('app-toast');
@@ -243,6 +271,7 @@ export async function submitNewOption() {
         renderOptions();
         showToast('Greška pri dodavanju smještaja.', 'error');
     }
+    return tempId;
 }
 
 export function openDetail(optionId) {
@@ -251,65 +280,132 @@ export function openDetail(optionId) {
     state.activeDetailId = opt.id;
 
     const overlay = document.getElementById('detail-overlay');
-    const image = document.getElementById('detail-image');
-    const title = document.getElementById('detail-title');
-    const descriptionEl = document.getElementById('detail-description');
-    const priceEl = document.getElementById('detail-price');
-    const votesEl = document.getElementById('detail-votes');
-    const noteEl = document.getElementById('detail-note');
-    const link = document.getElementById('detail-link');
-    const voteBtn = document.getElementById('detail-vote');
+    if (!overlay) return;
+
+    const isSelected = state.selectedOptionIds.has(opt.id);
+    const voters = opt.voters || [];
+    const voterEmails = opt.voterEmails || [];
+
+    const creatorUser = state.whitelistedUsers.find(u => u.email === opt.created_by);
+    const creatorName = creatorUser ? creatorUser.name : (opt.created_by || 'Nepoznato');
+    const rawAmount = opt.price ? opt.price.replace('€', '').trim() : 'N/A';
+    const displayPrice = rawAmount !== 'N/A' ? `${rawAmount}€` : 'N/A';
+
+    // Build Voters Stack HTML
+    let votersHtml = '';
+    if (voters.length > 0) {
+        const maxVisible = 3;
+        const visibleCount = Math.min(voters.length, maxVisible);
+        const remainingCount = voters.length - visibleCount;
+
+        let avatarCircles = '';
+        for (let i = 0; i < visibleCount; i++) {
+            const voterName = voters[i];
+            const voterEmail = voterEmails[i] || voterName;
+            const initials = getTwoInitials(voterName);
+            const color = getDeterministicAvatarColor(voterEmail);
+            avatarCircles += `<div class="voter-avatar" style="--avatar-color: ${color};" title="${voterName}">${initials}</div>`;
+        }
+
+        const moreCircle = remainingCount > 0
+            ? `<div class="voter-avatar more-count" title="+${remainingCount} još">+${remainingCount}</div>`
+            : '';
+
+        votersHtml = `
+            <span class="voters-label">Glasali:</span>
+            <div class="voters-avatar-stack">
+                ${avatarCircles}
+                ${moreCircle}
+            </div>
+        `;
+    } else {
+        votersHtml = `
+            <span class="voters-label">Glasali:</span>
+            <span class="voters-empty-text">Još nitko</span>
+        `;
+    }
+
+    // Determine platform link label
+    let linkText = 'Pogledaj ponudu ↗';
+    let isAirbnb = false;
+    let isBooking = false;
+    if (opt.link) {
+        try {
+            const parsed = new URL(opt.link.startsWith('http') ? opt.link : `https://${opt.link}`);
+            const host = parsed.hostname.toLowerCase();
+            isAirbnb = host.includes('airbnb') || host.includes('abnb.me');
+            isBooking = host.includes('booking') || host.includes('bkg.to');
+        } catch {}
+
+        if (isAirbnb) linkText = 'Pogledaj na Airbnb-u ↗';
+        else if (isBooking) linkText = 'Pogledaj na Booking.com ↗';
+    }
 
     const safeImage = opt.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=85';
-    if (image) {
-        image.src = safeImage;
-        image.alt = opt.title || 'Accommodation';
-    }
-
-    if (votesEl) votesEl.textContent = `${opt.voters?.length || 0} glasova`;
-    if (voteBtn) {
-        voteBtn.textContent = state.selectedOptionIds.has(opt.id) ? 'Ukloni svoj glas' : 'Glasaj za ovaj smještaj';
-    }
-
     const isCreator = Boolean(state.userEmail && opt.created_by && opt.created_by.toLowerCase() === state.userEmail.toLowerCase());
-    const editableSection = document.getElementById('detail-editable-section');
-    const readonlySection = document.getElementById('detail-readonly-section');
 
-    if (isCreator) {
-        if (readonlySection) readonlySection.style.display = 'none';
-        if (editableSection) editableSection.style.display = 'block';
+    const sheet = overlay.querySelector('.detail-sheet');
+    if (sheet) {
+        sheet.innerHTML = `
+            <div style="position: relative; width: 100%; height: clamp(220px, 38vh, 320px); background: #1B1C20; overflow: hidden; isolation: isolate;">
+                <!-- Top-Left Heart Vote Button -->
+                <button class="card-heart-btn ${isSelected ? 'voted' : ''}" type="button" 
+                        aria-label="Glasaj"
+                        onclick="toggleVote('${opt.id}'); openDetail('${opt.id}')">
+                    <span class="material-symbols-outlined">favorite</span>
+                </button>
 
-        const editTitle = document.getElementById('edit-detail-title');
-        const editPrice = document.getElementById('edit-detail-price');
-        const editImage = document.getElementById('edit-detail-image');
-        const editNote = document.getElementById('edit-detail-note');
+                <!-- Top-Right Close Button -->
+                <button class="detail-close" type="button" onclick="closeDetail()" aria-label="Zatvori" style="position: absolute; top: 12px; right: 12px; width: 38px; height: 38px; border-radius: 50%; background: rgba(18, 19, 22, 0.72); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.18); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.25rem; cursor: pointer; z-index: 10;">&times;</button>
 
-        if (editTitle) editTitle.value = opt.title || '';
-        if (editPrice) editPrice.value = opt.price || '';
-        if (editImage) editImage.value = opt.image || '';
-        if (editNote) editNote.value = opt.note || '';
-    } else {
-        if (editableSection) editableSection.style.display = 'none';
-        if (readonlySection) readonlySection.style.display = 'block';
+                <!-- Property Cover Image -->
+                <img src="${safeImage}" alt="${opt.title}" style="width: 100%; height: 100%; object-fit: cover;" />
 
-        if (title) title.textContent = opt.title || 'Smještaj';
-        if (descriptionEl) {
-            descriptionEl.textContent = opt.description || '';
-            descriptionEl.style.display = opt.description ? 'block' : 'none';
-        }
-        if (priceEl) priceEl.textContent = opt.price || 'Cijena nije navedena';
-        if (noteEl) noteEl.textContent = opt.note || 'Nema dodatnih napomena.';
+                <!-- Bottom-Right Price Badge -->
+                <div class="price-badge" style="position: absolute; bottom: 12px; right: 12px; left: auto; top: auto; width: auto; max-width: max-content; background: rgba(18, 19, 22, 0.88); backdrop-filter: blur(8px); padding: 6px 12px; border-radius: var(--md-shape-corner-small); font-size: 0.85rem; font-weight: 600; color: #ffffff; border: 1px solid rgba(255,255,255,0.12); z-index: 5; box-sizing: border-box; display: inline-flex; align-items: center; gap: 5px;"><span class="material-symbols-outlined" style="font-size: 0.95rem; font-variation-settings: 'FILL' 1, 'wght' 500; vertical-align: -2px;">local_offer</span>${displayPrice}</div>
+            </div>
+            
+            <div class="detail-content" style="padding: 24px; display: flex; flex-direction: column; gap: 8px;">
+                <div class="voters-row" style="display: flex; align-items: center; gap: 10px; min-height: 40px; border-top: none; padding-top: 0;">
+                    ${votersHtml}
+                </div>
+
+                <div id="detail-readonly-section" style="display: ${isCreator ? 'none' : 'block'};">
+                    <h2 class="detail-title" style="font-size: 1.35rem; font-weight: 600; color: var(--md-sys-color-on-surface); margin-bottom: 4px;">${opt.title || 'Smještaj'}</h2>
+                    <span class="card-creator-subtitle" style="font-size: 0.82rem; color: var(--md-sys-color-on-surface-variant);">Dodao: ${creatorName}</span>
+                </div>
+
+                <div id="detail-editable-section" style="display: ${isCreator ? 'block' : 'none'};">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label style="font-size: 0.78rem; color: var(--md-sys-color-on-surface-variant);">Naziv smještaja</label>
+                        <input type="text" id="edit-detail-title" class="input-field" value="${opt.title || ''}" />
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label style="font-size: 0.78rem; color: var(--md-sys-color-on-surface-variant);">Cijena (€)</label>
+                        <input type="text" id="edit-detail-price" class="input-field" value="${opt.price || ''}" />
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label style="font-size: 0.78rem; color: var(--md-sys-color-on-surface-variant);">URL slike</label>
+                        <input type="text" id="edit-detail-image" class="input-field" value="${opt.image || ''}" />
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label style="font-size: 0.78rem; color: var(--md-sys-color-on-surface-variant);">Napomena / Bilješka</label>
+                        <textarea id="edit-detail-note" class="input-field">${opt.note || ''}</textarea>
+                    </div>
+                    <button class="btn btn-primary" type="button" onclick="saveOptionDetails()">Spremi izmjene</button>
+                </div>
+
+                ${opt.note && !isCreator ? `<div class="card-note-box" style="background: var(--md-sys-color-surface-container); border: 1px solid var(--md-sys-color-outline-variant); border-radius: var(--md-shape-corner-small); padding: 12px 16px; font-size: 0.88rem; color: var(--md-sys-color-on-surface-variant); display: flex; gap: 10px; align-items: flex-start;"><span class="material-symbols-outlined" style="color: var(--md-sys-color-primary); font-size: 1.15rem;">chat_bubble</span><span>${opt.note}</span></div>` : ''}
+                
+                ${opt.description && !isCreator ? `<p style="font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); line-height: 1.5;">${opt.description}</p>` : ''}
+
+                ${opt.link ? `<a href="${opt.link}" target="_blank" class="btn btn-primary" style="margin-top: 16px; text-decoration: none; justify-content: center; display: inline-flex; align-items: center; gap: 6px;">${linkText}</a>` : ''}
+            </div>
+        `;
     }
 
-    if (link) {
-        link.href = opt.link || '#';
-        link.style.display = opt.link ? 'inline-flex' : 'none';
-    }
-
-    if (overlay) {
-        overlay.classList.add('active');
-        overlay.setAttribute('aria-hidden', 'false');
-    }
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
 }
 
@@ -325,15 +421,7 @@ export function closeDetail() {
 
 export function updateDetailModalIfOpen() {
     if (state.activeDetailId === null) return;
-    const detailOpt = state.options.find(o => String(o.id) === String(state.activeDetailId));
-    if (detailOpt) {
-        const votesEl = document.getElementById('detail-votes');
-        const voteBtn = document.getElementById('detail-vote');
-        if (votesEl) votesEl.textContent = `${detailOpt.voters?.length || 0} glasova`;
-        if (voteBtn) voteBtn.textContent = state.selectedOptionIds.has(detailOpt.id)
-            ? 'Ukloni svoj glas'
-            : 'Glasaj za ovaj smještaj';
-    }
+    openDetail(state.activeDetailId);
 }
 
 export async function saveOptionDetails() {
@@ -382,3 +470,4 @@ export async function saveOptionDetails() {
 window.submitLinkAndFetch = submitLinkAndFetch;
 window.submitNewOption = submitNewOption;
 window.resetAddModalStep = resetAddModalStep;
+window.saveOptionDetails = saveOptionDetails;

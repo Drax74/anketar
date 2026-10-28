@@ -20,17 +20,26 @@
 
   <title>Madrid - Trkadzije &amp; Rumoljubi</title>
 
-  <link rel="icon" href="/anketar/favicon.ico" sizes="any">
-  <link rel="apple-touch-icon" href="/anketar/apple-touch-icon-180x180.png">
-
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png">
   <link rel="stylesheet" href="/src/styles/style.css">
-
-  <link rel="preload" as="image" href="/anketar/hero-cover-image.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="/hero-cover-image.webp" fetchpriority="high">
 </head>
 <body>
 
 <div class="app-scroll-container">
-  <!-- SPOTIFY-INSPIRED 3D-ELEVATED RECTANGULAR HERO HEADER -->
+
+  <!-- DESKTOP TOP USER / LOGOUT HEADER ROW (Hidden on mobile via CSS) -->
+  <div class="desktop-top-header">
+    <button class="btn btn-secondary desktop-logout-btn" onclick="logoutUser()">
+      <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">logout</span> Odjava
+    </button>
+    <div class="desktop-user-profile">
+      <div class="user-avatar" id="desktop-user-avatar-initials">U</div>
+    </div>
+  </div>
+
+  <!-- HERO HEADER (Shared across all screen sizes) -->
   <header class="header-card hero-header" id="hero-header">
     <div class="hero-bg-parallax"></div>
     <div class="hero-overlay-gradient"></div>
@@ -40,48 +49,110 @@
     </div>
   </header>
 
-  <!-- STICKY HEADER WRAPPER (LEADERBOARD + CONTROLS) -->
-  <div class="sticky-header-wrapper">
-    <!-- LEADERBOARD PODIUM (TOP 3) -->
-    <div id="leaderboard-section" class="leaderboard-section">
-      <div class="leaderboard-header">
-        <span class="leaderboard-title">Top 3 Favorita</span>
+  <!-- UNIFIED WORKSPACE (Single DOM structure for Mobile & Desktop) -->
+  <main class="accommodation-layout">
+
+    <!-- SHARED STICKY HEADER WRAPPER (On mobile, locks Leaderboard + Controls together) -->
+    <div class="sticky-header-stack">
+
+      <!-- LEADERBOARD PANE -->
+      <aside class="leaderboard-wrapper-pane" id="leaderboard-pane">
+        <div id="leaderboard-section" class="leaderboard-section">
+          <div class="leaderboard-header">
+            <span class="leaderboard-title">Top 3 Favorita</span>
+          </div>
+          <div id="leaderboard-container" class="leaderboard-container">
+            <!-- HTML SKELETON PLACEHOLDERS -->
+            <div class="leaderboard-item skeleton-card" style="position: relative;">
+              <div class="leaderboard-rank skeleton-box" style="width: 24px; height: 24px;"></div>
+              <div class="leaderboard-info" style="gap: 6px;">
+                <div class="skeleton-box" style="width: 60%; height: 14px;"></div>
+                <div class="skeleton-box" style="width: 100%; height: 5px; border-radius: 3px;"></div>
+              </div>
+              <div class="skeleton-box" style="width: 32px; height: 14px;"></div>
+            </div>
+            <div class="leaderboard-item skeleton-card" style="position: relative;">
+              <div class="leaderboard-rank skeleton-box" style="width: 24px; height: 24px;"></div>
+              <div class="leaderboard-info" style="gap: 6px;">
+                <div class="skeleton-box" style="width: 60%; height: 14px;"></div>
+                <div class="skeleton-box" style="width: 100%; height: 5px; border-radius: 3px;"></div>
+              </div>
+              <div class="skeleton-box" style="width: 32px; height: 14px;"></div>
+            </div>
+            <div class="leaderboard-item skeleton-card" style="position: relative;">
+              <div class="leaderboard-rank skeleton-box" style="width: 24px; height: 24px;"></div>
+              <div class="leaderboard-info" style="gap: 6px;">
+                <div class="skeleton-box" style="width: 60%; height: 14px;"></div>
+                <div class="skeleton-box" style="width: 100%; height: 5px; border-radius: 3px;"></div>
+              </div>
+              <div class="skeleton-box" style="width: 32px; height: 14px;"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CONTROLS BAR (Mobile: inside sticky wrapper; Desktop: displayed inside right-column via CSS display/order) -->
+      <div class="controls-sticky-wrapper mobile-controls-slot">
+        <div class="controls-row">
+          <span style="font-size: 1rem; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">Smjestaji (<span class="options-count">0</span>)</span>
+          <div style="display: flex; gap: 8px;">
+            <button id="btn-manual-sort" class="btn btn-secondary" style="width: auto; padding: 8px 12px; font-size: 0.85rem;" onclick="toggleManualSort()" title="Poredaj po broju glasova">
+              <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">swap_vert</span> Poredaj
+            </button>
+            <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; font-size: 0.85rem;" onclick="openAddModal()">+ Dodaj Smjestaj</button>
+          </div>
+        </div>
       </div>
-      <div id="leaderboard-container" class="leaderboard-container">
-        <div class="leaderboard-empty">Još nema glasova. Budi prvi koji će pokrenuti ljestvicu! 🗳️</div>
-      </div>
+
     </div>
 
-    <!-- CONTROLS ROW -->
-    <div class="controls-row">
-      <span style="font-size: 1rem; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">Smjestaji (<span id="options-count">0</span>)</span>
-      <div style="display: flex; gap: 8px;">
-        <button id="btn-manual-sort" class="btn btn-secondary" style="width: auto; padding: 8px 12px; font-size: 0.85rem;" onclick="toggleManualSort()" title="Poredaj po broju glasova">
-          <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">swap_vert</span> Poredaj
-        </button>
-        <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; font-size: 0.85rem;" onclick="openAddModal()">+ Dodaj Smjestaj</button>
-      </div>
-    </div>
-  </div>
+    <!-- RIGHT CONTENT PANE (Hosts Cards on Mobile, Hosts Controls + Cards on Desktop) -->
+    <section class="right-content-pane">
 
-  <!-- ACCOMMODATION CARDS CONTAINER -->
-  <div id="options-container" class="options-list" data-layout>
-    <div class="loading-card" style="padding: 40px 20px; text-align: center;">
-      <div class="spinner" style="margin: 0 auto 12px auto;"></div>
-      <p>Loading smjestaje...</p>
-    </div>
-  </div>
+      <!-- DESKTOP CONTROLS SLOT (Only visible on desktop via CSS) -->
+      <div class="controls-sticky-wrapper desktop-controls-slot">
+        <div class="controls-row">
+          <span style="font-size: 1rem; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">Smjestaji (<span class="options-count">0</span>)</span>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary" style="width: auto; padding: 8px 12px; font-size: 0.85rem;" onclick="toggleManualSort()" title="Poredaj po broju glasova">
+              <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">swap_vert</span> Poredaj
+            </button>
+            <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; font-size: 0.85rem;" onclick="openAddModal()">+ Dodaj Smjestaj</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACCOMMODATION CARDS CONTAINER -->
+      <div id="options-container" class="options-list" data-layout>
+        <div class="option-card skeleton-card">
+          <div class="card-cover-container skeleton-box" style="height: 160px;"></div>
+          <div class="card-body" style="gap: 14px;">
+            <div class="skeleton-box" style="width: 70%; height: 20px;"></div>
+            <div class="skeleton-box" style="width: 100%; height: 40px;"></div>
+            <div class="skeleton-box" style="width: 40%; height: 14px;"></div>
+          </div>
+        </div>
+        <div class="option-card skeleton-card">
+          <div class="card-cover-container skeleton-box" style="height: 160px;"></div>
+          <div class="card-body" style="gap: 14px;">
+            <div class="skeleton-box" style="width: 70%; height: 20px;"></div>
+            <div class="skeleton-box" style="width: 100%; height: 40px;"></div>
+            <div class="skeleton-box" style="width: 40%; height: 14px;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
 </div>
 
+<!-- MODALS & TOAST -->
 <div id="app-toast" class="app-toast" role="status" aria-live="polite"></div>
 
-<!-- FLOATING USER AVATAR FAB (Bottom-Right or Top-Right) -->
 <div class="floating-user-container">
   <button id="floating-avatar-btn" class="floating-fab-btn" onclick="toggleUserMenu()" aria-label="User Menu">
     <div class="user-avatar" id="user-avatar-initials">U</div>
   </button>
-
-  <!-- POPUP / POPOVER MENU -->
   <div id="user-dropdown-menu" class="user-dropdown-menu">
     <div class="dropdown-header">
       <span class="dropdown-user-name" id="footer-user-name">Loading...</span>
@@ -93,7 +164,6 @@
   </div>
 </div>
 
-<!-- AUTHENTICATION MODAL (Standard Centered Modal) -->
 <div id="auth-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="auth-title">
   <div class="modal" style="text-align: center; padding: 32px 24px;">
     <h2 id="auth-title" style="margin-bottom: 12px;">Dragi Trkadzijo i Rumoljubu</h2>
@@ -106,17 +176,14 @@
   </div>
 </div>
 
-<!-- ADD OPTION MODAL (Native Bottom Sheet) -->
 <div id="add-modal-overlay" class="native-sheet-overlay" role="dialog" aria-modal="true" aria-labelledby="add-title" onclick="if(event.target===this) closeAddModal()">
   <div class="native-sheet-container">
     <div class="native-sheet-handle"></div>
     <div class="native-sheet-payload">
       <h2 id="add-title">Dodaj Smjestaj</h2>
-
-      <!-- STEP 1: LINK SUBMISSION -->
       <div id="add-step-1">
         <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-top: 8px; margin-bottom: 16px; line-height: 1.4;">
-          Unesi link smještaja s Booking.com ili Airbnb-a. Nakon potvrde linka, pokušat ću automatski dohvatiti podatke o smještaju. Ako dohvaćanje ne uspije, moći ćeš ih unijeti ručno.
+          Unesi link smještaja s Booking.com ili Airbnb-a.
         </p>
         <div class="form-group">
           <label for="input-link">Link smještaja</label>
@@ -128,63 +195,25 @@
           <button class="btn btn-primary" id="btn-confirm-link" onclick="submitLinkAndFetch()">Potvrdi link</button>
         </div>
       </div>
-
-      <!-- SKELETON LOADING STATE -->
       <div id="add-skeleton-loading" style="display: none; padding: 12px 0;">
-        <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 16px; text-align: center;">
-          Dohvaćam podatke o smještaju...
-        </p>
-        <div class="skeleton-box" style="height: 16px; width: 40%; margin-bottom: 8px;"></div>
-        <div class="skeleton-box" style="height: 48px; width: 100%; margin-bottom: 16px;"></div>
-        <div class="skeleton-box" style="height: 16px; width: 30%; margin-bottom: 8px;"></div>
-        <div class="skeleton-box" style="height: 40px; width: 100%; margin-bottom: 16px;"></div>
-        <div class="skeleton-box" style="height: 16px; width: 50%; margin-bottom: 8px;"></div>
-        <div class="skeleton-box" style="height: 60px; width: 100%; margin-bottom: 20px;"></div>
+        <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 16px; text-align: center;">Dohvaćam podatke...</p>
       </div>
-
-      <!-- STEP 2: ADAPTIVE FORM FIELDS -->
       <div id="add-step-2" style="display: none;">
-
-        <!-- IMAGE PREVIEW / PLACEHOLDER BOX -->
         <div class="add-image-preview-box">
           <img id="add-preview-img" src="" alt="Fetched Cover" style="display: none;" />
           <div id="add-image-placeholder" class="add-image-placeholder-content">
             <span class="material-symbols-outlined">photo</span>
-            <span>Nema slike (ručni unos)</span>
+            <span>Nema slike</span>
           </div>
         </div>
-
-        <!-- READ-ONLY SUCCESS PREVIEW -->
-        <div id="scraper-success-preview" class="read-only-preview" style="display: none;">
-          <div class="read-only-title" id="preview-title"></div>
-          <div class="read-only-desc" id="preview-desc"></div>
-        </div>
-
-        <!-- EDITABLE TITLE (Fallback when scraping fails) -->
-        <div class="form-group" id="group-title" style="display: none;">
-          <label for="input-title">Ime</label>
-          <input type="text" id="input-title" class="input-field" placeholder="Villa Horizon" oninput="clearFieldError('input-title', 'error-input-title')" />
-          <div class="error-message" id="error-input-title">Naziv smještaja je obavezno polje.</div>
-        </div>
-
-        <!-- EDITABLE PRICE -->
         <div class="form-group">
           <label for="input-price">Ukupna Cijena</label>
           <input type="text" id="input-price" class="input-field" placeholder="450€ total" />
         </div>
-
-        <!-- EDITABLE IMAGE URL (Fallback when scraping fails) -->
-        <div class="form-group" id="group-image" style="display: none;">
-          <label for="input-image">Image URL</label>
-          <input type="url" id="input-image" class="input-field" placeholder="https://..." />
-        </div>
-
-        <!-- EDITABLE NOTE -->
         <div class="form-group">
           <label for="input-note">Napomena (opcionalno)</label>
-          <textarea id="input-note" class="input-field" placeholder="Blizu centra, ima bazen..."></textarea>
+          <textarea id="input-note" class="input-field" placeholder="Blizu centra..."></textarea>
         </div>
-
         <div style="display: flex; gap: 12px; margin-top: 20px;">
           <button class="btn btn-secondary" onclick="resetAddModalStep()">Natrag</button>
           <button class="btn btn-primary" id="btn-add-submit" onclick="submitNewOption()">Dodaj Prijedlog</button>
@@ -194,52 +223,21 @@
   </div>
 </div>
 
-<!-- DETAILS MODAL WITH CREATOR-ONLY EDITABLE FIELDS -->
 <div id="detail-overlay" class="detail-overlay" aria-hidden="true" onclick="if(event.target===this) closeDetail()">
   <article class="detail-sheet" role="dialog" aria-modal="true" aria-labelledby="detail-title">
     <button class="detail-close" type="button" aria-label="Close details" onclick="closeDetail()">×</button>
     <img id="detail-image" class="detail-image" alt="" />
-
     <div class="detail-content">
-      <div class="detail-meta">
-        <span id="detail-votes" class="detail-pill"></span>
-      </div>
-
-      <!-- READ-ONLY SECTION (For all non-creators) -->
+      <div class="detail-meta"><span id="detail-votes" class="detail-pill"></span></div>
       <div id="detail-readonly-section">
-        <div style="margin-bottom: 8px;">
-          <span id="detail-price" class="detail-pill" style="background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);"></span>
-        </div>
+        <div style="margin-bottom: 8px;"><span id="detail-price" class="detail-pill"></span></div>
         <h2 id="detail-title" class="detail-title"></h2>
-        <p id="detail-description" style="font-size: 0.88rem; color: var(--md-sys-color-on-surface-variant); margin-top: 4px; margin-bottom: 8px; line-height: 1.4;"></p>
+        <p id="detail-description"></p>
         <p id="detail-note" class="detail-note"></p>
       </div>
-
-      <!-- EDITABLE SECTION (Exclusively shown to Option Creator) -->
-      <div id="detail-editable-section" style="display: none; margin-bottom: 16px;">
-        <div class="form-group">
-          <label for="edit-detail-title">Naziv smještaja</label>
-          <input type="text" id="edit-detail-title" class="input-field" />
-        </div>
-        <div class="form-group">
-          <label for="edit-detail-price">Cijena</label>
-          <input type="text" id="edit-detail-price" class="input-field" />
-        </div>
-        <div class="form-group">
-          <label for="edit-detail-image">Image URL</label>
-          <input type="url" id="edit-detail-image" class="input-field" />
-        </div>
-        <div class="form-group">
-          <label for="edit-detail-note">Napomena</label>
-          <textarea id="edit-detail-note" class="input-field" rows="3"></textarea>
-        </div>
-        <button type="button" class="btn btn-primary" onclick="saveOptionDetails()" style="margin-top: 8px;">Spremi Promjene</button>
-      </div>
-
-      <!-- ACTION BUTTONS -->
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top: 12px;">
-        <button id="detail-vote" class="btn btn-primary" type="button" style="flex:1" onclick="voteFromDetail()">Glasaj za ovaj smještaj</button>
-        <a id="detail-link" class="btn btn-secondary" target="_blank" rel="noopener noreferrer" style="flex:1; text-decoration:none;" href="#">Otvori smještaj ↗</a>
+        <button id="detail-vote" class="btn btn-primary" type="button" style="flex:1" onclick="voteFromDetail()">Glasaj</button>
+        <a id="detail-link" class="btn btn-secondary" target="_blank" rel="noopener noreferrer" style="flex:1; text-decoration:none;" href="#">Otvori ↗</a>
       </div>
     </div>
   </article>

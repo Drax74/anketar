@@ -11,7 +11,7 @@
     width: 100%;
     padding: 12px 16px;
     background: var(--md-sys-color-surface);
-    border: 1px solid var(--md-sys-color-outline);
+    border: 1px solid var(--md-sys-color-outline-variant);
     border-radius: var(--md-shape-corner-medium);
     color: var(--md-sys-color-on-surface);
     font-size: 1rem;
@@ -28,7 +28,7 @@ select.input-field {
 
 .input-field:focus {
     border-color: var(--md-sys-color-primary);
-    box-shadow: 0 0 0 3px rgba(168,199,250,.12);
+    box-shadow: 0 0 0 3px rgba(255, 200, 87, 0.15);
 }
 
 textarea.input-field { resize: vertical; min-height: 70px; }
@@ -39,7 +39,7 @@ textarea.input-field { resize: vertical; min-height: 70px; }
 
 /* SKELETON LOADER & READ-ONLY PREVIEW STYLING */
 .skeleton-box {
-    background: linear-gradient(90deg, var(--md-sys-color-surface-container-high) 25%, var(--md-sys-color-surface) 50%, var(--md-sys-color-surface-container-high) 75%);
+    background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.06) 75%);
     background-size: 200% 100%;
     animation: skeleton-pulse 1.5s infinite;
     border-radius: 8px;
@@ -145,10 +145,10 @@ textarea.input-field { resize: vertical; min-height: 70px; }
 .btn-primary {
     background: var(--md-sys-color-primary);
     color: var(--md-sys-color-on-primary);
-    box-shadow: 0 5px 18px rgba(168,199,250,.12);
+    box-shadow: 0 5px 18px rgba(255, 200, 87, 0.2);
 }
 
-.btn-primary:active { box-shadow: 0 2px 8px rgba(168,199,250,.08); }
+.btn-primary:active { box-shadow: 0 2px 8px rgba(255, 200, 87, 0.1); }
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 .btn-secondary { background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); border: 1px solid var(--md-sys-color-outline-variant); }
 
@@ -173,10 +173,10 @@ textarea.input-field { resize: vertical; min-height: 70px; }
     transform: translate(-50%, 18px);
     opacity: 0;
     pointer-events: none;
-    background: #28292e;
-    color: #f4f4f6;
-    border: 1px solid #44474f;
-    box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.5);
     border-radius: 999px;
     padding: 12px 17px;
     width: max-content;
@@ -186,4 +186,4 @@ textarea.input-field { resize: vertical; min-height: 70px; }
 }
 
 .app-toast.visible { opacity: 1; transform: translate(-50%, 0); }
-.app-toast[data-kind="error"] { border-color: rgba(242,184,181,.6); }
+.app-toast[data-kind="error"] { border-color: rgba(244, 63, 94, 0.6); }
