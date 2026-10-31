@@ -3,6 +3,37 @@ import { state } from '../state.js';
 
 const REDIRECT_URL = `${window.location.origin}/anketar/`;
 
+function applySession(session) {
+    const previousEmail = state.userEmail;
+    const user = session?.user;
+
+    state.userEmail = user?.email || '';
+    state.userName = state.userEmail
+        ? user.user_metadata?.full_name || state.userEmail
+        : '';
+
+    const identityChanged = previousEmail !== state.userEmail;
+
+    if (identityChanged) {
+        state.selectedOptionIds.clear();
+    }
+
+    // Remove the old identity cache. Supabase manages its own session storage.
+    localStorage.removeItem('poll_user_email');
+    localStorage.removeItem('poll_user_name');
+
+    const authModal = document.getElementById('auth-modal');
+
+    if (state.userEmail) {
+        authModal?.classList.remove('active');
+        document.body.style.overflow = '';
+    } else {
+        authModal?.classList.add('active');
+    }
+
+    return identityChanged;
+}
+
 export async function loginWithGoogle() {
     const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -20,47 +51,47 @@ export async function loginWithGoogle() {
     }
 }
 
-export function initAuthListener(onAuthSuccess) {
-    supabase.auth.onAuthStateChange(async (event, session) => {
-        if (session && session.user && session.user.email) {
-            state.userEmail = session.user.email;
-            state.userName = session.user.user_metadata?.full_name || session.user.email;
+export function initAuthListener(onAuthChange) {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+        const identityChanged = applySession(session);
 
-            localStorage.setItem('poll_user_email', state.userEmail);
-            localStorage.setItem('poll_user_name', state.userName);
-
-            document.getElementById('auth-modal')?.classList.remove('active');
-            document.body.style.overflow = '';
-
-            if (typeof onAuthSuccess === 'function') {
-                onAuthSuccess();
-            }
+        if (typeof onAuthChange === 'function') {
+            onAuthChange({
+                event,
+                session,
+                identityChanged
+            });
         }
     });
+
+    return data.subscription;
 }
 
 export async function checkInitialSession() {
     try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session && session.user && session.user.email) {
-            state.userEmail = session.user.email;
-            state.userName = session.user.user_metadata?.full_name || session.user.email;
-            localStorage.setItem('poll_user_email', state.userEmail);
-            localStorage.setItem('poll_user_name', state.userName);
-            return true;
-        }
-    } catch (err) {
-        console.error('Session check failed:', err);
+        const { data, error } = await supabase.auth.getSession();
+
+        if (error) throw error;
+
+        applySession(data.session);
+        return Boolean(state.userEmail);
+    } catch (error) {
+        console.error('Session check failed:', error);
+        applySession(null);
+        return false;
     }
-    return false;
 }
 
 export async function logoutUserSession() {
     try {
-        await supabase.auth.signOut();
-    } catch (e) {
-        console.error('Sign out error:', e);
+        const { error } = await supabase.auth.signOut();
+
+        if (error) throw error;
+
+        applySession(null);
+        location.reload();
+    } catch (error) {
+        console.error('Sign out failed:', error);
+        alert('Odjava nije uspjela. Pokušajte ponovno.');
     }
-    localStorage.clear();
-    location.reload();
 }

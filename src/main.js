@@ -1,61 +1,82 @@
 import { state } from './state.js';
 import { getPollData } from './services/api.js';
-import { setupRealtimeSubscription } from './services/realtime.js';
+import { refreshVotesFromServer, renderVoteUI, setupRealtimeSubscription} from './services/realtime.js';
 import { initAuthListener, checkInitialSession, logoutUserSession, loginWithGoogle } from './services/auth.js';
-import { renderOptions, scrollToCardIfNeeded, updateCardSubelements } from './components/cards.js';
+import { findOptionCard, renderOptions, scrollToCardIfNeeded } from './components/cards.js';
 import { renderLeaderboard } from './components/leaderboard.js';
-import { openDetail, closeDetail, saveOptionDetails, openAddModal, closeAddModal, submitNewOption, showToast, updateDetailModalIfOpen } from './components/modals.js';
+import { openDetail, closeDetail, saveOptionDetails } from './components/modals.js';
 import { addVote, removeVote } from './services/api.js';
-
+import { isVotePending, rebuildVoteState, setConfirmedVote } from "./shared/helpers/votes";
+import { showToast } from "./components/toast";
+import { openAddModal, closeAddModal,submitNewOption } from "./components/add-modal";
 async function toggleVote(optionId) {
     if (!state.userEmail) {
         showToast('Molimo prijavite se za glasovanje.', 'error');
         return;
     }
 
-    const isAdding = !state.selectedOptionIds.has(optionId);
-    applyOptimisticVote(optionId, isAdding);
+    const option = state.options.find(
+        item => String(item.id) === String(optionId)
+    );
+
+    if (!option || isVotePending(option.id)) return;
+
+    const key = String(option.id);
+    const userEmail = state.userEmail;
+    const isAdding = !state.selectedOptionIds.has(option.id);
+
+    state.pendingVotes.set(key, {
+        optionId: option.id,
+        userEmail,
+        isAdding
+    });
+
+    rebuildVoteState();
+    renderVoteUI();
+
+    if (isAdding) {
+        triggerHeartAnimation(option.id);
+    }
+
+    let failed = false;
 
     try {
-        if (isAdding) await addVote(state.userEmail, optionId);
-        else await removeVote(state.userEmail, optionId);
-    } catch (err) {
-        console.error('Vote sync failed:', err);
-        showToast('Glas nije spremljen. Vraćam stanje…', 'error');
-        applyOptimisticVote(optionId, !isAdding);
-    }
-}
+        if (isAdding) {
+            await addVote(userEmail, option.id);
+        } else {
+            await removeVote(userEmail, option.id);
+        }
 
-function applyOptimisticVote(optionId, isAdding) {
-    const targetOpt = state.options.find(o => String(o.id) === String(optionId));
-    if (!targetOpt) return;
-
-    if (!targetOpt.voterEmails) targetOpt.voterEmails = [];
-    if (!targetOpt.voters) targetOpt.voters = [];
-
-    if (isAdding) {
-        state.selectedOptionIds.add(optionId);
-        if (!targetOpt.voterEmails.includes(state.userEmail)) targetOpt.voterEmails.push(state.userEmail);
-        if (!targetOpt.voters.includes(state.userName)) targetOpt.voters.push(state.userName);
-        state.votes.push({ user_email: state.userEmail, option_id: optionId });
-    } else {
-        state.selectedOptionIds.delete(optionId);
-        targetOpt.voterEmails = targetOpt.voterEmails.filter(e => e !== state.userEmail);
-        targetOpt.voters = targetOpt.voters.filter(n => n !== state.userName && n !== state.userEmail);
-        state.votes = state.votes.filter(v => !(String(v.option_id) === String(optionId) && v.user_email === state.userEmail));
+        setConfirmedVote(option.id, userEmail, isAdding);
+    } catch (error) {
+        failed = true;
+        console.error('Vote sync failed:', error);
+        showToast(
+            'Spremanje glasa nije potvrđeno. Provjeravam stanje…',
+            'error'
+        );
+    } finally {
+        state.pendingVotes.delete(key);
+        rebuildVoteState();
+        renderVoteUI();
     }
 
-    updateCardSubelements(optionId);
-    updateDetailModalIfOpen(); // Updates both heart button and voters stack row inside active detail modal!
-    renderLeaderboard(true);
-
-    if (isAdding) {
-        triggerHeartAnimation(optionId);
+    // The server may have accepted a write before its response was lost.
+    if (failed) {
+        try {
+            await refreshVotesFromServer();
+        } catch (error) {
+            console.warn('Vote reconciliation failed:', error);
+            showToast(
+                'Stanje glasova nije moguće provjeriti. Osvježite stranicu kada veza proradi.',
+                'error'
+            );
+        }
     }
 }
 
 function triggerHeartAnimation(optionId) {
-    const cardEl = document.querySelector(`.option-card[data-id="${optionId}"]`);
+    const cardEl = findOptionCard(optionId);
     if (cardEl) {
         animateHeartButton(cardEl.querySelector('.card-heart-btn'));
     }
@@ -133,51 +154,164 @@ function updateUserUI() {
     if (desktopAvatarEl) desktopAvatarEl.innerText = initials;
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        await checkInitialSession();
+function showPollMessage(message, onRetry = null) {
+    const container = document.getElementById('options-container');
 
-        const { whitelist, options, votes } = await getPollData();
-        state.whitelistedUsers = whitelist;
-        state.votes = votes;
+    if (container) {
+        const notice = document.createElement('div');
+        notice.className = 'empty-state-container';
 
-        state.options = options.map(opt => {
-            const optVotes = votes.filter(v => v.option_id === opt.id);
-            const voterEmails = optVotes.map(v => v.user_email);
-            const voterNames = optVotes.map(v => whitelist.find(u => u.email === v.user_email)?.name || v.user_email);
-            const creator = whitelist.find(u => u.email === opt.created_by);
-            return { ...opt, voterEmails, voters: voterNames, creatorName: creator ? creator.name : 'Nepoznato' };
-        });
+        const text = document.createElement('p');
+        text.textContent = message;
+        notice.append(text);
 
-        if (state.userEmail) {
-            const user = whitelist.find(u => u.email === state.userEmail);
-            state.userName = user ? user.name : (state.userName || state.userEmail);
-            state.options.forEach(opt => {
-                if (opt.voterEmails?.includes(state.userEmail)) state.selectedOptionIds.add(opt.id);
-            });
-            document.getElementById('auth-modal')?.classList.remove('active');
-            updateUserUI();
-        } else {
-            document.getElementById('auth-modal')?.classList.add('active');
+        if (typeof onRetry === 'function') {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-secondary';
+            button.textContent = 'Pokušaj ponovno';
+            button.addEventListener('click', onRetry);
+            notice.append(button);
         }
 
-        await renderOptions(false, null, false);
-        await renderLeaderboard(false);
-
-        initAuthListener(() => {
-            if (state.userEmail) {
-                const user = state.whitelistedUsers.find(u => u.email === state.userEmail);
-                state.userName = user ? user.name : (state.userName || state.userEmail);
-            }
-            updateUserUI();
-        });
-
-        setupRealtimeSubscription();
-    } catch (err) {
-        console.error('Initialization error:', err);
-        await renderOptions(false, null, false);
-        await renderLeaderboard(false);
+        container.replaceChildren(notice);
+        container.classList.add('loaded');
     }
+
+    document.getElementById('leaderboard-container')?.replaceChildren();
+
+    document.querySelectorAll('.options-count').forEach(element => {
+        element.textContent = '0';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await checkInitialSession();
+
+    let pollLoaded = false;
+    let loading = false;
+
+    initAuthListener(({ identityChanged }) => {
+        if (identityChanged) {
+            closeDetail();
+            closeAddModal();
+            window.location.reload();
+            return;
+        }
+
+        if (state.userEmail) {
+            const user = state.whitelistedUsers.find(
+                user => user.email === state.userEmail
+            );
+
+            state.userName = user
+                ? user.name
+                : (state.userName || state.userEmail);
+        }
+
+        updateUserUI();
+
+        if (pollLoaded) {
+            rebuildVoteState();
+            renderVoteUI();
+        }
+    });
+
+    async function loadPollData() {
+        if (loading) return;
+
+        const requestedEmail = state.userEmail;
+
+        if (!requestedEmail) {
+            showPollMessage('Prijavite se za pristup glasovanju.');
+            return;
+        }
+
+        loading = true;
+        pollLoaded = false;
+        showPollMessage('Učitavanje podataka…');
+
+        try {
+            const {
+                userEmail,
+                whitelist,
+                options,
+                votes
+            } = await getPollData();
+
+            if (
+                requestedEmail !== state.userEmail ||
+                userEmail !== state.userEmail
+            ) {
+                return;
+            }
+
+            state.whitelistedUsers = whitelist;
+            state.votes = votes;
+
+            state.options = options.map(option => {
+                const creator = whitelist.find(
+                    user => user.email === option.created_by
+                );
+
+                return {
+                    ...option,
+                    creatorName: creator ? creator.name : 'Nepoznato'
+                };
+            });
+
+            const currentUser = whitelist.find(
+                user => user.email === state.userEmail
+            );
+
+            state.userName = currentUser
+                ? currentUser.name
+                : (state.userName || state.userEmail);
+
+            rebuildVoteState();
+            updateUserUI();
+
+            await renderOptions(false, null, false);
+            await renderLeaderboard(false);
+
+            pollLoaded = true;
+            setupRealtimeSubscription();
+        } catch (error) {
+            if (requestedEmail !== state.userEmail) return;
+
+            console.error('Poll loading failed:', error);
+
+            state.whitelistedUsers = [];
+            state.options = [];
+            state.votes = [];
+            rebuildVoteState();
+
+            if (error.code === 'AUTH_REQUIRED') {
+                await checkInitialSession();
+                updateUserUI();
+
+                document.getElementById('auth-modal')
+                    ?.classList.add('active');
+
+                showPollMessage('Prijavite se za pristup glasovanju.');
+            } else if (error.code === 'ACCESS_NOT_APPROVED') {
+                showPollMessage(
+                    'Vaš račun nema odobren pristup ovom glasovanju. Obratite se administratoru.',
+                    loadPollData
+                );
+            } else {
+                showPollMessage(
+                    'Podatke nije moguće učitati. Provjerite vezu i pokušajte ponovno.',
+                    loadPollData
+                );
+            }
+        } finally {
+            loading = false;
+        }
+    }
+
+    updateUserUI();
+    await loadPollData();
 });
 
 export async function handleNewOptionSubmission() {

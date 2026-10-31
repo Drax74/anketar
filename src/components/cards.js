@@ -1,41 +1,23 @@
+import { safeWebUrl } from '../shared/helpers/url.js';
+import { renderVoters } from './voters.js';
 import { state } from '../state.js';
 import { animateLayoutTransition } from '../animations/motion.js';
 import { openDetail } from './modals.js';
+import {isVotePending} from "../shared/helpers/votes";
 
 window.openDetail = openDetail;
 
-const AVATAR_PALETTE = [
-    '#647FA8', // Slate Blue
-    '#648C79', // Sage Green
-    '#B87983', // Dusty Rose
-    '#B58A45', // Muted Amber
-    '#8A78B5', // Lavender
-    '#B97655', // Terracotta
-    '#4E9290', // Teal
-    '#858B98'  // Cool Gray
-];
-
-function getDeterministicAvatarColor(identifier = '') {
-    let hash = 0;
-    for (let i = 0; i < identifier.length; i++) {
-        hash = identifier.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const index = Math.abs(hash) % AVATAR_PALETTE.length;
-    return AVATAR_PALETTE[index];
-}
-
-function getTwoInitials(name = '') {
-    const parts = name.trim().split(/\s+/).filter(Boolean);
-    if (parts.length === 0) return '?';
-    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
-export async function renderOptions(isNewItemAdded = false, newItemId = null, animateIn = true) {
+export async function renderOptions(
+    isNewItemAdded = false,
+    newItemId = null,
+    animateIn = true
+) {
     const container = document.getElementById('options-container');
+
     document.querySelectorAll('.options-count').forEach((countEl) => {
         countEl.textContent = String(state.options.length);
     });
+
     if (!container) return;
 
     const renderDOM = () => {
@@ -63,71 +45,83 @@ export async function renderOptions(isNewItemAdded = false, newItemId = null, an
             const cardEl = document.createElement('div');
             cardEl.className = `option-card animate-item ${isSelected ? 'selected' : ''} ${isBrandNew ? 'new-item' : ''}`;
             cardEl.dataset.id = opt.id;
-            cardEl.setAttribute('onclick', `openDetail('${opt.id}')`);
+            cardEl.addEventListener('click', () => openDetail(opt.id));
 
-            const creatorUser = state.whitelistedUsers.find(u => u.email === opt.created_by);
-            const creatorName = creatorUser ? creatorUser.name : (opt.created_by || 'Nepoznato');
+            const creatorUser = state.whitelistedUsers.find(
+                user => user.email === opt.created_by
+            );
+            const creatorName = creatorUser
+                ? creatorUser.name
+                : (opt.created_by || 'Nepoznato');
 
-            const rawAmount = opt.price ? opt.price.replace('€', '').trim() : 'N/A';
-            const displayPrice = rawAmount !== 'N/A' ? `${rawAmount}€` : 'N/A';
-
-            let votersHtml = '';
-            if (voters.length > 0) {
-                const maxVisible = 3;
-                const visibleCount = Math.min(voters.length, maxVisible);
-                const remainingCount = voters.length - visibleCount;
-
-                let avatarCircles = '';
-                for (let i = 0; i < visibleCount; i++) {
-                    const voterName = voters[i];
-                    const voterEmail = voterEmails[i] || voterName;
-                    const initials = getTwoInitials(voterName);
-                    const color = getDeterministicAvatarColor(voterEmail);
-                    avatarCircles += `<div class="voter-avatar" style="--avatar-color: ${color};" title="${voterName}">${initials}</div>`;
-                }
-
-                const moreCircle = remainingCount > 0
-                    ? `<div class="voter-avatar more-count" title="+${remainingCount} još">+${remainingCount}</div>`
-                    : '';
-
-                votersHtml = `
-                    <span class="voters-label">Glasali:</span>
-                    <div class="voters-avatar-stack">
-                        ${avatarCircles}
-                        ${moreCircle}
-                    </div>
-                `;
-            } else {
-                votersHtml = `
-                    <span class="voters-label">Glasali:</span>
-                    <span class="voters-empty-text">Još nitko</span>
-                `;
-            }
+            const rawAmount = opt.price
+                ? opt.price.replace('€', '').trim()
+                : 'N/A';
+            const displayPrice = rawAmount !== 'N/A'
+                ? `${rawAmount}€`
+                : 'N/A';
 
             cardEl.innerHTML = `
                 <div class="card-cover-container">
-                  <button class="card-heart-btn ${isSelected ? 'voted' : ''}" type="button" 
-                          aria-label="Glasaj za ovaj smještaj"
-                          aria-pressed="${isSelected}"
-                          onclick="event.stopPropagation(); toggleVote('${opt.id}')">
-                    <span class="material-symbols-outlined">favorite</span>
-                    <span class="vote-heart-particles" aria-hidden="true"></span>
-                  </button>
-                  <img class="card-cover" src="${opt.image}" alt="${opt.title}" loading="lazy" onError="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80'" />
-                  <div class="price-badge"><span class="material-symbols-outlined" style="font-size: 0.95rem; font-variation-settings: 'FILL' 1, 'wght' 500; vertical-align: -2px;">local_offer</span> ${displayPrice}</div>
+                    <button class="card-heart-btn ${isSelected ? 'voted' : ''}"
+                            type="button"
+                            aria-label="Glasaj za ovaj smještaj"
+                            aria-pressed="${isSelected}">
+                        <span class="material-symbols-outlined">favorite</span>
+                        <span class="vote-heart-particles" aria-hidden="true"></span>
+                    </button>
+                    <img class="card-cover" alt="" loading="lazy" />
+                    <div class="price-badge">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; font-variation-settings: 'FILL' 1, 'wght' 500; vertical-align: -2px;">local_offer</span>
+                        <span class="price-value"></span>
+                    </div>
                 </div>
                 <div class="card-body">
-                  <div class="card-main-info">
-                    <div class="card-title-group">
-                      <h4 class="card-title">${opt.title}</h4>
-                      <span class="card-creator-subtitle">Dodao: ${creatorName}</span>
+                    <div class="card-main-info">
+                        <div class="card-title-group">
+                            <h4 class="card-title"></h4>
+                            <span class="card-creator-subtitle"></span>
+                        </div>
                     </div>
-                  </div>
-                  <div class="voters-row">
-                    ${votersHtml}
-                  </div>
+                    <div class="voters-row"></div>
                 </div>
             `;
+
+            cardEl.querySelector('.card-title').textContent = opt.title ?? '';
+            cardEl.querySelector('.card-creator-subtitle').textContent =
+                `Dodao: ${creatorName}`;
+            cardEl.querySelector('.price-value').textContent = displayPrice;
+
+            const image = cardEl.querySelector('.card-cover');
+            const fallbackImage =
+                'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80';
+
+            image.alt = opt.title ?? '';
+            image.addEventListener('error', () => {
+                image.src = fallbackImage;
+            }, { once: true });
+            image.src = safeWebUrl(opt.image, fallbackImage);
+
+            cardEl.querySelector('.card-heart-btn').addEventListener(
+                'click',
+                event => {
+                    event.stopPropagation();
+                    window.toggleVote(opt.id);
+                }
+            );
+
+            const heartBtn = cardEl.querySelector('.card-heart-btn');
+            const pending = isVotePending(opt.id);
+
+            heartBtn.disabled = pending;
+            heartBtn.setAttribute('aria-busy', String(pending));
+
+            renderVoters(
+                cardEl.querySelector('.voters-row'),
+                voters,
+                voterEmails
+            );
+
             fragment.appendChild(cardEl);
         });
 
@@ -148,10 +142,12 @@ export async function renderOptions(isNewItemAdded = false, newItemId = null, an
 }
 
 export function updateCardSubelements(optionId) {
-    const opt = state.options.find(o => String(o.id) === String(optionId));
+    const opt = state.options.find(
+        option => String(option.id) === String(optionId)
+    );
     if (!opt) return;
 
-    const cardEl = document.querySelector(`.option-card[data-id="${optionId}"]`);
+    const cardEl = findOptionCard(optionId);
     if (!cardEl) return;
 
     const isSelected = state.selectedOptionIds.has(opt.id);
@@ -162,52 +158,39 @@ export function updateCardSubelements(optionId) {
 
     const heartBtn = cardEl.querySelector('.card-heart-btn');
     if (heartBtn) {
+        const pending = isVotePending(opt.id);
+
         heartBtn.classList.toggle('voted', isSelected);
         heartBtn.setAttribute('aria-pressed', String(isSelected));
+        heartBtn.disabled = pending;
+        heartBtn.setAttribute('aria-busy', String(pending));
     }
 
     const votersRow = cardEl.querySelector('.voters-row');
     if (votersRow) {
-        if (voters.length > 0) {
-            const maxVisible = 3;
-            const visibleCount = Math.min(voters.length, maxVisible);
-            const remainingCount = voters.length - visibleCount;
-
-            let avatarCircles = '';
-            for (let i = 0; i < visibleCount; i++) {
-                const voterName = voters[i];
-                const voterEmail = voterEmails[i] || voterName;
-                const initials = getTwoInitials(voterName);
-                const color = getDeterministicAvatarColor(voterEmail);
-                avatarCircles += `<div class="voter-avatar" style="--avatar-color: ${color};" title="${voterName}">${initials}</div>`;
-            }
-
-            const moreCircle = remainingCount > 0
-                ? `<div class="voter-avatar more-count" title="+${remainingCount} još">+${remainingCount}</div>`
-                : '';
-
-            votersRow.innerHTML = `
-                <span class="voters-label">Glasali:</span>
-                <div class="voters-avatar-stack">
-                    ${avatarCircles}
-                    ${moreCircle}
-                </div>
-            `;
-        } else {
-            votersRow.innerHTML = `
-                <span class="voters-label">Glasali:</span>
-                <span class="voters-empty-text">Još nitko</span>
-            `;
-        }
+        renderVoters(votersRow, voters, voterEmails);
     }
 }
 
 export function scrollToCardIfNeeded(optionId) {
     setTimeout(() => {
-        const cardEl = document.querySelector(`.option-card[data-id="${optionId}"]`);
+        const cardEl = findOptionCard(optionId);
         if (!cardEl) return;
+
         const rect = cardEl.getBoundingClientRect();
-        const visible = rect.top >= 84 && rect.bottom <= window.innerHeight - 110;
-        if (!visible) cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const visible =
+            rect.top >= 84 && rect.bottom <= window.innerHeight - 110;
+
+        if (!visible) {
+            cardEl.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
     }, 360);
+}
+
+export function findOptionCard(optionId) {
+    return Array.from(document.querySelectorAll('.option-card'))
+        .find(card => card.dataset.id === String(optionId));
 }

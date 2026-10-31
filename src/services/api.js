@@ -5,20 +5,43 @@ export async function getWhitelistedUsers() {
     if (error) throw error;
     return data;
 }
-
 export async function getPollData() {
-    const [whitelistRes, optionsRes, votesRes] = await Promise.all([
-        supabase.from('whitelist').select('*'),
+    const { data: authData, error: authError } =
+        await supabase.auth.getSession();
+
+    if (authError) throw authError;
+
+    const userEmail = authData.session?.user?.email;
+
+    if (!userEmail) {
+        const error = new Error('Sign in before loading poll data.');
+        error.code = 'AUTH_REQUIRED';
+        throw error;
+    }
+
+    const whitelist = await getWhitelistedUsers();
+
+    const isApproved = whitelist.some(
+        user => user.email === userEmail
+    );
+
+    if (!isApproved) {
+        const error = new Error('Your account is not approved for this poll.');
+        error.code = 'ACCESS_NOT_APPROVED';
+        throw error;
+    }
+
+    const [optionsRes, votesRes] = await Promise.all([
         supabase.from('options').select('*'),
         supabase.from('votes').select('*')
     ]);
 
-    if (whitelistRes.error) throw whitelistRes.error;
     if (optionsRes.error) throw optionsRes.error;
     if (votesRes.error) throw votesRes.error;
 
     return {
-        whitelist: whitelistRes.data,
+        userEmail,
+        whitelist,
         options: optionsRes.data,
         votes: votesRes.data
     };
@@ -53,10 +76,12 @@ export async function updateOption(id, fields) {
     return data;
 }
 
-export async function sendMagicLink(email) {
-    const { error } = await supabase.auth.signInWithOtp({
-        email: email,
-        options: { emailRedirectTo: `${window.location.origin}/anketar/` }
-    });
+export async function getVotes() {
+    const { data, error } = await supabase
+        .from('votes')
+        .select('*');
+
     if (error) throw error;
+
+    return data;
 }
