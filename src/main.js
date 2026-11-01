@@ -1,5 +1,4 @@
 import '@fontsource-variable/inter/wght.css';
-import '@fontsource-variable/material-symbols-outlined/fill.css';
 import { setupAppNavigation, showAppView } from './components/app-navigation.js';
 import { getInitials } from './shared/helpers/format.js';
 import { state } from './state.js';
@@ -166,7 +165,11 @@ function setPollAvailability(available) {
 
 function showPollMessage(message, onRetry = null, { loading = false } = {}) {
     const teaser = document.getElementById('leader-teaser');
-    if (teaser) teaser.hidden = true;
+    if (teaser) {
+        teaser.hidden = !loading;
+        teaser.disabled = loading;
+        teaser.setAttribute('aria-busy', String(loading));
+    }
     for (const id of ['options-container', 'leaderboard-container', 'leaderboard-preview']) {
         const container = document.getElementById(id);
         if (!container) continue;

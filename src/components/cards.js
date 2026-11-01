@@ -14,13 +14,13 @@ export async function renderOptions(isNewItemAdded = false, newItemId = null, an
     const renderDOM = () => {
         container.replaceChildren();
         if (!state.options.length) {
-            container.innerHTML = `<div class="poll-status"><span class="material-symbols-outlined poll-status__icon" aria-hidden="true">holiday_village</span><h3 class="poll-status__title">Prvi prijedlog je tvoj.</h3><p class="poll-status__message">Dodaj smještaj koji bi se mogao svidjeti ekipi.</p><button class="btn btn-primary poll-status__action" type="button">Dodaj smještaj</button></div>`;
+            container.innerHTML = `<div class="poll-status"><span class="material-symbols-outlined poll-status__icon" aria-hidden="true">&#xe58a;</span><h3 class="poll-status__title">Prvi prijedlog je tvoj.</h3><p class="poll-status__message">Dodaj smještaj koji bi se mogao svidjeti ekipi.</p><button class="btn btn-primary poll-status__action" type="button">Dodaj smještaj</button></div>`;
             container.querySelector('button').addEventListener('click', () => window.openAddModal());
             return;
         }
 
         const fragment = document.createDocumentFragment();
-        state.options.forEach(option => {
+        state.options.forEach((option, index) => {
             const selected = state.selectedOptionIds.has(option.id);
             const card = document.createElement('article');
             card.className = `option-card stay-card animate-item${selected ? ' stay-card--selected selected' : ''}${isNewItemAdded && option.id === newItemId ? ' stay-card--new' : ''}`;
@@ -28,9 +28,9 @@ export async function renderOptions(isNewItemAdded = false, newItemId = null, an
             card.addEventListener('click', () => openDetail(option.id));
             card.innerHTML = `
                 <div class="card-cover-container stay-card__cover">
-                    <img class="card-cover stay-card__image" alt="" loading="lazy" decoding="async" /><span class="stay-card__placeholder" hidden><span class="material-symbols-outlined" aria-hidden="true">holiday_village</span>Fotografija nije dostupna</span>
+                    <img class="card-cover stay-card__image" alt="" loading="lazy" decoding="async" /><span class="stay-card__placeholder" hidden><span class="material-symbols-outlined" aria-hidden="true">&#xe58a;</span>Fotografija nije dostupna</span>
                     <button class="card-heart-btn vote-button${selected ? ' voted vote-button--selected' : ''}" type="button" aria-label="Glasaj za ovaj smještaj" aria-pressed="${selected}">
-                        <span class="material-symbols-outlined vote-button__icon" aria-hidden="true">favorite</span>
+                        <span class="material-symbols-outlined vote-button__icon" aria-hidden="true">&#xe87e;</span>
                         <span class="vote-heart-particles" aria-hidden="true"></span>
                     </button>
                     <div class="price-badge"><span class="price-value"></span></div>
@@ -54,6 +54,11 @@ export async function renderOptions(isNewItemAdded = false, newItemId = null, an
                 image.hidden = true;
                 placeholder.hidden = false;
             }, { once: true });
+            // The first row can be the LCP element; discover it without lazy-load delay.
+            if (index < 3) {
+                image.loading = 'eager';
+                image.fetchPriority = index === 0 ? 'high' : 'auto';
+            }
             if (imageUrl) image.src = imageUrl;
             card.querySelector('.card-heart-btn').addEventListener('click', event => {
                 event.stopPropagation();

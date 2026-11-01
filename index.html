@@ -43,7 +43,7 @@
       <div id="user-dropdown-menu" class="profile-menu__panel">
         <span class="profile-menu__name" id="footer-user-name">Korisnik</span>
         <span class="profile-menu__email" id="footer-user-email"></span>
-        <button class="profile-menu__logout" type="button" onclick="logoutUser()"><span class="material-symbols-outlined profile-menu__logout-icon" aria-hidden="true">logout</span>Odjava</button>
+        <button class="profile-menu__logout" type="button" onclick="logoutUser()"><span class="material-symbols-outlined profile-menu__logout-icon" aria-hidden="true">&#xe9ba;</span>Odjava</button>
       </div>
     </div>
   </header>
@@ -59,21 +59,21 @@
         </div>
       </header>
 
-      <button id="leader-teaser" class="leader-teaser" type="button" data-nav-view="rankings" hidden></button>
+      <button id="leader-teaser" class="leader-teaser" type="button" data-nav-view="rankings" disabled aria-busy="true"><span class="leader-teaser__title">Učitavanje poretka…</span></button>
 
       <div class="trip-app__workspace">
         <aside class="rankings-sidebar" aria-label="Trenutni favoriti">
-          <div class="rankings-sidebar__heading"><h2 class="rankings-sidebar__title">Favoriti ekipe</h2><span class="material-symbols-outlined rankings-sidebar__icon" aria-hidden="true">leaderboard</span></div>
+          <div class="rankings-sidebar__heading"><h2 class="rankings-sidebar__title">Favoriti ekipe</h2><span class="material-symbols-outlined rankings-sidebar__icon" aria-hidden="true">&#xf20c;</span></div>
           <div id="leaderboard-preview"></div>
-          <button class="rankings-sidebar__link" type="button" data-nav-view="rankings">Cijeli poredak<span class="material-symbols-outlined rankings-sidebar__link-icon" aria-hidden="true">arrow_forward</span></button>
+          <button class="rankings-sidebar__link" type="button" data-nav-view="rankings">Cijeli poredak<span class="material-symbols-outlined rankings-sidebar__link-icon" aria-hidden="true">&#xe5c8;</span></button>
           <p class="rankings-sidebar__hint">Možeš glasati za više prijedloga.</p>
         </aside>
         <section class="trip-app__stays" aria-labelledby="stays-heading">
           <div class="browse-toolbar">
             <h2 class="browse-toolbar__title" id="stays-heading" tabindex="-1">Smještaji <span class="browse-toolbar__count options-count">0</span></h2>
             <div class="browse-toolbar__actions">
-              <button id="btn-manual-sort" class="browse-toolbar__sort" type="button" onclick="toggleManualSort()"><span class="material-symbols-outlined browse-toolbar__sort-icon" aria-hidden="true">sort</span>Poredaj</button>
-              <button class="btn btn-primary browse-toolbar__add" type="button" data-add-accommodation><span class="material-symbols-outlined" aria-hidden="true">add</span>Dodaj smještaj</button>
+              <button id="btn-manual-sort" class="browse-toolbar__sort" type="button" onclick="toggleManualSort()"><span class="material-symbols-outlined browse-toolbar__sort-icon" aria-hidden="true">&#xe164;</span>Poredaj</button>
+              <button class="btn btn-primary browse-toolbar__add" type="button" data-add-accommodation><span class="material-symbols-outlined" aria-hidden="true">&#xe145;</span>Dodaj smještaj</button>
             </div>
           </div>
           <div id="options-container" class="stay-grid options-list" data-layout></div>
@@ -94,9 +94,9 @@
 </div>
 
 <nav class="app-navigation" aria-label="Navigacija">
-  <button class="app-navigation__item" type="button" data-nav-view="stays"><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">home</span><span>Smještaji</span></button>
-  <button class="app-navigation__item app-navigation__item--add" type="button" data-add-accommodation><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">add</span><span>Dodaj</span></button>
-  <button class="app-navigation__item" type="button" data-nav-view="rankings"><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">leaderboard</span><span>Poredak</span></button>
+  <button class="app-navigation__item" type="button" data-nav-view="stays"><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">&#xe9b2;</span><span>Smještaji</span></button>
+  <button class="app-navigation__item app-navigation__item--add" type="button" data-add-accommodation><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">&#xe145;</span><span>Dodaj</span></button>
+  <button class="app-navigation__item" type="button" data-nav-view="rankings"><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">&#xf20c;</span><span>Poredak</span></button>
 </nav>
 
 <!-- MODALS & TOAST -->
@@ -141,7 +141,7 @@
         <div class="add-image-preview-box">
           <img id="add-preview-img" src="" alt="Fetched Cover" style="display: none;" />
           <div id="add-image-placeholder" class="add-image-placeholder-content">
-            <span class="material-symbols-outlined">photo</span>
+            <span class="material-symbols-outlined">&#xe693;</span>
             <span>Nema slike</span>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { materialIcon } from '../shared/helpers/icons.js';
 import { state } from '../state.js';
 import { animateLayoutTransition } from '../animations/motion.js';
 import { openDetail } from './modals.js';
@@ -17,7 +18,7 @@ function rankingRow({ option, rank }, featured = false, compact = false) {
         <span class="card-cover-container ranking-row__image-wrap"><img class="card-cover ranking-row__image" alt="" loading="lazy" /></span>
         <span class="ranking-row__copy"><span class="leaderboard-item-title ranking-row__title"></span><span class="ranking-row__votes"></span></span>
         <span class="ranking-row__voters"></span>
-        <span class="material-symbols-outlined ranking-row__arrow" aria-hidden="true">chevron_right</span>`;
+        <span class="material-symbols-outlined ranking-row__arrow" aria-hidden="true">&#xe5cc;</span>`;
     row.querySelector('.ranking-row__rank').textContent = String(rank).padStart(2, '0');
     row.querySelector('.ranking-row__title').textContent = option.title || 'Smještaj';
     row.querySelector('.ranking-row__votes').textContent = formatVotes(option.voters.length);
@@ -34,13 +35,15 @@ function renderTeaser(ranked) {
     const teaser = document.getElementById('leader-teaser');
     if (!teaser) return;
     teaser.hidden = !state.options.length;
+    teaser.disabled = false;
+    teaser.setAttribute('aria-busy', 'false');
     teaser.replaceChildren();
     if (teaser.hidden) return;
     const maximum = ranked[0]?.option.voters.length || 0;
     const leaders = ranked.filter(entry => entry.option.voters.length === maximum);
     const joint = leaders.length > 1;
     const option = ranked[0]?.option;
-    teaser.innerHTML = `<span class="leader-teaser__visual"></span><span class="leader-teaser__copy"><span class="leader-teaser__eyebrow"></span><span class="leader-teaser__title"></span><span class="leader-teaser__votes"></span></span><span class="material-symbols-outlined leader-teaser__arrow" aria-hidden="true">chevron_right</span>`;
+    teaser.innerHTML = `<span class="leader-teaser__visual"></span><span class="leader-teaser__copy"><span class="leader-teaser__eyebrow"></span><span class="leader-teaser__title"></span><span class="leader-teaser__votes"></span></span><span class="material-symbols-outlined leader-teaser__arrow" aria-hidden="true">&#xe5cc;</span>`;
     const visual = teaser.querySelector('.leader-teaser__visual');
     if (option && !joint) {
         const image = document.createElement('img');
@@ -53,7 +56,7 @@ function renderTeaser(ranked) {
     } else {
         const icon = document.createElement('span');
         icon.className = 'material-symbols-outlined';
-        icon.textContent = joint ? 'equal' : 'favorite';
+        icon.textContent = materialIcon(joint ? 'equal' : 'favorite');
         icon.setAttribute('aria-hidden', 'true');
         visual.append(icon);
     }

@@ -173,3 +173,36 @@ test('signed-out visitors see login without requesting poll records', async ({ p
     await expect(page.locator('.app-navigation [data-add-accommodation]')).toBeDisabled();
     expect(reads).toEqual([]);
 });
+
+
+test('first-row photos load eagerly and hero keeps its top edge', async ({ page }) => {
+    await openPoll(page);
+    const images = page.locator('.stay-card__image');
+    for (let index = 0; index < 3; index++) await expect(images.nth(index)).toHaveAttribute('loading', 'eager');
+    await expect(images.first()).toHaveAttribute('fetchpriority', 'high');
+    await expect(images.nth(3)).toHaveAttribute('loading', 'lazy');
+    await expect(page.locator('.trip-hero__image')).toHaveCSS('object-position', '50% 0%');
+    await expect(page.locator('.trip-hero')).toHaveCSS('height', '168px');
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await expect(page.locator('.trip-hero')).toHaveCSS('height', '280px');
+    await expect(page.locator('.trip-hero__image')).toHaveCSS('object-position', '50% 0%');
+});
+
+test('loading rankings do not push the accommodation list down', async ({ page }) => {
+    await mockPoll(page);
+    let release;
+    const ready = new Promise(resolve => { release = resolve; });
+    await page.route('**/rest/v1/options*', async route => {
+        await ready;
+        await route.fallback();
+    });
+    await page.goto('./');
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator('#leader-teaser')).toHaveAttribute('aria-busy', 'true');
+    const before = await page.locator('.browse-toolbar').boundingBox();
+    release();
+    await expect(page.locator('.stay-card')).toHaveCount(5);
+    await expect(page.locator('#leader-teaser')).toHaveAttribute('aria-busy', 'false');
+    const after = await page.locator('.browse-toolbar').boundingBox();
+    expect(Math.abs(after.y - before.y)).toBeLessThan(1);
+});

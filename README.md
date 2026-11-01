@@ -9,7 +9,7 @@ npm run dev
 
 Open the Vite address with the `/anketar/` base path. The existing Supabase project provides Google authentication, approved membership, accommodations, votes, and the scraper Edge Function. Database policies and the Edge Function are deployed separately in Supabase.
 
-Inter and Material Symbols are bundled locally from Fontsource. Building does not fetch Google Fonts. Font licenses are distributed in `public/font-licenses.txt`.
+Inter and Material Symbols are bundled locally from Fontsource. Building does not fetch Google Fonts. Only the Material symbols listed in `src/shared/material-icons.json` are shipped; npm scripts regenerate the small icon font automatically. Add new symbols to that mapping before using them (static HTML uses their numeric entities; JavaScript uses `materialIcon(name)`). Font licenses are distributed in `public/font-licenses.txt`.
 
 ```sh
 npm run build

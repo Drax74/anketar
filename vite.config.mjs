@@ -17,8 +17,6 @@ export default defineConfig({
                 'apple-touch-icon-180x180.png',
                 'pwa-192x192.png',
                 'pwa-512x512.png',
-                'app-preview.png',
-                'app-preview-wide.png',
                 'hero-cover-image.webp'
             ],
             manifest: {
@@ -64,7 +62,19 @@ export default defineConfig({
                 ]
             },
             workbox: {
-                globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,woff2}']
+                globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,woff2}'],
+                // Store install screenshots and optional language fonts only when needed.
+                globIgnores: [
+                    '**/app-preview*.png',
+                    '**/inter-cyrillic*.woff2',
+                    '**/inter-greek*.woff2',
+                    '**/inter-vietnamese*.woff2'
+                ],
+                runtimeCaching: [{
+                    urlPattern: ({ request, url }) => request.destination === 'font' && url.origin === self.location.origin,
+                    handler: 'CacheFirst',
+                    options: { cacheName: 'optional-fonts', expiration: { maxEntries: 12, maxAgeSeconds: 31536000 } }
+                }]
             }
         })
     ]

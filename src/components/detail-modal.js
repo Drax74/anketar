@@ -1,3 +1,4 @@
+import { materialIcon } from '../shared/helpers/icons.js';
 import { state } from '../state.js';
 import { updateOption } from '../services/api.js';
 import { safeWebUrl, getListingSource } from '../shared/helpers/url.js';
@@ -127,7 +128,7 @@ function applyDetailLayout(overlay, sheet) {
     vote.classList.toggle('detail-page__vote', mobile);
 
     back.querySelector('.material-symbols-outlined').textContent =
-        mobile ? 'arrow_back' : 'close';
+        materialIcon(mobile ? 'arrow_back' : 'close');
 
     back.setAttribute(
         'aria-label',
@@ -269,12 +270,12 @@ export function openDetail(optionId, { fromHistory = false } = {}) {
     sheet.classList.add('accommodation-detail');
     sheet.innerHTML = `
         <div class="card-cover-container accommodation-detail__cover">
-            <img class="card-cover accommodation-detail__image" alt="" /><span class="accommodation-detail__placeholder" hidden><span class="material-symbols-outlined" aria-hidden="true">holiday_village</span>Fotografija nije dostupna</span>
+            <img class="card-cover accommodation-detail__image" alt="" /><span class="accommodation-detail__placeholder" hidden><span class="material-symbols-outlined" aria-hidden="true">&#xe58a;</span>Fotografija nije dostupna</span>
             <button class="card-heart-btn vote-button" type="button" aria-label="Glasaj za ovaj smještaj" aria-pressed="false">
-                <span class="material-symbols-outlined vote-button__icon" aria-hidden="true">favorite</span>
+                <span class="material-symbols-outlined vote-button__icon" aria-hidden="true">&#xe87e;</span>
                 <span class="vote-heart-particles" aria-hidden="true"></span>
             </button>
-            <button class="detail-close accommodation-detail__close" type="button" aria-label="Zatvori"><span class="material-symbols-outlined accommodation-detail__close-icon" aria-hidden="true">close</span></button>
+            <button class="detail-close accommodation-detail__close" type="button" aria-label="Zatvori"><span class="material-symbols-outlined accommodation-detail__close-icon" aria-hidden="true">&#xe5cd;</span></button>
             <div class="price-badge accommodation-detail__price"><span class="price-value"></span></div>
         </div>
         <div class="detail-content accommodation-detail__content">
@@ -298,7 +299,7 @@ export function openDetail(optionId, { fromHistory = false } = {}) {
                 <p class="accommodation-detail__save-status" role="status"></p>
             </form>
         </div>
-        <footer class="accommodation-detail__footer"><a class="btn btn-primary accommodation-detail__offer" target="_blank" rel="noopener noreferrer">Otvori ponudu <span class="material-symbols-outlined accommodation-detail__offer-icon" aria-hidden="true">north_east</span></a></footer>`;
+        <footer class="accommodation-detail__footer"><a class="btn btn-primary accommodation-detail__offer" target="_blank" rel="noopener noreferrer">Otvori ponudu <span class="material-symbols-outlined accommodation-detail__offer-icon" aria-hidden="true">&#xf1e1;</span></a></footer>`;
 
     populateDetail(sheet, option);
     sheet.querySelector('.card-heart-btn').addEventListener('click', () => window.toggleVote(option.id));
