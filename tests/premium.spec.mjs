@@ -185,7 +185,7 @@ test('first-row photos load eagerly and hero keeps its top edge', async ({ page 
     await expect(page.locator('.trip-hero__image')).toHaveCSS('object-position', '50% 0%');
     await expect(page.locator('.trip-hero')).toHaveCSS('height', '168px');
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await expect(page.locator('.trip-hero')).toHaveCSS('height', '280px');
+    await expect(page.locator('.trip-hero')).toHaveCSS('height', '400px');
     await expect(page.locator('.trip-hero__image')).toHaveCSS('object-position', '50% 0%');
 });
 

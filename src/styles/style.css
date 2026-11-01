@@ -21,6 +21,7 @@
 @import './ranking-list.css';
 @import './ranking-empty.css';
 @import './poll-status.css';
+@import './pull-refresh.css';
 @import './modals.css';
 @import './detail-overlay.css';
 @import './accommodation-detail.css';

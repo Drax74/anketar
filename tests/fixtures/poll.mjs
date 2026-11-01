@@ -6,7 +6,7 @@ export async function mockPoll(page, { tied = false, failReads = false, failScra
     const titles = ['Loft u centru', 'Apartman Sol', 'Casa Madrid', 'Studio Retiro', 'Smještaj <b>Madrid</b> & "ekipa"'];
     const options = titles.map((title, index) => ({ id: `option-${index}`, title, price: String(420 - index * 20), image: '/anketar/hero-cover-image.webp', link: 'https://www.airbnb.com/rooms/test', created_by: members[index].email, note: 'Blizu centra i metroa.', description: 'Svijetao smještaj za zajedničko putovanje.' }));
     const votes = [8, tied ? 8 : 6, 4, 1].flatMap((count, index) => members.slice(0, count).map((member, number) => ({ id: index * 100 + number + 1, option_id: `option-${index}`, user_email: member.email })));
-    const backend = { options, votes, writes: [], failReads, failScrape, failWrites: false, writeDelay: 0 };
+    const backend = { options, votes, writes: [], reads: [], failReads, failScrape, failWrites: false, writeDelay: 0, readDelay: 0 };
     const expires = Math.floor(Date.now() / 1000) + 3600;
     const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
     const token = `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode({ sub: user.id, email, role: 'authenticated', aud: 'authenticated', exp: expires })}.test-only-signature`;
@@ -28,6 +28,8 @@ export async function mockPoll(page, { tied = false, failReads = false, failScra
         if (!url.pathname.startsWith('/rest/v1/')) return route.abort();
         const table = url.pathname.split('/').at(-1);
         if (request.method() === 'GET') {
+            backend.reads.push(table);
+            if (backend.readDelay) await new Promise(resolve => setTimeout(resolve, backend.readDelay));
             return backend.failReads ? json({ message: 'test-only unavailable' }, 503)
                 : json(table === 'whitelist' ? members : backend[table]);
         }

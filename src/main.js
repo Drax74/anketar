@@ -1,6 +1,7 @@
 import '@fontsource-variable/inter/wght.css';
 import './styles/fonts.css';
 import { setupAppNavigation, showAppView } from './components/app-navigation.js';
+import { setupTouchControls } from './components/touch-controls.js';
 import { getInitials } from './shared/helpers/format.js';
 import { state } from './state.js';
 import { getPollData } from './services/api.js';
@@ -337,6 +338,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    setupTouchControls({
+        refresh: loadPollData,
+        canRefresh: () => !loading && pollLoaded && state.pendingVotes.size === 0
+    });
     updateUserUI();
     await loadPollData();
 });
