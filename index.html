@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html lang="hr">
+<html lang="{{t:locale}}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="Glasajte za smještaj u Madridu!">
+  <meta name="description" content="{{t:meta.description}}">
 
   <!-- Open Graph / WhatsApp Preview Meta Tags -->
-  <meta property="og:title" content="🇪🇸 Madrid Ekskurzija (03.12 – 06.12.2026)">
-  <meta property="og:description" content="Glasajte za smještaj u Madridu!">
+  <meta property="og:title" content="{{t:meta.socialTitle}}">
+  <meta property="og:description" content="{{t:meta.description}}">
   <meta property="og:image" content="https://35milimetros.es/wp-content/uploads/2026/03/2b4013cc-60a9-4680-a9bd-f9f891d42a63_source-aspect-ratio_1600w_0.webp">
   <meta property="og:url" content="https://drax74.github.io/anketar/">
   <meta property="og:type" content="website">
 
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="🇪🇸 Madrid Ekskurzija (03.12 – 06.12.2026)">
-  <meta name="twitter:description" content="Glasajte za smještaj u Madridu!">
+  <meta name="twitter:title" content="{{t:meta.socialTitle}}">
+  <meta name="twitter:description" content="{{t:meta.description}}">
   <meta name="twitter:image" content="https://35milimetros.es/wp-content/uploads/2026/03/2b4013cc-60a9-4680-a9bd-f9f891d42a63_source-aspect-ratio_1600w_0.webp">
 
-  <title>Madrid - Trkadzije &amp; Rumoljubi</title>
+  <title>{{t:meta.title}}</title>
 
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png">
@@ -30,51 +30,51 @@
 <div class="app-scroll-container trip-app">
   <header class="trip-header">
     <div class="trip-header__identity">
-      <a class="trip-header__title" href="./" aria-label="Madrid — početna">Madrid<span class="trip-header__dot" aria-hidden="true">.</span></a>
-      <p class="trip-header__dates">3.–6. prosinca 2026.</p>
+      <a class="trip-header__title" href="./" aria-label="{{t:brand.home}}">{{t:brand.name}}<span class="trip-header__dot" aria-hidden="true">.</span></a>
+      <p class="trip-header__dates">{{t:trip.dates}}</p>
     </div>
-    <nav class="trip-header__tabs" aria-label="Glavne stranice">
-      <button class="trip-header__tab" type="button" data-nav-view="stays">Smještaji</button>
-      <button class="trip-header__tab" type="button" data-nav-view="rankings">Poredak</button>
+    <nav class="trip-header__tabs" aria-label="{{t:nav.pages}}">
+      <button class="trip-header__tab" type="button" data-nav-view="stays">{{t:nav.stays}}</button>
+      <button class="trip-header__tab" type="button" data-nav-view="rankings">{{t:nav.rankings}}</button>
     </nav>
     <div class="profile-menu">
-      <button id="floating-avatar-btn" class="profile-menu__trigger" type="button" onclick="toggleUserMenu()" aria-label="Korisnički izbornik" aria-expanded="false" aria-controls="user-dropdown-menu">
-        <span class="profile-menu__avatar" id="user-avatar-initials">U</span>
+      <button id="floating-avatar-btn" class="profile-menu__trigger" type="button" onclick="toggleUserMenu()" aria-label="{{t:user.menu}}" aria-expanded="false" aria-controls="user-dropdown-menu">
+        <span class="profile-menu__avatar" id="user-avatar-initials">{{t:user.initial}}</span>
       </button>
       <div id="user-dropdown-menu" class="profile-menu__panel">
-        <span class="profile-menu__name" id="footer-user-name">Korisnik</span>
+        <span class="profile-menu__name" id="footer-user-name">{{t:user.fallback}}</span>
         <span class="profile-menu__email" id="footer-user-email"></span>
-        <button class="profile-menu__logout" type="button" onclick="logoutUser()"><span class="material-symbols-outlined profile-menu__logout-icon" aria-hidden="true">&#xe9ba;</span>Odjava</button>
+        <button class="profile-menu__logout" type="button" onclick="logoutUser()"><span class="material-symbols-outlined profile-menu__logout-icon" aria-hidden="true">&#xe9ba;</span>{{t:user.logout}}</button>
       </div>
     </div>
   </header>
 
   <main>
-    <section id="stays-view" class="trip-app__view" aria-label="Smještaji">
+    <section id="stays-view" class="trip-app__view" aria-label="{{t:nav.stays}}">
       <header class="trip-hero" id="hero-header">
         <img class="trip-hero__image" src="/hero-cover-image.webp" srcset="/hero-cover-image-800.webp 800w, /hero-cover-image.webp 1600w" sizes="(min-width: 1440px) 1072px, (min-width: 1024px) calc(100vw - 368px), calc(100vw - 32px)" alt="" fetchpriority="high" />
         <div class="trip-hero__content">
-          <p class="trip-hero__eyebrow">Trkadzije &amp; Rumoljubi</p>
-          <h1 class="trip-hero__title">Madrid, zajedno.</h1>
-          <p class="trip-hero__subtitle">Pronađimo smještaj za našu ekipu.</p>
+          <p class="trip-hero__eyebrow">{{t:hero.group}}</p>
+          <h1 class="trip-hero__title">{{t:hero.title}}</h1>
+          <p class="trip-hero__subtitle">{{t:hero.subtitle}}</p>
         </div>
       </header>
 
-      <button id="leader-teaser" class="leader-teaser" type="button" data-nav-view="rankings" disabled aria-busy="true"><span class="leader-teaser__title">Učitavanje poretka…</span></button>
+      <button id="leader-teaser" class="leader-teaser" type="button" data-nav-view="rankings" disabled aria-busy="true"><span class="leader-teaser__title">{{t:rankings.loading}}</span></button>
 
       <div class="trip-app__workspace">
-        <aside class="rankings-sidebar" aria-label="Trenutni favoriti">
-          <div class="rankings-sidebar__heading"><h2 class="rankings-sidebar__title">Favoriti ekipe</h2><span class="material-symbols-outlined rankings-sidebar__icon" aria-hidden="true">&#xf20c;</span></div>
+        <aside class="rankings-sidebar" aria-label="{{t:rankings.currentFavorites}}">
+          <div class="rankings-sidebar__heading"><h2 class="rankings-sidebar__title">{{t:rankings.favorites}}</h2><span class="material-symbols-outlined rankings-sidebar__icon" aria-hidden="true">&#xf20c;</span></div>
           <div id="leaderboard-preview"></div>
-          <button class="rankings-sidebar__link" type="button" data-nav-view="rankings">Cijeli poredak<span class="material-symbols-outlined rankings-sidebar__link-icon" aria-hidden="true">&#xe5c8;</span></button>
-          <p class="rankings-sidebar__hint">Možeš glasati za više prijedloga.</p>
+          <button class="rankings-sidebar__link" type="button" data-nav-view="rankings">{{t:rankings.all}}<span class="material-symbols-outlined rankings-sidebar__link-icon" aria-hidden="true">&#xe5c8;</span></button>
+          <p class="rankings-sidebar__hint">{{t:votes.hint}}</p>
         </aside>
         <section class="trip-app__stays" aria-labelledby="stays-heading">
           <div class="browse-toolbar">
-            <h2 class="browse-toolbar__title" id="stays-heading" tabindex="-1">Smještaji <span class="browse-toolbar__count options-count">0</span></h2>
+            <h2 class="browse-toolbar__title" id="stays-heading" tabindex="-1">{{t:nav.stays}} <span class="browse-toolbar__count options-count">0</span></h2>
             <div class="browse-toolbar__actions">
-              <button id="btn-manual-sort" class="browse-toolbar__sort" type="button" onclick="toggleManualSort()"><span class="material-symbols-outlined browse-toolbar__sort-icon" aria-hidden="true">&#xe164;</span>Poredaj</button>
-              <button class="btn btn-primary browse-toolbar__add" type="button" data-add-accommodation><span class="material-symbols-outlined" aria-hidden="true">&#xe145;</span>Dodaj smještaj</button>
+              <button id="btn-manual-sort" class="browse-toolbar__sort" type="button" onclick="toggleManualSort()"><span class="material-symbols-outlined browse-toolbar__sort-icon" aria-hidden="true">&#xe164;</span>{{t:stays.sort}}</button>
+              <button class="btn btn-primary browse-toolbar__add" type="button" data-add-accommodation><span class="material-symbols-outlined" aria-hidden="true">&#xe145;</span>{{t:stays.add}}</button>
             </div>
           </div>
           <div id="options-container" class="stay-grid options-list" data-layout></div>
@@ -84,20 +84,20 @@
 
     <section id="rankings-view" class="trip-app__view" aria-labelledby="rankings-heading" hidden>
       <header class="ranking-heading">
-        <p class="ranking-heading__eyebrow">Glasovi grupe</p>
-        <h1 class="ranking-heading__title" id="rankings-heading" tabindex="-1">Poredak</h1>
-        <p class="ranking-heading__description">Favoriti naše ekipe, na jednom mjestu.</p>
+        <p class="ranking-heading__eyebrow">{{t:rankings.groupVotes}}</p>
+        <h1 class="ranking-heading__title" id="rankings-heading" tabindex="-1">{{t:nav.rankings}}</h1>
+        <p class="ranking-heading__description">{{t:rankings.description}}</p>
       </header>
       <div id="leaderboard-container" class="ranking-list"></div>
-      <p class="ranking-heading__hint">Možeš glasati za više prijedloga.</p>
+      <p class="ranking-heading__hint">{{t:votes.hint}}</p>
     </section>
   </main>
 </div>
 
-<nav class="app-navigation" aria-label="Navigacija">
-  <button class="app-navigation__item" type="button" data-nav-view="stays"><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">&#xe9b2;</span><span>Smještaji</span></button>
-  <button class="app-navigation__item app-navigation__item--add" type="button" data-add-accommodation><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">&#xe145;</span><span>Dodaj</span></button>
-  <button class="app-navigation__item" type="button" data-nav-view="rankings"><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">&#xf20c;</span><span>Poredak</span></button>
+<nav class="app-navigation" aria-label="{{t:nav.label}}">
+  <button class="app-navigation__item" type="button" data-nav-view="stays"><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">&#xe9b2;</span><span>{{t:nav.stays}}</span></button>
+  <button class="app-navigation__item app-navigation__item--add" type="button" data-add-accommodation><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">&#xe145;</span><span>{{t:nav.add}}</span></button>
+  <button class="app-navigation__item" type="button" data-nav-view="rankings"><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">&#xf20c;</span><span>{{t:nav.rankings}}</span></button>
 </nav>
 
 <!-- MODALS & TOAST -->
@@ -105,12 +105,12 @@
 
 <div id="auth-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="auth-title">
   <div class="modal" style="text-align: center; padding: 32px 24px;">
-    <h2 id="auth-title" style="margin-bottom: 12px;">Dragi Trkadzijo i Rumoljubu</h2>
+    <h2 id="auth-title" style="margin-bottom: 12px;">{{t:auth.welcome}}</h2>
     <p style="font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 24px; line-height: 1.5;">
-      Prijavi se svojim Google računom kako bi pristupio aplikaciji i glasovao
+      {{t:auth.intro}}
     </p>
     <button class="btn btn-primary" onclick="loginWithGoogle()" style="width: 100%; padding: 12px; font-size: 1rem;">
-      Prijava s Google računom
+      {{t:auth.google}}
     </button>
   </div>
 </div>
@@ -119,31 +119,31 @@
   <div class="native-sheet-container">
     <div class="native-sheet-handle"></div>
     <div class="native-sheet-payload">
-      <h2 id="add-title">Dodaj smještaj</h2>
+      <h2 id="add-title">{{t:stays.add}}</h2>
       <div id="add-step-1">
         <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-top: 8px; margin-bottom: 16px; line-height: 1.4;">
-          Unesi link smještaja s Booking.com ili Airbnb-a.
+          {{t:add.linkHelp}}
         </p>
         <div class="form-group">
-          <label for="input-link">Link smještaja</label>
-          <input type="url" id="input-link" class="input-field" placeholder="Unesi Booking.com ili Airbnb link" />
-          <div class="error-message" id="error-input-link">Unesi važeći URL smještaja.</div>
+          <label for="input-link">{{t:form.link}}</label>
+          <input type="url" id="input-link" class="input-field" placeholder="{{t:form.linkPlaceholder}}" />
+          <div class="error-message" id="error-input-link">{{t:form.linkInvalid}}</div>
         </div>
         <div style="display: flex; gap: 12px; margin-top: 20px;">
-          <button class="btn btn-secondary" onclick="closeAddModal()">Odustani</button>
-          <button class="btn btn-primary" id="btn-confirm-link" onclick="submitLinkAndFetch()">Potvrdi link</button>
+          <button class="btn btn-secondary" onclick="closeAddModal()">{{t:common.cancel}}</button>
+          <button class="btn btn-primary" id="btn-confirm-link" onclick="submitLinkAndFetch()">{{t:add.confirmLink}}</button>
         </div>
       </div>
       <div id="add-skeleton-loading" style="display: none; padding: 12px 0;">
         <div class="spinner" aria-hidden="true"></div>
-        <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 16px; text-align: center;">Dohvaćam podatke...</p>
+        <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 16px; text-align: center;">{{t:add.fetching}}</p>
       </div>
       <div id="add-step-2" style="display: none;">
         <div class="add-image-preview-box">
-          <img id="add-preview-img" src="" alt="Fetched Cover" style="display: none;" />
+          <img id="add-preview-img" src="" alt="{{t:add.coverAlt}}" style="display: none;" />
           <div id="add-image-placeholder" class="add-image-placeholder-content">
             <span class="material-symbols-outlined">&#xe693;</span>
-            <span>Nema slike</span>
+            <span>{{t:common.noImage}}</span>
           </div>
         </div>
         <div id="scraper-success-preview" class="read-only-preview" style="display: none;">
@@ -151,24 +151,24 @@
           <p id="preview-desc" class="read-only-desc"></p>
         </div>
         <div class="form-group" id="group-title">
-          <label for="input-title">Naziv smještaja</label>
-          <input type="text" id="input-title" class="input-field" placeholder="Npr. Loft u centru" />
+          <label for="input-title">{{t:form.title}}</label>
+          <input type="text" id="input-title" class="input-field" placeholder="{{t:form.titlePlaceholder}}" />
         </div>
         <div class="form-group" id="group-image">
-          <label for="input-image">URL fotografije (opcionalno)</label>
-          <input type="url" id="input-image" class="input-field" placeholder="https://…" />
+          <label for="input-image">{{t:form.optionalImageUrl}}</label>
+          <input type="url" id="input-image" class="input-field" placeholder="{{t:form.imagePlaceholder}}" />
         </div>
         <div class="form-group">
-          <label for="input-price">Ukupna cijena</label>
-          <input type="text" id="input-price" class="input-field" placeholder="Npr. 450 € ukupno" />
+          <label for="input-price">{{t:form.totalPrice}}</label>
+          <input type="text" id="input-price" class="input-field" placeholder="{{t:form.pricePlaceholder}}" />
         </div>
         <div class="form-group">
-          <label for="input-note">Napomena (opcionalno)</label>
-          <textarea id="input-note" class="input-field" placeholder="Blizu centra..."></textarea>
+          <label for="input-note">{{t:form.optionalNote}}</label>
+          <textarea id="input-note" class="input-field" placeholder="{{t:form.notePlaceholder}}"></textarea>
         </div>
         <div style="display: flex; gap: 12px; margin-top: 20px;">
-          <button class="btn btn-secondary" onclick="resetAddModalStep()">Natrag</button>
-          <button class="btn btn-primary" id="btn-add-submit" onclick="submitNewOption()">Dodaj prijedlog</button>
+          <button class="btn btn-secondary" onclick="resetAddModalStep()">{{t:common.back}}</button>
+          <button class="btn btn-primary" id="btn-add-submit" onclick="submitNewOption()">{{t:add.submit}}</button>
         </div>
       </div>
     </div>

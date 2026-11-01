@@ -1,3 +1,4 @@
+import { t, htmlText } from '../i18n.js';
 import { setAccommodationImage } from '../shared/helpers/images.js';
 import { materialIcon } from '../shared/helpers/icons.js';
 import { state } from '../state.js';
@@ -133,7 +134,7 @@ function applyDetailLayout(overlay, sheet) {
 
     back.setAttribute(
         'aria-label',
-        mobile ? 'Natrag na smještaje' : 'Zatvori'
+        mobile ? t('detail.back') : t('common.close')
     );
 
     sheet.setAttribute('role', mobile ? 'region' : 'dialog');
@@ -271,36 +272,36 @@ export function openDetail(optionId, { fromHistory = false } = {}) {
     sheet.classList.add('accommodation-detail');
     sheet.innerHTML = `
         <div class="card-cover-container accommodation-detail__cover">
-            <img class="card-cover accommodation-detail__image" alt="" /><span class="accommodation-detail__placeholder" hidden><span class="material-symbols-outlined" aria-hidden="true">&#xe58a;</span>Fotografija nije dostupna</span>
-            <button class="card-heart-btn vote-button" type="button" aria-label="Glasaj za ovaj smještaj" aria-pressed="false">
+            <img class="card-cover accommodation-detail__image" alt="" /><span class="accommodation-detail__placeholder" hidden><span class="material-symbols-outlined" aria-hidden="true">&#xe58a;</span>${htmlText('common.imageUnavailable')}</span>
+            <button class="card-heart-btn vote-button" type="button" aria-label="${htmlText('votes.add')}" aria-pressed="false">
                 <span class="material-symbols-outlined vote-button__icon" aria-hidden="true">&#xe87e;</span>
                 <span class="vote-heart-particles" aria-hidden="true"></span>
             </button>
-            <button class="detail-close accommodation-detail__close" type="button" aria-label="Zatvori"><span class="material-symbols-outlined accommodation-detail__close-icon" aria-hidden="true">&#xe5cd;</span></button>
+            <button class="detail-close accommodation-detail__close" type="button" aria-label="${htmlText('common.close')}"><span class="material-symbols-outlined accommodation-detail__close-icon" aria-hidden="true">&#xe5cd;</span></button>
             <div class="price-badge accommodation-detail__price"><span class="price-value"></span></div>
         </div>
         <div class="detail-content accommodation-detail__content">
             <div class="accommodation-detail__heading">
                 <h2 id="detail-title" class="detail-title accommodation-detail__title"></h2>
-                <button class="accommodation-detail__edit" type="button" hidden>Uredi</button>
+                <button class="accommodation-detail__edit" type="button" hidden>${htmlText('detail.edit')}</button>
             </div>
             <div id="detail-readonly-section" class="accommodation-detail__read-view">
                 <p class="accommodation-detail__source"></p>
                 <p class="card-creator-subtitle accommodation-detail__creator"></p>
                 <div class="voters-row accommodation-detail__voters"></div>
-                <section class="accommodation-detail__description-section"><h3 class="accommodation-detail__section-title">O smještaju</h3><p class="accommodation-detail__description"></p></section>
-                <aside class="accommodation-detail__note"><h3 class="accommodation-detail__note-title">Bilješka uz prijedlog</h3><p class="detail-note-text accommodation-detail__note-text"></p></aside>
+                <section class="accommodation-detail__description-section"><h3 class="accommodation-detail__section-title">${htmlText('detail.about')}</h3><p class="accommodation-detail__description"></p></section>
+                <aside class="accommodation-detail__note"><h3 class="accommodation-detail__note-title">${htmlText('detail.note')}</h3><p class="detail-note-text accommodation-detail__note-text"></p></aside>
             </div>
             <form id="detail-editable-section" class="accommodation-detail__form" hidden>
-                <div class="form-group"><label for="edit-detail-title">Naziv smještaja</label><input type="text" id="edit-detail-title" class="input-field" required /></div>
-                <div class="form-group"><label for="edit-detail-price">Cijena (€)</label><input type="text" id="edit-detail-price" class="input-field" /></div>
-                <div class="form-group"><label for="edit-detail-image">URL fotografije</label><input type="text" inputmode="url" id="edit-detail-image" class="input-field" /></div>
-                <div class="form-group"><label for="edit-detail-note">Napomena / bilješka</label><textarea id="edit-detail-note" class="input-field"></textarea></div>
-                <div class="accommodation-detail__form-actions"><button class="btn btn-primary" type="submit">Spremi izmjene</button><button class="btn btn-secondary accommodation-detail__cancel" type="button">Odustani</button></div>
+                <div class="form-group"><label for="edit-detail-title">${htmlText('form.title')}</label><input type="text" id="edit-detail-title" class="input-field" required /></div>
+                <div class="form-group"><label for="edit-detail-price">${htmlText('form.price')}</label><input type="text" id="edit-detail-price" class="input-field" /></div>
+                <div class="form-group"><label for="edit-detail-image">${htmlText('form.imageUrl')}</label><input type="text" inputmode="url" id="edit-detail-image" class="input-field" /></div>
+                <div class="form-group"><label for="edit-detail-note">${htmlText('form.note')}</label><textarea id="edit-detail-note" class="input-field"></textarea></div>
+                <div class="accommodation-detail__form-actions"><button class="btn btn-primary" type="submit">${htmlText('detail.save')}</button><button class="btn btn-secondary accommodation-detail__cancel" type="button">${htmlText('common.cancel')}</button></div>
                 <p class="accommodation-detail__save-status" role="status"></p>
             </form>
         </div>
-        <footer class="accommodation-detail__footer"><a class="btn btn-primary accommodation-detail__offer" target="_blank" rel="noopener noreferrer">Otvori ponudu <span class="material-symbols-outlined accommodation-detail__offer-icon" aria-hidden="true">&#xf1e1;</span></a></footer>`;
+        <footer class="accommodation-detail__footer"><a class="btn btn-primary accommodation-detail__offer" target="_blank" rel="noopener noreferrer">${htmlText('detail.offer')} <span class="material-symbols-outlined accommodation-detail__offer-icon" aria-hidden="true">&#xf1e1;</span></a></footer>`;
 
     populateDetail(sheet, option);
     sheet.querySelector('.card-heart-btn').addEventListener('click', () => window.toggleVote(option.id));
@@ -331,13 +332,13 @@ function populateDetail(sheet, option) {
     const placeholder = sheet.querySelector('.accommodation-detail__placeholder');
     placeholder.hidden = true;
     setAccommodationImage(image, option.image, () => { placeholder.hidden = false; });
-    sheet.querySelector('.card-cover').alt = option.title || 'Smještaj';
+    sheet.querySelector('.card-cover').alt = option.title || t('common.stay');
     sheet.querySelector('.price-value').textContent = formatPrice(option.price);
-    sheet.querySelector('.detail-title').textContent = option.title || 'Smještaj';
+    sheet.querySelector('.detail-title').textContent = option.title || t('common.stay');
     const source = sheet.querySelector('.accommodation-detail__source');
     source.textContent = getListingSource(option.link);
     source.hidden = !source.textContent;
-    sheet.querySelector('.accommodation-detail__creator').textContent = `Prijedlog: ${creator?.name || option.creatorName || 'član ekipe'}`;
+    sheet.querySelector('.accommodation-detail__creator').textContent = t('stay.creator', { name: creator?.name || option.creatorName || t('common.teamMember') });
     sheet.querySelector('.accommodation-detail__description').textContent = option.description || '';
     sheet.querySelector('.accommodation-detail__description-section').hidden = !option.description;
     sheet.querySelector('.detail-note-text').textContent = option.note || '';
@@ -489,7 +490,7 @@ export async function saveOptionDetails() {
     const button = form.querySelector('button[type="submit"]');
     if (form.hidden || button.disabled) return;
     const title = form.querySelector('#edit-detail-title').value.trim();
-    if (!title) { showToast('Naziv smještaja ne može biti prazan.', 'error'); return; }
+    if (!title) { showToast(t('detail.titleRequired'), 'error'); return; }
     const rawPrice = form.querySelector('#edit-detail-price').value.trim();
     const updates = {
         title,
@@ -499,7 +500,7 @@ export async function saveOptionDetails() {
     };
     button.disabled = true;
     const status = sheet.querySelector('.accommodation-detail__save-status');
-    status.textContent = 'Spremanje…';
+    status.textContent = t('detail.saving');
     try {
         const saved = await updateOption(optionId, updates);
         if (!Array.isArray(saved) || saved.length !== 1) throw new Error('The update was not confirmed.');
@@ -510,10 +511,10 @@ export async function saveOptionDetails() {
             populateDetail(sheet, state.options.find(item => String(item.id) === String(optionId)));
             setDetailEditing(false);
         }
-        showToast('Izmjene su spremljene.');
+        showToast(t('detail.saved'));
     } catch (error) {
         console.error('Failed to save option edits:', error);
-        status.textContent = 'Spremanje nije uspjelo. Tvoje izmjene su sačuvane u obrascu.';
-        showToast('Greška pri spremanju izmjena. Pokušajte ponovno.', 'error');
+        status.textContent = t('detail.saveFailedStatus');
+        showToast(t('detail.saveFailed'), 'error');
     } finally { button.disabled = false; }
 }

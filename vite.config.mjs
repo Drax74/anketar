@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import injectHTML from 'vite-plugin-html-inject';
+import { localizeHtml, t } from './src/i18n.js';
 
 export default defineConfig({
     base: '/anketar/',
@@ -10,6 +11,10 @@ export default defineConfig({
     },
     plugins: [
         injectHTML(),
+        {
+            name: 'app-language',
+            transformIndexHtml: { order: 'post', handler: localizeHtml }
+        },
         VitePWA({
             registerType: 'autoUpdate',
             injectRegister: 'script-defer',
@@ -22,9 +27,10 @@ export default defineConfig({
             ],
             manifest: {
                 id: '/anketar/',
-                name: 'Madrid Ekskurzija - Trkadzije & Rumoljubi',
-                short_name: 'Madrid 2026',
-                description: 'Glasajte za smještaj u Madridu!',
+                lang: t('locale'),
+                name: t('pwa.name'),
+                short_name: t('pwa.shortName'),
+                description: t('meta.description'),
                 theme_color: '#121316',
                 background_color: '#121316',
                 display: 'standalone',
@@ -51,14 +57,14 @@ export default defineConfig({
                         sizes: '2916x1748',
                         type: 'image/jpeg',
                         form_factor: 'wide',
-                        label: 'Madrid Voting Desktop Dashboard'
+                        label: t('pwa.desktopScreenshot')
                     },
                     {
                         src: 'app-preview.png',
                         sizes: '687x1024',
                         type: 'image/png',
                         form_factor: 'narrow',
-                        label: 'Madrid Voting Dashboard'
+                        label: t('pwa.mobileScreenshot')
                     }
                 ]
             },

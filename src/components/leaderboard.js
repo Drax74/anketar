@@ -1,3 +1,4 @@
+import { t } from '../i18n.js';
 import { materialIcon } from '../shared/helpers/icons.js';
 import { state } from '../state.js';
 import { animateLayoutTransition } from '../animations/motion.js';
@@ -12,7 +13,7 @@ function rankingRow({ option, rank }, featured = false, compact = false) {
     row.className = `ranking-row animate-item${featured ? ' ranking-row--featured' : ''}${compact ? ' ranking-row--compact' : ''}`;
     row.dataset.id = option.id;
     row.dataset.detailId = option.id;
-    row.setAttribute('aria-label', `${option.title || 'Smještaj'}, ${formatVotes(option.voters.length)}, otvori detalje`);
+    row.setAttribute('aria-label', t('rankings.rowLabel', { title: option.title || t('common.stay'), votes: formatVotes(option.voters.length) }));
     row.innerHTML = `
         <span class="ranking-row__rank"></span>
         <span class="card-cover-container ranking-row__image-wrap"><img class="card-cover ranking-row__image" alt="" loading="lazy" /></span>
@@ -20,7 +21,7 @@ function rankingRow({ option, rank }, featured = false, compact = false) {
         <span class="ranking-row__voters"></span>
         <span class="material-symbols-outlined ranking-row__arrow" aria-hidden="true">&#xe5cc;</span>`;
     row.querySelector('.ranking-row__rank').textContent = String(rank).padStart(2, '0');
-    row.querySelector('.ranking-row__title').textContent = option.title || 'Smještaj';
+    row.querySelector('.ranking-row__title').textContent = option.title || t('common.stay');
     row.querySelector('.ranking-row__votes').textContent = formatVotes(option.voters.length);
     const image = row.querySelector('img');
     setAccommodationImage(image, option.image);
@@ -56,14 +57,14 @@ function renderTeaser(ranked) {
         icon.setAttribute('aria-hidden', 'true');
         visual.append(icon);
     }
-    teaser.querySelector('.leader-teaser__eyebrow').textContent = joint ? 'Izjednačeno na vrhu' : option ? 'Vodi trenutno' : 'Ekipa bira';
-    teaser.querySelector('.leader-teaser__title').textContent = joint ? `${leaders.length} prijedloga dijeli prvo mjesto` : option?.title || 'Svaki glas je važan';
-    teaser.querySelector('.leader-teaser__votes').textContent = option ? formatVotes(maximum) : 'Budi prvi koji će glasati';
+    teaser.querySelector('.leader-teaser__eyebrow').textContent = joint ? t('rankings.tied') : option ? t('rankings.leading') : t('rankings.teamChooses');
+    teaser.querySelector('.leader-teaser__title').textContent = joint ? t('rankings.jointLeaders', { count: leaders.length }) : option?.title || t('rankings.everyVote');
+    teaser.querySelector('.leader-teaser__votes').textContent = option ? formatVotes(maximum) : t('votes.first');
 }
 
 export async function renderLeaderboard(animateTransition = true) {
     const options = [...state.options].filter(option => option.voters?.length)
-        .sort((a, b) => b.voters.length - a.voters.length || String(a.title).localeCompare(String(b.title), 'hr'));
+        .sort((a, b) => b.voters.length - a.voters.length || String(a.title).localeCompare(String(b.title), t('locale')));
     let previous = null;
     let rank = 0;
     const ranked = options.map((option, index) => {
@@ -82,7 +83,7 @@ export async function renderLeaderboard(animateTransition = true) {
             if (!ranked.length) {
                 const empty = document.createElement('p');
                 empty.className = 'ranking-empty';
-                empty.textContent = 'Još nema glasova. Tvoj glas može pokrenuti ekipu.';
+                empty.textContent = t('rankings.empty');
                 container.append(empty);
                 return;
             }

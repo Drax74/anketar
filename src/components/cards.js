@@ -1,3 +1,4 @@
+import { t, htmlText } from '../i18n.js';
 import { setAccommodationImage } from '../shared/helpers/images.js';
 import { formatPrice } from '../shared/helpers/format.js';
 import { isVotePending } from '../shared/helpers/votes.js';
@@ -14,7 +15,7 @@ export async function renderOptions(isNewItemAdded = false, newItemId = null, an
     const renderDOM = () => {
         container.replaceChildren();
         if (!state.options.length) {
-            container.innerHTML = `<div class="poll-status"><span class="material-symbols-outlined poll-status__icon" aria-hidden="true">&#xe58a;</span><h3 class="poll-status__title">Prvi prijedlog je tvoj.</h3><p class="poll-status__message">Dodaj smještaj koji bi se mogao svidjeti ekipi.</p><button class="btn btn-primary poll-status__action" type="button">Dodaj smještaj</button></div>`;
+            container.innerHTML = `<div class="poll-status"><span class="material-symbols-outlined poll-status__icon" aria-hidden="true">&#xe58a;</span><h3 class="poll-status__title">${htmlText('stays.emptyTitle')}</h3><p class="poll-status__message">${htmlText('stays.emptyDescription')}</p><button class="btn btn-primary poll-status__action" type="button">${htmlText('stays.add')}</button></div>`;
             container.querySelector('button').addEventListener('click', () => window.openAddModal());
             return;
         }
@@ -28,8 +29,8 @@ export async function renderOptions(isNewItemAdded = false, newItemId = null, an
             card.addEventListener('click', () => openDetail(option.id));
             card.innerHTML = `
                 <div class="card-cover-container stay-card__cover">
-                    <img class="card-cover stay-card__image" alt="" loading="lazy" decoding="async" /><span class="stay-card__placeholder" hidden><span class="material-symbols-outlined" aria-hidden="true">&#xe58a;</span>Fotografija nije dostupna</span>
-                    <button class="card-heart-btn vote-button${selected ? ' voted vote-button--selected' : ''}" type="button" aria-label="Glasaj za ovaj smještaj" aria-pressed="${selected}">
+                    <img class="card-cover stay-card__image" alt="" loading="lazy" decoding="async" /><span class="stay-card__placeholder" hidden><span class="material-symbols-outlined" aria-hidden="true">&#xe58a;</span>${htmlText('common.imageUnavailable')}</span>
+                    <button class="card-heart-btn vote-button${selected ? ' voted vote-button--selected' : ''}" type="button" aria-label="${htmlText('votes.add')}" aria-pressed="${selected}">
                         <span class="material-symbols-outlined vote-button__icon" aria-hidden="true">&#xe87e;</span>
                         <span class="vote-heart-particles" aria-hidden="true"></span>
                     </button>
@@ -40,13 +41,13 @@ export async function renderOptions(isNewItemAdded = false, newItemId = null, an
                     <p class="stay-card__creator"></p>
                     <div class="voters-row stay-card__voters"></div>
                 </div>`;
-            card.querySelector('.stay-card__title-button').textContent = option.title || 'Smještaj';
+            card.querySelector('.stay-card__title-button').textContent = option.title || t('common.stay');
             const creator = state.whitelistedUsers.find(user => user.email === option.created_by);
-            card.querySelector('.stay-card__creator').textContent = `Prijedlog: ${creator?.name || option.creatorName || 'član ekipe'}`;
+            card.querySelector('.stay-card__creator').textContent = t('stay.creator', { name: creator?.name || option.creatorName || t('common.teamMember') });
             card.querySelector('.price-value').textContent = formatPrice(option.price);
             const image = card.querySelector('.card-cover');
             const placeholder = card.querySelector('.stay-card__placeholder');
-            image.alt = option.title || 'Smještaj';
+            image.alt = option.title || t('common.stay');
             placeholder.hidden = true;
             // The first row can be the LCP element; discover it without lazy-load delay.
             if (index < 3) {
@@ -80,7 +81,7 @@ function updateVoteControls(card, option) {
     button.classList.toggle('voted', selected);
     button.classList.toggle('vote-button--selected', selected);
     button.setAttribute('aria-pressed', String(selected));
-    button.setAttribute('aria-label', selected ? 'Ukloni svoj glas' : 'Glasaj za ovaj smještaj');
+    button.setAttribute('aria-label', selected ? t('votes.remove') : t('votes.add'));
     button.disabled = pending;
     button.setAttribute('aria-busy', String(pending));
     renderVoters(card.querySelector('.voters-row'), option.voters || [], option.voterEmails || [], { selected });

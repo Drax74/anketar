@@ -1,3 +1,4 @@
+import { t } from '../i18n.js';
 import { showAppView } from './app-navigation.js';
 import { closeDetail } from './detail-modal.js';
 import { closeAddModal } from './add-modal.js';
@@ -82,7 +83,7 @@ export function setupTouchControls({ refresh, canRefresh }) {
         gesture.distance = gesture.axis === 'x' ? dx : dy;
         if (gesture.pull && gesture.axis === 'y') {
             indicator.hidden = false;
-            label.textContent = dy >= 80 ? 'Otpusti za osvježavanje' : 'Povuci za osvježavanje';
+            label.textContent = dy >= 80 ? t('refresh.release') : t('refresh.pull');
         }
     }, { passive: false });
 
@@ -104,7 +105,7 @@ export function setupTouchControls({ refresh, canRefresh }) {
                 refreshing = true;
                 indicator.hidden = false;
                 indicator.classList.add('pull-refresh--loading');
-                label.textContent = 'Osvježavanje…';
+                label.textContent = t('refresh.loading');
                 try {
                     await refresh();
                 } finally {

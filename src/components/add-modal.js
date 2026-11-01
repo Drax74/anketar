@@ -1,3 +1,4 @@
+import { t } from '../i18n.js';
 import { state } from '../state.js';
 import { addOption } from '../services/api.js';
 import { scrapeAccommodation } from '../services/scraper.js';
@@ -22,7 +23,7 @@ let pendingScrapedData = {
 
 export function openAddModal() {
     if (!state.userEmail || !state.whitelistedUsers.some(user => user.email === state.userEmail)) {
-        showToast('Prijavite se odobrenim računom za dodavanje smještaja.', 'error');
+        showToast(t('add.approvedRequired'), 'error');
         return;
     }
     resetAddModalStep();
@@ -90,7 +91,7 @@ export async function submitLinkAndFetch() {
         !isBookingOrAirbnbUrl(rawLink)
     ) {
         showToast(
-            'Dozvoljeni su isključivo valjani Booking.com i Airbnb linkovi!',
+            t('add.supportedLinksOnly'),
             'error'
         );
         return;
@@ -99,7 +100,7 @@ export async function submitLinkAndFetch() {
     const formattedLink = safeWebUrl(rawLink);
 
     if (!formattedLink) {
-        showToast('Poveznica mora koristiti HTTP ili HTTPS.', 'error');
+        showToast(t('add.httpRequired'), 'error');
         return;
     }
 
@@ -109,7 +110,7 @@ export async function submitLinkAndFetch() {
     );
 
     if (isDuplicate) {
-        showToast('Ovaj smještaj (link) je već dodan na popis!', 'error');
+        showToast(t('add.duplicate'), 'error');
         return;
     }
 
@@ -131,7 +132,7 @@ export async function submitLinkAndFetch() {
             scrapedSuccessfully: true
         };
 
-        showToast('Podaci o smještaju uspješno dohvaćeni!');
+        showToast(t('add.fetched'));
         renderAddModalStep2(true);
     } catch (error) {
         if (generation !== scrapeGeneration) return;
@@ -140,7 +141,7 @@ export async function submitLinkAndFetch() {
         pendingScrapedData.scrapedSuccessfully = false;
 
         showToast(
-            'Automatsko dohvaćanje nije uspjelo. Unesite podatke ručno.',
+            t('add.manualFallback'),
             'error'
         );
 
@@ -174,7 +175,7 @@ function renderAddModalStep2(scrapedSuccessfully) {
 
         if (previewDesc) {
             previewDesc.textContent =
-                pendingScrapedData.description || 'Opis nije dostupan.';
+                pendingScrapedData.description || t('add.noDescription');
         }
 
         const previewImage = safeWebUrl(pendingScrapedData.image);
@@ -235,7 +236,7 @@ export async function submitNewOption() {
         .getElementById('input-note')?.value.trim() || '';
 
     if (!finalTitle) {
-        showToast('Naziv smještaja je obavezan.', 'error');
+        showToast(t('form.titleRequired'), 'error');
         return;
     }
 
@@ -256,7 +257,7 @@ export async function submitNewOption() {
         created_by: state.userEmail,
         creatorName: creatorUser
             ? creatorUser.name
-            : (state.userEmail || 'Nepoznato'),
+            : (state.userEmail || t('common.unknown')),
         voterEmails: [],
         voters: []
     };
@@ -290,7 +291,7 @@ export async function submitNewOption() {
 
         renderOptions();
         renderLeaderboard(false);
-        showToast('Greška pri dodavanju smještaja.', 'error');
+        showToast(t('add.failed'), 'error');
         return;
     }
 

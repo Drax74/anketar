@@ -1,3 +1,4 @@
+import { t } from '../i18n.js';
 import { formatVotes, getInitials } from '../shared/helpers/format.js';
 
 const AVATAR_PALETTE = ['#647FA8', '#648C79', '#B87983', '#B58A45', '#8A78B5', '#B97655', '#4E9290', '#858B98'];
@@ -24,7 +25,7 @@ export function renderVoters(container, voters = [], voterEmails = [], { selecte
         if (voters.length > 3) {
             const more = document.createElement('span');
             more.className = 'voter-stack__avatar voter-stack__avatar--more';
-            more.textContent = `+${voters.length - 3}`;
+            more.textContent = t('votes.more', { count: voters.length - 3 });
             stack.append(more);
         }
         container.append(stack);
@@ -32,12 +33,12 @@ export function renderVoters(container, voters = [], voterEmails = [], { selecte
 
     const summary = document.createElement('span');
     summary.className = 'voter-stack__summary';
-    summary.textContent = voters.length ? formatVotes(voters.length) : 'Budi prvi koji će glasati';
+    summary.textContent = voters.length ? formatVotes(voters.length) : t('votes.first');
     container.append(summary);
     if (selected) {
         const selection = document.createElement('span');
         selection.className = 'voter-stack__selection';
-        selection.textContent = 'Tvoj glas';
+        selection.textContent = t('votes.yours');
         container.append(selection);
     }
 }

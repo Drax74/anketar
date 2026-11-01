@@ -1,3 +1,4 @@
+import { t } from './i18n.js';
 import '@fontsource-variable/inter/wght.css';
 import './styles/fonts.css';
 import { setupAppNavigation, showAppView } from './components/app-navigation.js';
@@ -16,7 +17,7 @@ import { showToast } from './components/toast.js';
 import { openAddModal, closeAddModal,submitNewOption } from './components/add-modal.js';
 async function toggleVote(optionId) {
     if (!state.userEmail) {
-        showToast('Molimo prijavite se za glasovanje.', 'error');
+        showToast(t('votes.signIn'), 'error');
         return;
     }
 
@@ -57,7 +58,7 @@ async function toggleVote(optionId) {
         failed = true;
         console.error('Vote sync failed:', error);
         showToast(
-            'Spremanje glasa nije potvrđeno. Provjeravam stanje…',
+            t('votes.unconfirmed'),
             'error'
         );
     } finally {
@@ -73,7 +74,7 @@ async function toggleVote(optionId) {
         } catch (error) {
             console.warn('Vote reconciliation failed:', error);
             showToast(
-                'Stanje glasova nije moguće provjeriti. Osvježite stranicu kada veza proradi.',
+                t('votes.unavailable'),
                 'error'
             );
         }
@@ -134,7 +135,7 @@ async function toggleManualSort() {
         return String(a.title || '').localeCompare(String(b.title || ''));
     });
     await renderOptions(false, null, true);
-    showToast('Smještaji sortirani po broju glasova!');
+    showToast(t('stays.sorted'));
 }
 
 async function voteFromDetail() {
@@ -145,7 +146,7 @@ async function voteFromDetail() {
 }
 
 function updateUserUI() {
-    const displayName = state.userName || state.userEmail || 'Korisnik';
+    const displayName = state.userName || state.userEmail || t('user.fallback');
     const initials = getInitials(displayName);
 
     const nameEl = document.getElementById('footer-user-name');
@@ -199,7 +200,7 @@ function showPollMessage(message, onRetry = null, { loading = false } = {}) {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'btn btn-secondary poll-status__action';
-            button.textContent = 'Pokušaj ponovno';
+            button.textContent = t('common.retry');
             button.addEventListener('click', onRetry);
             notice.append(button);
         }
@@ -248,13 +249,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const requestedEmail = state.userEmail;
 
         if (!requestedEmail) {
-            showPollMessage('Prijavite se za pristup glasovanju.');
+            showPollMessage(t('poll.signIn'));
             return;
         }
 
         loading = true;
         pollLoaded = false;
-        showPollMessage('Učitavanje podataka…', null, { loading: true });
+        showPollMessage(t('poll.loading'), null, { loading: true });
 
         try {
             const {
@@ -281,7 +282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 return {
                     ...option,
-                    creatorName: creator ? creator.name : 'Nepoznato'
+                    creatorName: creator ? creator.name : t('common.unknown')
                 };
             });
 
@@ -321,15 +322,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('auth-modal')
                     ?.classList.add('active');
 
-                showPollMessage('Prijavite se za pristup glasovanju.');
+                showPollMessage(t('poll.signIn'));
             } else if (error.code === 'ACCESS_NOT_APPROVED') {
                 showPollMessage(
-                    'Vaš račun nema odobren pristup ovom glasovanju. Obratite se administratoru.',
+                    t('poll.notApproved'),
                     loadPollData
                 );
             } else {
                 showPollMessage(
-                    'Podatke nije moguće učitati. Provjerite vezu i pokušajte ponovno.',
+                    t('poll.failed'),
                     loadPollData
                 );
             }

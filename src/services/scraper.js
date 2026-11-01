@@ -1,3 +1,4 @@
+import { t } from '../i18n.js';
 import { supabase } from '../supabase.js';
 
 export async function scrapeAccommodation(url) {
@@ -34,7 +35,7 @@ export async function scrapeAccommodation(url) {
 
     return {
         link: url,
-        title: rawTitle.split(' - ')[0].trim() || 'Smještaj',
+        title: rawTitle.split(' - ')[0].trim() || t('common.stay'),
         image,
         description
     };

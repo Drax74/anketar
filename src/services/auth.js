@@ -1,3 +1,4 @@
+import { t } from '../i18n.js';
 import { supabase } from '../supabase.js';
 import { state } from '../state.js';
 
@@ -48,7 +49,7 @@ export async function loginWithGoogle() {
 
     if (error) {
         console.error('Error initiating Google login:', error.message);
-        alert(`Login failed: ${error.message}`);
+        alert(t('auth.loginFailed', { message: error.message }));
     }
 }
 
@@ -93,6 +94,6 @@ export async function logoutUserSession() {
         location.reload();
     } catch (error) {
         console.error('Sign out failed:', error);
-        alert('Odjava nije uspjela. Pokušajte ponovno.');
+        alert(t('auth.logoutFailed'));
     }
 }

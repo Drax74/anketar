@@ -1,3 +1,4 @@
+import { t } from '../i18n.js';
 import { supabase } from '../supabase.js';
 import { state } from '../state.js';
 import { getVotes } from './api.js';
@@ -105,7 +106,7 @@ export function setupRealtimeSubscription() {
                         voters: [],
                         creatorName: creatorUser
                             ? creatorUser.name
-                            : 'Nepoznato'
+                            : t('common.unknown')
                     };
 
                     const alreadyExists = state.options.some(
