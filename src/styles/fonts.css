@@ -1,0 +1,9 @@
+/* Later overlapping faces take precedence over the full extended Latin font. */
+@font-face {
+    font-family: 'Inter Variable';
+    font-style: normal;
+    font-display: swap;
+    font-weight: 100 900;
+    src: url('../assets/fonts/inter-croatian.woff2') format('woff2');
+    unicode-range: U+0106-0107, U+010C-010D, U+0110-0111, U+0160-0161, U+017D-017E;
+}

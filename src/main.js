@@ -1,4 +1,5 @@
 import '@fontsource-variable/inter/wght.css';
+import './styles/fonts.css';
 import { setupAppNavigation, showAppView } from './components/app-navigation.js';
 import { getInitials } from './shared/helpers/format.js';
 import { state } from './state.js';

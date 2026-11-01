@@ -12,6 +12,7 @@ export default defineConfig({
         injectHTML(),
         VitePWA({
             registerType: 'autoUpdate',
+            injectRegister: 'script-defer',
             includeAssets: [
                 'favicon.ico',
                 'apple-touch-icon-180x180.png',
@@ -66,6 +67,7 @@ export default defineConfig({
                 // Store install screenshots and optional language fonts only when needed.
                 globIgnores: [
                     '**/app-preview*.png',
+                    '**/inter-latin-ext*.woff2',
                     '**/inter-cyrillic*.woff2',
                     '**/inter-greek*.woff2',
                     '**/inter-vietnamese*.woff2'

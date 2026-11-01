@@ -206,3 +206,33 @@ test('loading rankings do not push the accommodation list down', async ({ page }
     const after = await page.locator('.browse-toolbar').boundingBox();
     expect(Math.abs(after.y - before.y)).toBeLessThan(1);
 });
+
+test('Croatian UI uses the small font while other language faces stay available', async ({ page }) => {
+    const fonts = [];
+    page.on('request', request => {
+        if (request.url().includes('.woff2')) fonts.push(request.url());
+    });
+    await openPoll(page);
+    expect(fonts.some(url => url.includes('inter-croatian.woff2'))).toBe(true);
+    expect(fonts.some(url => url.includes('inter-latin-ext-wght-normal'))).toBe(false);
+    await page.evaluate(async () => {
+        await document.fonts.load('16px "Inter Variable"', 'Łódź Ελληνικά');
+    });
+    expect(fonts.some(url => url.includes('inter-latin-ext-wght-normal'))).toBe(true);
+    expect(fonts.some(url => url.includes('inter-greek-wght-normal'))).toBe(true);
+});
+
+test('hero selects the smaller source on a high-density phone', async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+    const page = await context.newPage();
+    try {
+        await mockPoll(page);
+        await page.goto('./');
+        const hero = page.locator('.trip-hero__image');
+        await expect.poll(() => hero.evaluate(image => image.currentSrc)).toContain('hero-cover-image-800.webp');
+        await page.setViewportSize({ width: 1440, height: 1000 });
+        await expect.poll(() => hero.evaluate(image => image.currentSrc)).toMatch(/\/hero-cover-image\.webp$/);
+    } finally {
+        await context.close();
+    }
+});
