@@ -1,196 +1,109 @@
 import { safeWebUrl } from '../shared/helpers/url.js';
+import { formatPrice } from '../shared/helpers/format.js';
+import { isVotePending } from '../shared/helpers/votes.js';
 import { renderVoters } from './voters.js';
 import { state } from '../state.js';
 import { animateLayoutTransition } from '../animations/motion.js';
 import { openDetail } from './modals.js';
-import {isVotePending} from "../shared/helpers/votes";
 
-window.openDetail = openDetail;
-
-export async function renderOptions(
-    isNewItemAdded = false,
-    newItemId = null,
-    animateIn = true
-) {
+export async function renderOptions(isNewItemAdded = false, newItemId = null, animateIn = true) {
     const container = document.getElementById('options-container');
-
-    document.querySelectorAll('.options-count').forEach((countEl) => {
-        countEl.textContent = String(state.options.length);
-    });
-
+    document.querySelectorAll('.options-count').forEach(element => { element.textContent = String(state.options.length); });
     if (!container) return;
 
     const renderDOM = () => {
-        container.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-
-        if (state.options.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state-container" style="text-align: center; padding: 48px 20px; color: var(--md-sys-color-on-surface-variant);">
-                    <span class="material-symbols-outlined" style="font-size: 3rem; color: var(--md-sys-color-primary); margin-bottom: 12px;">flights_and_hotels</span>
-                    <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--md-sys-color-on-surface); margin-bottom: 4px;">Još nema dodanih smještaja</h3>
-                    <p style="font-size: 0.880rem; color: var(--md-sys-color-outline);">Budite prvi koji će predložiti savršeni smještaj za putovanje!</p>
-                </div>
-            `;
-            container.classList.add('loaded');
+        container.replaceChildren();
+        if (!state.options.length) {
+            container.innerHTML = `<div class="poll-status"><span class="material-symbols-outlined poll-status__icon" aria-hidden="true">holiday_village</span><h3 class="poll-status__title">Prvi prijedlog je tvoj.</h3><p class="poll-status__message">Dodaj smještaj koji bi se mogao svidjeti ekipi.</p><button class="btn btn-primary poll-status__action" type="button">Dodaj smještaj</button></div>`;
+            container.querySelector('button').addEventListener('click', () => window.openAddModal());
             return;
         }
 
-        state.options.forEach((opt) => {
-            const isSelected = state.selectedOptionIds.has(opt.id);
-            const voters = opt.voters || [];
-            const voterEmails = opt.voterEmails || [];
-            const isBrandNew = isNewItemAdded && opt.id === newItemId;
-
-            const cardEl = document.createElement('div');
-            cardEl.className = `option-card animate-item ${isSelected ? 'selected' : ''} ${isBrandNew ? 'new-item' : ''}`;
-            cardEl.dataset.id = opt.id;
-            cardEl.addEventListener('click', () => openDetail(opt.id));
-
-            const creatorUser = state.whitelistedUsers.find(
-                user => user.email === opt.created_by
-            );
-            const creatorName = creatorUser
-                ? creatorUser.name
-                : (opt.created_by || 'Nepoznato');
-
-            const rawAmount = opt.price
-                ? opt.price.replace('€', '').trim()
-                : 'N/A';
-            const displayPrice = rawAmount !== 'N/A'
-                ? `${rawAmount}€`
-                : 'N/A';
-
-            cardEl.innerHTML = `
-                <div class="card-cover-container">
-                    <button class="card-heart-btn ${isSelected ? 'voted' : ''}"
-                            type="button"
-                            aria-label="Glasaj za ovaj smještaj"
-                            aria-pressed="${isSelected}">
-                        <span class="material-symbols-outlined">favorite</span>
+        const fragment = document.createDocumentFragment();
+        state.options.forEach(option => {
+            const selected = state.selectedOptionIds.has(option.id);
+            const card = document.createElement('article');
+            card.className = `option-card stay-card animate-item${selected ? ' stay-card--selected selected' : ''}${isNewItemAdded && option.id === newItemId ? ' stay-card--new' : ''}`;
+            card.dataset.id = option.id;
+            card.addEventListener('click', () => openDetail(option.id));
+            card.innerHTML = `
+                <div class="card-cover-container stay-card__cover">
+                    <img class="card-cover stay-card__image" alt="" loading="lazy" decoding="async" /><span class="stay-card__placeholder" hidden><span class="material-symbols-outlined" aria-hidden="true">holiday_village</span>Fotografija nije dostupna</span>
+                    <button class="card-heart-btn vote-button${selected ? ' voted vote-button--selected' : ''}" type="button" aria-label="Glasaj za ovaj smještaj" aria-pressed="${selected}">
+                        <span class="material-symbols-outlined vote-button__icon" aria-hidden="true">favorite</span>
                         <span class="vote-heart-particles" aria-hidden="true"></span>
                     </button>
-                    <img class="card-cover" alt="" loading="lazy" />
-                    <div class="price-badge">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; font-variation-settings: 'FILL' 1, 'wght' 500; vertical-align: -2px;">local_offer</span>
-                        <span class="price-value"></span>
-                    </div>
+                    <div class="price-badge"><span class="price-value"></span></div>
                 </div>
-                <div class="card-body">
-                    <div class="card-main-info">
-                        <div class="card-title-group">
-                            <h4 class="card-title"></h4>
-                            <span class="card-creator-subtitle"></span>
-                        </div>
-                    </div>
-                    <div class="voters-row"></div>
-                </div>
-            `;
-
-            cardEl.querySelector('.card-title').textContent = opt.title ?? '';
-            cardEl.querySelector('.card-creator-subtitle').textContent =
-                `Dodao: ${creatorName}`;
-            cardEl.querySelector('.price-value').textContent = displayPrice;
-
-            const image = cardEl.querySelector('.card-cover');
-            const fallbackImage =
-                'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80';
-
-            image.alt = opt.title ?? '';
+                <div class="stay-card__body">
+                    <h3 class="stay-card__title"><button class="stay-card__title-button" type="button"></button></h3>
+                    <p class="stay-card__creator"></p>
+                    <div class="voters-row stay-card__voters"></div>
+                </div>`;
+            card.querySelector('.stay-card__title-button').textContent = option.title || 'Smještaj';
+            const creator = state.whitelistedUsers.find(user => user.email === option.created_by);
+            card.querySelector('.stay-card__creator').textContent = `Prijedlog: ${creator?.name || option.creatorName || 'član ekipe'}`;
+            card.querySelector('.price-value').textContent = formatPrice(option.price);
+            const image = card.querySelector('.card-cover');
+            const imageUrl = safeWebUrl(option.image);
+            const placeholder = card.querySelector('.stay-card__placeholder');
+            image.alt = option.title || 'Smještaj';
+            image.hidden = !imageUrl;
+            placeholder.hidden = Boolean(imageUrl);
             image.addEventListener('error', () => {
-                image.src = fallbackImage;
+                image.hidden = true;
+                placeholder.hidden = false;
             }, { once: true });
-            image.src = safeWebUrl(opt.image, fallbackImage);
-
-            cardEl.querySelector('.card-heart-btn').addEventListener(
-                'click',
-                event => {
-                    event.stopPropagation();
-                    window.toggleVote(opt.id);
-                }
-            );
-
-            const heartBtn = cardEl.querySelector('.card-heart-btn');
-            const pending = isVotePending(opt.id);
-
-            heartBtn.disabled = pending;
-            heartBtn.setAttribute('aria-busy', String(pending));
-
-            renderVoters(
-                cardEl.querySelector('.voters-row'),
-                voters,
-                voterEmails
-            );
-
-            fragment.appendChild(cardEl);
+            if (imageUrl) image.src = imageUrl;
+            card.querySelector('.card-heart-btn').addEventListener('click', event => {
+                event.stopPropagation();
+                window.toggleVote(option.id);
+            });
+            updateVoteControls(card, option);
+            fragment.append(card);
         });
-
-        container.appendChild(fragment);
-        container.classList.add('loaded');
+        container.append(fragment);
     };
 
     if (animateIn && !isNewItemAdded) {
-        await animateLayoutTransition(container, renderDOM, {
-            selector: '.option-card',
-            stiffness: 190,
-            damping: 27,
-            fadeIn: true
-        });
+        await animateLayoutTransition(container, renderDOM, { selector: '.stay-card', stiffness: 230, damping: 30, fadeIn: true });
     } else {
         renderDOM();
     }
 }
 
+function updateVoteControls(card, option) {
+    const selected = state.selectedOptionIds.has(option.id);
+    const pending = isVotePending(option.id);
+    card.classList.toggle('selected', selected);
+    card.classList.toggle('stay-card--selected', selected);
+    const button = card.querySelector('.card-heart-btn');
+    button.classList.toggle('voted', selected);
+    button.classList.toggle('vote-button--selected', selected);
+    button.setAttribute('aria-pressed', String(selected));
+    button.setAttribute('aria-label', selected ? 'Ukloni svoj glas' : 'Glasaj za ovaj smještaj');
+    button.disabled = pending;
+    button.setAttribute('aria-busy', String(pending));
+    renderVoters(card.querySelector('.voters-row'), option.voters || [], option.voterEmails || [], { selected });
+}
+
 export function updateCardSubelements(optionId) {
-    const opt = state.options.find(
-        option => String(option.id) === String(optionId)
-    );
-    if (!opt) return;
-
-    const cardEl = findOptionCard(optionId);
-    if (!cardEl) return;
-
-    const isSelected = state.selectedOptionIds.has(opt.id);
-    const voters = opt.voters || [];
-    const voterEmails = opt.voterEmails || [];
-
-    cardEl.classList.toggle('selected', isSelected);
-
-    const heartBtn = cardEl.querySelector('.card-heart-btn');
-    if (heartBtn) {
-        const pending = isVotePending(opt.id);
-
-        heartBtn.classList.toggle('voted', isSelected);
-        heartBtn.setAttribute('aria-pressed', String(isSelected));
-        heartBtn.disabled = pending;
-        heartBtn.setAttribute('aria-busy', String(pending));
-    }
-
-    const votersRow = cardEl.querySelector('.voters-row');
-    if (votersRow) {
-        renderVoters(votersRow, voters, voterEmails);
-    }
+    const option = state.options.find(item => String(item.id) === String(optionId));
+    const card = findOptionCard(optionId);
+    if (option && card) updateVoteControls(card, option);
 }
 
 export function scrollToCardIfNeeded(optionId) {
     setTimeout(() => {
-        const cardEl = findOptionCard(optionId);
-        if (!cardEl) return;
-
-        const rect = cardEl.getBoundingClientRect();
-        const visible =
-            rect.top >= 84 && rect.bottom <= window.innerHeight - 110;
-
-        if (!visible) {
-            cardEl.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
+        const card = findOptionCard(optionId);
+        if (!card) return;
+        const bounds = card.getBoundingClientRect();
+        if (bounds.top < 84 || bounds.bottom > window.innerHeight - 100) {
+            card.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'center' });
         }
-    }, 360);
+    }, 300);
 }
 
 export function findOptionCard(optionId) {
-    return Array.from(document.querySelectorAll('.option-card'))
-        .find(card => card.dataset.id === String(optionId));
+    return Array.from(document.querySelectorAll('.option-card')).find(card => card.dataset.id === String(optionId));
 }

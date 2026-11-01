@@ -8,6 +8,9 @@ import {
 } from '../shared/helpers/validation.js';
 import { renderOptions } from './cards.js';
 import { showToast } from './toast.js';
+import { renderLeaderboard } from './leaderboard.js';
+
+let scrapeGeneration = 0;
 
 let pendingScrapedData = {
     scrapedSuccessfully: false,
@@ -18,6 +21,10 @@ let pendingScrapedData = {
 };
 
 export function openAddModal() {
+    if (!state.userEmail || !state.whitelistedUsers.some(user => user.email === state.userEmail)) {
+        showToast('Prijavite se odobrenim računom za dodavanje smještaja.', 'error');
+        return;
+    }
     resetAddModalStep();
 
     const overlay = document.getElementById('add-modal-overlay');
@@ -42,6 +49,7 @@ export function closeAddModal() {
 }
 
 export function resetAddModalStep() {
+    scrapeGeneration++;
     pendingScrapedData = {
         scrapedSuccessfully: false,
         title: '',
@@ -105,6 +113,7 @@ export async function submitLinkAndFetch() {
         return;
     }
 
+    const generation = ++scrapeGeneration;
     pendingScrapedData.link = formattedLink;
 
     const step1 = document.getElementById('add-step-1');
@@ -115,6 +124,7 @@ export async function submitLinkAndFetch() {
 
     try {
         const metadata = await scrapeAccommodation(formattedLink);
+        if (generation !== scrapeGeneration) return;
 
         pendingScrapedData = {
             ...metadata,
@@ -124,6 +134,7 @@ export async function submitLinkAndFetch() {
         showToast('Podaci o smještaju uspješno dohvaćeni!');
         renderAddModalStep2(true);
     } catch (error) {
+        if (generation !== scrapeGeneration) return;
         console.warn('[Metadata Scraper] Request failed:', error);
 
         pendingScrapedData.scrapedSuccessfully = false;
@@ -193,8 +204,7 @@ function renderAddModalStep2(scrapedSuccessfully) {
 }
 
 export async function submitNewOption() {
-    const fallbackImage =
-        'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80';
+    const fallbackImage = '';
 
     let finalTitle = '';
     let finalImage = '';
@@ -267,6 +277,7 @@ export async function submitNewOption() {
 
     state.options = [newOption, ...state.options];
     renderOptions(true, tempId);
+    renderLeaderboard(false);
 
     try {
         await addOption(dbPayload);
@@ -278,6 +289,7 @@ export async function submitNewOption() {
         );
 
         renderOptions();
+        renderLeaderboard(false);
         showToast('Greška pri dodavanju smještaja.', 'error');
         return;
     }

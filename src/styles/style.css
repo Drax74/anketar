@@ -1,237 +1,28 @@
 @import './variables.css';
 @import './base.css';
-@import './hero.css';
-@import './leaderboard.css';
-@import './cards.css';
+@import './material-symbols.css';
 @import './components.css';
+@import './trip-app.css';
+@import './trip-header.css';
+@import './hero.css';
+@import './profile-menu.css';
+@import './app-navigation.css';
+@import './browse-toolbar.css';
+@import './stay-grid.css';
+@import './cards.css';
+@import './vote-button.css';
+@import './vote-heart-particles.css';
+@import './price-badge.css';
+@import './voter-stack.css';
+@import './leaderboard.css';
+@import './rankings-sidebar.css';
+@import './leader-teaser.css';
+@import './ranking-heading.css';
+@import './ranking-list.css';
+@import './ranking-empty.css';
+@import './poll-status.css';
 @import './modals.css';
+@import './detail-overlay.css';
 @import './accommodation-detail.css';
 @import './detail-page.css';
 @import './detail-transition.css';
-@import './floating-fab.css';
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Google Sans', 'Inter', -apple-system, sans-serif;
-    -webkit-tap-highlight-color: transparent;
-}
-
-html {
-    scroll-behavior: smooth;
-    scroll-padding-top: 18px;
-    background-color: var(--md-sys-color-background);
-    overscroll-behavior-y: none;
-}
-
-body {
-    background-color: var(--md-sys-color-background);
-    color: var(--md-sys-color-on-surface);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    padding: 0;
-    overflow-x: hidden;
-    overscroll-behavior-y: none;
-}
-
-/* ========================================== */
-/* BASE SCROLL CONTAINER                      */
-/* ========================================== */
-.app-scroll-container {
-    position: relative;
-    width: 100%;
-    max-width: 480px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    isolation: isolate;
-    padding: 0 12px calc(94px + env(safe-area-inset-bottom)) 12px;
-    box-sizing: border-box;
-    margin: 0 auto;
-    background-color: var(--md-sys-color-background);
-}
-
-.desktop-top-header {
-    display: none;
-}
-
-.controls-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 4px;
-    background-color: transparent;
-}
-
-/* ========================================== */
-/* 📱 MOBILE VIEWPORT (< 1024px)                */
-/* ========================================== */
-@media (max-width: 1023px) {
-    .desktop-controls-slot {
-        display: none !important;
-    }
-
-    .accommodation-layout {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        width: 100%;
-    }
-
-    .sticky-header-stack {
-        position: sticky;
-        top: 0;
-        z-index: 90;
-        background-color: var(--md-sys-color-background);
-        margin-left: -12px;
-        margin-right: -12px;
-        padding: 12px 12px 14px 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    }
-
-    .leaderboard-wrapper-pane {
-        margin: 0;
-        padding: 0;
-        background: transparent;
-    }
-
-    .right-content-pane {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        width: 100%;
-    }
-}
-
-/* ========================================== */
-/* 💻 DESKTOP VIEWPORT (≥ 1024px)               */
-/* ========================================== */
-@media (min-width: 1024px) {
-    .app-scroll-container {
-        max-width: 1440px;
-        padding: 24px 32px calc(94px + env(safe-area-inset-bottom)) 32px;
-    }
-
-    .desktop-top-header {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 12px;
-        padding: 0 4px;
-        background: transparent;
-        margin-bottom: 8px;
-    }
-
-    .desktop-user-profile {
-        display: flex;
-        align-items: center;
-    }
-
-    .desktop-logout-btn {
-        width: auto;
-        padding: 6px 12px;
-        font-size: 0.85rem;
-        background: transparent;
-        color: #ffffff;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .desktop-logout-btn:hover {
-        opacity: 0.75;
-    }
-
-    .mobile-controls-slot {
-        display: none !important;
-    }
-
-    /* NESTED CSS GRID LAYOUT */
-    .accommodation-layout {
-        display: grid;
-        grid-template-columns: 360px minmax(0, 1fr);
-        gap: 32px;
-        align-items: stretch;
-        width: 100%;
-    }
-
-    .sticky-header-stack {
-        position: static;
-        background: transparent;
-        margin: 0;
-        padding: 0;
-        box-shadow: none;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .leaderboard-wrapper-pane {
-        position: sticky;
-        top: 24px;
-        background: rgba(27, 28, 32, 0.65);
-        -webkit-backdrop-filter: blur(16px);
-        backdrop-filter: blur(16px);
-        border: 1px solid var(--md-sys-color-outline-variant);
-        border-radius: var(--md-shape-corner-large);
-        padding: 20px;
-    }
-
-    .leaderboard-section {
-        background-color: transparent !important;
-        box-shadow: none !important;
-        border: none !important;
-        padding: 0 !important;
-    }
-
-    .right-content-pane {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        min-width: 0;
-    }
-
-    .desktop-controls-slot {
-        display: block !important;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        background-color: var(--md-sys-color-background);
-        margin-left: -16px;
-        margin-right: -16px;
-        padding: 16px 16px;
-    }
-
-    /* Default Desktop: 2 Columns for Cards */
-    .options-list {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 24px;
-    }
-
-    .hero-bg-parallax {
-        background-position: center 0;
-    }
-}
-
-/* ========================================== */
-/* 🖥️ WIDE DESKTOP VIEWPORT (≥ 1280px - 3 COLS) */
-/* ========================================== */
-@media (min-width: 1280px) {
-    .app-scroll-container {
-        max-width: 1680px;
-    }
-
-    /* Expands card grid section to 3 columns on wide screens */
-    .options-list {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}

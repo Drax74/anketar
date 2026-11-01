@@ -145,12 +145,12 @@ textarea.input-field { resize: vertical; min-height: 70px; }
 .btn-primary {
     background: var(--md-sys-color-primary);
     color: var(--md-sys-color-on-primary);
-    box-shadow: 0 5px 18px rgba(255, 200, 87, 0.2);
+    box-shadow: none;
 }
 
 .btn-primary:active { box-shadow: 0 2px 8px rgba(255, 200, 87, 0.1); }
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-.btn-secondary { background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); border: 1px solid var(--md-sys-color-outline-variant); }
+.btn-secondary { background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); border: 1px solid rgba(255,255,255,.06); }
 
 .spinner {
     width: 32px;

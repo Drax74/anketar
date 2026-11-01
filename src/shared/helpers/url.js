@@ -27,3 +27,11 @@ export function safeWebUrl(value, fallback = '') {
         return fallback;
     }
 }
+export function getListingSource(value) {
+    const url = safeWebUrl(value);
+    if (!url) return '';
+    const host = new URL(url).hostname;
+    if (['airbnb.com', 'airbnb.hr', 'abnb.me'].some(domain => host === domain || host.endsWith(`.${domain}`))) return 'Airbnb';
+    if (['booking.com', 'bkg.to'].some(domain => host === domain || host.endsWith(`.${domain}`))) return 'Booking.com';
+    return host.replace(/^www\./, '');
+}

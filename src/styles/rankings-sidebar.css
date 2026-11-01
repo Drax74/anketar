@@ -1,0 +1,8 @@
+.rankings-sidebar { display: none; }
+.rankings-sidebar__heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.rankings-sidebar__title { font-size: 15px; font-weight: 650; letter-spacing: -.3px; }
+.rankings-sidebar__icon { font-size: 20px; color: var(--md-sys-color-on-surface-variant); }
+.rankings-sidebar__link { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 16px 0 0; border: 0; background: transparent; font-size: 12px; font-weight: 600; }
+.rankings-sidebar__link-icon { font-size: 18px; }
+.rankings-sidebar__hint { margin-top: 16px; font-size: 11px; color: var(--md-sys-color-on-surface-variant); line-height: 1.6; }
+@media (min-width: 1024px) { .rankings-sidebar { display: block; position: sticky; top: 24px; padding: 20px; background: #191b1f; border-radius: 16px; } }

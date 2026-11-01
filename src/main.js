@@ -1,3 +1,7 @@
+import '@fontsource-variable/inter/wght.css';
+import '@fontsource-variable/material-symbols-outlined/fill.css';
+import { setupAppNavigation, showAppView } from './components/app-navigation.js';
+import { getInitials } from './shared/helpers/format.js';
 import { state } from './state.js';
 import { getPollData } from './services/api.js';
 import { refreshVotesFromServer, renderVoteUI, setupRealtimeSubscription} from './services/realtime.js';
@@ -6,9 +10,9 @@ import { findOptionCard, renderOptions, scrollToCardIfNeeded } from './component
 import { renderLeaderboard } from './components/leaderboard.js';
 import { openDetail, closeDetail, saveOptionDetails } from './components/modals.js';
 import { addVote, removeVote } from './services/api.js';
-import { isVotePending, rebuildVoteState, setConfirmedVote } from "./shared/helpers/votes";
-import { showToast } from "./components/toast";
-import { openAddModal, closeAddModal,submitNewOption } from "./components/add-modal";
+import { isVotePending, rebuildVoteState, setConfirmedVote } from './shared/helpers/votes.js';
+import { showToast } from './components/toast.js';
+import { openAddModal, closeAddModal,submitNewOption } from './components/add-modal.js';
 async function toggleVote(optionId) {
     if (!state.userEmail) {
         showToast('Molimo prijavite se za glasovanje.', 'error');
@@ -93,23 +97,23 @@ function animateHeartButton(btn) {
     if (!icon) return;
 
     icon.getAnimations().forEach(a => a.cancel());
-    btn.classList.remove('is-popping');
+    btn.classList.remove('is-popping', 'vote-button--popping');
     void btn.offsetWidth;
-    btn.classList.add('is-popping');
-    setTimeout(() => btn.classList.remove('is-popping'), 450);
+    btn.classList.add('is-popping', 'vote-button--popping');
+    setTimeout(() => btn.classList.remove('is-popping', 'vote-button--popping'), 320);
 
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         const layer = btn.querySelector('.vote-heart-particles');
         if (layer) {
             layer.replaceChildren();
-            const colors = ['#FFC857', '#FF647F', '#F5F5F5', '#E8A1B0'];
+            const colors = ['#FFC857', '#ff536b'];
 
-            for (let i = 0; i < 8; i++) {
-                const angle = (Math.PI * 2 * i) / 8;
-                const distance = 18 + (i % 3) * 5;
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI * 2 * i) / 6;
+                const distance = 12 + (i % 3) * 4;
                 const particle = document.createElement('span');
 
-                particle.className = 'vote-heart-particle';
+                particle.className = 'vote-heart-particle vote-heart-particles__particle';
                 particle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
                 particle.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
                 particle.style.setProperty('--particle-color', colors[i % colors.length]);
@@ -141,7 +145,7 @@ async function voteFromDetail() {
 
 function updateUserUI() {
     const displayName = state.userName || state.userEmail || 'Korisnik';
-    const initials = displayName.substring(0, 2).toUpperCase();
+    const initials = getInitials(displayName);
 
     const nameEl = document.getElementById('footer-user-name');
     const avatarEl = document.getElementById('user-avatar-initials');
@@ -154,38 +158,54 @@ function updateUserUI() {
     if (desktopAvatarEl) desktopAvatarEl.innerText = initials;
 }
 
-function showPollMessage(message, onRetry = null) {
-    const container = document.getElementById('options-container');
+function setPollAvailability(available) {
+    document.querySelectorAll('[data-add-accommodation], #btn-manual-sort').forEach(button => {
+        button.disabled = !available;
+    });
+}
 
-    if (container) {
+function showPollMessage(message, onRetry = null, { loading = false } = {}) {
+    const teaser = document.getElementById('leader-teaser');
+    if (teaser) teaser.hidden = true;
+    for (const id of ['options-container', 'leaderboard-container', 'leaderboard-preview']) {
+        const container = document.getElementById(id);
+        if (!container) continue;
         const notice = document.createElement('div');
-        notice.className = 'empty-state-container';
-
+        notice.className = 'poll-status';
+        notice.setAttribute('role', 'status');
         const text = document.createElement('p');
+        text.className = 'poll-status__message';
         text.textContent = message;
         notice.append(text);
-
+        if (loading && id === 'options-container') {
+            notice.classList.add('poll-status--loading');
+            const skeletons = document.createElement('div');
+            skeletons.className = 'poll-status__skeletons';
+            skeletons.setAttribute('aria-hidden', 'true');
+            for (let index = 0; index < 3; index++) {
+                const card = document.createElement('div');
+                card.className = 'poll-status__skeleton';
+                card.innerHTML = '<div class="poll-status__skeleton-image"></div><div class="poll-status__skeleton-line"></div><div class="poll-status__skeleton-line poll-status__skeleton-line--short"></div>';
+                skeletons.append(card);
+            }
+            notice.append(skeletons);
+        }
         if (typeof onRetry === 'function') {
             const button = document.createElement('button');
             button.type = 'button';
-            button.className = 'btn btn-secondary';
+            button.className = 'btn btn-secondary poll-status__action';
             button.textContent = 'Pokušaj ponovno';
             button.addEventListener('click', onRetry);
             notice.append(button);
         }
-
         container.replaceChildren(notice);
-        container.classList.add('loaded');
     }
-
-    document.getElementById('leaderboard-container')?.replaceChildren();
-
-    document.querySelectorAll('.options-count').forEach(element => {
-        element.textContent = '0';
-    });
+    document.querySelectorAll('.options-count').forEach(element => { element.textContent = '0'; });
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    setupAppNavigation();
+    setPollAvailability(false);
     await checkInitialSession();
 
     let pollLoaded = false;
@@ -229,7 +249,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         loading = true;
         pollLoaded = false;
-        showPollMessage('Učitavanje podataka…');
+        showPollMessage('Učitavanje podataka…', null, { loading: true });
 
         try {
             const {
@@ -275,12 +295,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             await renderLeaderboard(false);
 
             pollLoaded = true;
+            setPollAvailability(true);
             setupRealtimeSubscription();
             window.dispatchEvent(new Event('poll:ready'));
         } catch (error) {
             if (requestedEmail !== state.userEmail) return;
 
             console.error('Poll loading failed:', error);
+            setPollAvailability(false);
 
             state.whitelistedUsers = [];
             state.options = [];
@@ -318,6 +340,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 export async function handleNewOptionSubmission() {
     const tempId = await submitNewOption();
     if (tempId) {
+        showAppView('stays');
         scrollToCardIfNeeded(tempId);
     }
 }
@@ -325,15 +348,17 @@ export async function handleNewOptionSubmission() {
 function toggleUserMenu() {
     const menu = document.getElementById('user-dropdown-menu');
     if (menu) {
-        menu.classList.toggle('active');
+        const expanded = menu.classList.toggle('active');
+        document.getElementById('floating-avatar-btn')?.setAttribute('aria-expanded', String(expanded));
     }
 }
 
 document.addEventListener('click', (e) => {
-    const container = document.querySelector('.floating-user-container');
+    const container = document.querySelector('.profile-menu');
     const menu = document.getElementById('user-dropdown-menu');
     if (container && menu && !container.contains(e.target)) {
         menu.classList.remove('active');
+        document.getElementById('floating-avatar-btn')?.setAttribute('aria-expanded', 'false');
     }
 });
 
@@ -345,7 +370,13 @@ window.voteFromDetail = voteFromDetail;
 window.saveOptionDetails = saveOptionDetails;
 window.openAddModal = openAddModal;
 window.closeAddModal = closeAddModal;
-window.submitNewOption = submitNewOption;
+window.submitNewOption = handleNewOptionSubmission;
 window.loginWithGoogle = loginWithGoogle;
 window.logoutUser = logoutUserSession;
 window.toggleUserMenu = toggleUserMenu;
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+        document.getElementById('user-dropdown-menu')?.classList.remove('active');
+        document.getElementById('floating-avatar-btn')?.setAttribute('aria-expanded', 'false');
+    }
+});

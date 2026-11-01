@@ -1,6 +1,8 @@
 import { state } from '../state.js';
 import { updateOption } from '../services/api.js';
-import { safeWebUrl } from '../shared/helpers/url.js';
+import { safeWebUrl, getListingSource } from '../shared/helpers/url.js';
+import { formatPrice } from '../shared/helpers/format.js';
+import { renderLeaderboard } from './leaderboard.js';
 import { isVotePending } from '../shared/helpers/votes.js';
 import { renderVoters } from './voters.js';
 import { showToast } from './toast.js';
@@ -119,7 +121,7 @@ function applyDetailLayout(overlay, sheet) {
         : 'clamp(220px, 38vh, 340px)';
 
     content.classList.toggle('detail-page__content', mobile);
-    content.style.padding = mobile ? '' : '24px';
+    content.style.padding = '';
 
     back.classList.toggle('detail-page__back', mobile);
     vote.classList.toggle('detail-page__vote', mobile);
@@ -244,252 +246,134 @@ document.addEventListener('keydown', event => {
     }
 });
 
-export function openDetail(
-    optionId,
-    { fromHistory = false } = {}
-) {
-    const opt = state.options.find(
-        item => String(item.id) === String(optionId)
-    );
-    if (!opt) return;
-
+export function openDetail(optionId, { fromHistory = false } = {}) {
+    const option = state.options.find(item => String(item.id) === String(optionId));
+    if (!option) return;
     const overlay = document.getElementById('detail-overlay');
     if (!overlay) return;
-
-    if (
-        String(state.activeDetailId) === String(opt.id) &&
-        overlay.classList.contains('active') &&
-        !closeTask
-    ) {
-        return;
-    }
+    if (String(state.activeDetailId) === String(option.id) && overlay.classList.contains('active') && !closeTask) return;
 
     const version = ++detailVersion;
-
     cancelDetailTransition();
     closeTask = null;
-    state.activeDetailId = opt.id;
-
-    const sourceImage = findOptionCard(opt.id)
-        ?.querySelector('.card-cover');
-
+    state.activeDetailId = option.id;
+    const sourceImage = findDetailSource(option.id);
     lockDetailPage(overlay);
-
-    const isSelected = state.selectedOptionIds.has(opt.id);
-    const voters = opt.voters || [];
-    const voterEmails = opt.voterEmails || [];
-
-    const creatorUser = state.whitelistedUsers.find(
-        user => user.email === opt.created_by
-    );
-    const creatorName = creatorUser
-        ? creatorUser.name
-        : (opt.created_by || 'Nepoznato');
-
-    const rawAmount = opt.price
-        ? opt.price.replace('€', '').trim()
-        : 'N/A';
-    const displayPrice = rawAmount !== 'N/A'
-        ? `${rawAmount}€`
-        : 'N/A';
-
-    let linkText = 'Pogledaj ponudu ↗';
-    let isAirbnb = false;
-    let isBooking = false;
-
-    if (opt.link) {
-        try {
-            const parsed = new URL(
-                opt.link.startsWith('http')
-                    ? opt.link
-                    : `https://${opt.link}`
-            );
-            const host = parsed.hostname.toLowerCase();
-            isAirbnb = host.includes('airbnb') || host.includes('abnb.me');
-            isBooking = host.includes('booking') || host.includes('bkg.to');
-        } catch {}
-
-        if (isAirbnb) linkText = 'Pogledaj na Airbnb-u ↗';
-        else if (isBooking) linkText = 'Pogledaj na Booking.com ↗';
-    }
-
-    const safeImage = safeWebUrl(
-        opt.image,
-        'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=85'
-    );
-
-    const isCreator = Boolean(
-        state.userEmail &&
-        opt.created_by &&
-        opt.created_by.toLowerCase() === state.userEmail.toLowerCase()
-    );
-
     const sheet = overlay.querySelector('.detail-sheet');
-
-    if (sheet) {
-        sheet.classList.add('accommodation-detail');
-        sheet.innerHTML = `
-            <div class="card-cover-container" style="height: clamp(220px, 38vh, 340px);">
-                <button class="card-heart-btn ${isSelected ? 'voted' : ''}"
-                        type="button"
-                        aria-label="Glasaj"
-                        aria-pressed="${isSelected}">
-                    <span class="material-symbols-outlined">favorite</span>
-                    <span class="vote-heart-particles" aria-hidden="true"></span>
-                </button>
-
-                <button
-                    class="detail-close accommodation-detail__close"
-                    type="button"
-                    aria-label="Zatvori">
-                    <span
-                        class="material-symbols-outlined accommodation-detail__close-icon"
-                        aria-hidden="true">close</span>
-                </button>
-
-                <img class="card-cover" alt="" />
-
-                <div class="price-badge accommodation-detail__price">
-                    <span class="material-symbols-outlined" style="font-size: 0.95rem; font-variation-settings: 'FILL' 1, 'wght' 500; vertical-align: -2px;">local_offer</span>
-                    <span class="price-value"></span>
-                </div>
-            </div>
-
-            <div class="detail-content" style="padding: 24px; display: flex; flex-direction: column; gap: 8px;">
-                <div class="voters-row" style="display: flex; align-items: center; gap: 10px; min-height: 40px; border-top: none; padding-top: 0;"></div>
-
-                <div id="detail-readonly-section" style="display: ${isCreator ? 'none' : 'block'};">
-                    <h2 id="detail-title" class="detail-title" style="font-size: 1.35rem; font-weight: 600; color: var(--md-sys-color-on-surface); margin-bottom: 4px;"></h2>
-                    <span class="card-creator-subtitle" style="font-size: 0.82rem; color: var(--md-sys-color-on-surface-variant);"></span>
-                </div>
-
-                <div id="detail-editable-section" style="display: ${isCreator ? 'block' : 'none'};">
-                    <div class="form-group" style="margin-bottom: 12px;">
-                        <label style="font-size: 0.78rem; color: var(--md-sys-color-on-surface-variant);">Naziv smještaja</label>
-                        <input type="text" id="edit-detail-title" class="input-field" />
-                    </div>
-                    <div class="form-group" style="margin-bottom: 12px;">
-                        <label style="font-size: 0.78rem; color: var(--md-sys-color-on-surface-variant);">Cijena (€)</label>
-                        <input type="text" id="edit-detail-price" class="input-field" />
-                    </div>
-                    <div class="form-group" style="margin-bottom: 12px;">
-                        <label style="font-size: 0.78rem; color: var(--md-sys-color-on-surface-variant);">URL slike</label>
-                        <input type="text" id="edit-detail-image" class="input-field" />
-                    </div>
-                    <div class="form-group" style="margin-bottom: 12px;">
-                        <label style="font-size: 0.78rem; color: var(--md-sys-color-on-surface-variant);">Napomena / Bilješka</label>
-                        <textarea id="edit-detail-note" class="input-field"></textarea>
-                    </div>
-                    <button class="btn btn-primary" type="button">Spremi izmjene</button>
-                </div>
-
-                ${opt.note && !isCreator ? `
-                    <div class="card-note-box" style="background: var(--md-sys-color-surface-container); border: 1px solid var(--md-sys-color-outline-variant); border-radius: var(--md-shape-corner-small); padding: 12px 16px; font-size: 0.88rem; color: var(--md-sys-color-on-surface-variant); display: flex; gap: 10px; align-items: flex-start;">
-                        <span class="material-symbols-outlined" style="color: var(--md-sys-color-primary); font-size: 1.15rem;">chat_bubble</span>
-                        <span class="detail-note-text"></span>
-                    </div>
-                ` : ''}
-
-                ${opt.description && !isCreator ? `
-                    <p style="font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); line-height: 1.5;"></p>
-                ` : ''}
-
-                ${safeWebUrl(opt.link) ? `
-                    <a rel="noopener noreferrer"
-                       target="_blank"
-                       class="btn btn-primary"
-                       style="margin-top: 16px; text-decoration: none; justify-content: center; display: inline-flex; align-items: center; gap: 6px;">${linkText}</a>
-                ` : ''}
-            </div>
-        `;
-
-        sheet.querySelector('.card-cover').src = safeImage;
-        sheet.querySelector('.card-cover').alt = opt.title ?? '';
-        sheet.querySelector('.price-value').textContent = displayPrice;
-        sheet.querySelector('.detail-title').textContent =
-            opt.title || 'Smještaj';
-        sheet.querySelector('.card-creator-subtitle').textContent =
-            `Dodao: ${creatorName}`;
-
-        for (const field of ['title', 'price', 'image', 'note']) {
-            sheet.querySelector(`#edit-detail-${field}`).value =
-                opt[field] ?? '';
-        }
-
-        const note = sheet.querySelector('.detail-note-text');
-        if (note) note.textContent = opt.note;
-
-        const description = sheet.querySelector('.detail-content > p');
-        if (description) description.textContent = opt.description;
-
-        const link = sheet.querySelector('a');
-        if (link) link.href = safeWebUrl(opt.link);
-
-        sheet.querySelector('.card-heart-btn').addEventListener(
-            'click',
-            () => window.toggleVote(opt.id)
-        );
-        sheet.querySelector('.detail-close').addEventListener(
-            'click',
-            closeDetail
-        );
-        sheet.querySelector('#detail-editable-section button').addEventListener(
-            'click',
-            saveOptionDetails
-        );
-
-        const heartBtn = sheet.querySelector('.card-heart-btn');
-        const pending = isVotePending(opt.id);
-
-        heartBtn.disabled = pending;
-        heartBtn.setAttribute('aria-busy', String(pending));
-
-        renderVoters(
-            sheet.querySelector('.voters-row'),
-            voters,
-            voterEmails
-        );
-    }
-
     if (!sheet) {
         state.activeDetailId = null;
-        unlockDetailPage(opt.id);
+        unlockDetailPage(option.id);
         return;
     }
+
+    sheet.classList.add('accommodation-detail');
+    sheet.innerHTML = `
+        <div class="card-cover-container accommodation-detail__cover">
+            <img class="card-cover accommodation-detail__image" alt="" /><span class="accommodation-detail__placeholder" hidden><span class="material-symbols-outlined" aria-hidden="true">holiday_village</span>Fotografija nije dostupna</span>
+            <button class="card-heart-btn vote-button" type="button" aria-label="Glasaj za ovaj smještaj" aria-pressed="false">
+                <span class="material-symbols-outlined vote-button__icon" aria-hidden="true">favorite</span>
+                <span class="vote-heart-particles" aria-hidden="true"></span>
+            </button>
+            <button class="detail-close accommodation-detail__close" type="button" aria-label="Zatvori"><span class="material-symbols-outlined accommodation-detail__close-icon" aria-hidden="true">close</span></button>
+            <div class="price-badge accommodation-detail__price"><span class="price-value"></span></div>
+        </div>
+        <div class="detail-content accommodation-detail__content">
+            <div class="accommodation-detail__heading">
+                <h2 id="detail-title" class="detail-title accommodation-detail__title"></h2>
+                <button class="accommodation-detail__edit" type="button" hidden>Uredi</button>
+            </div>
+            <div id="detail-readonly-section" class="accommodation-detail__read-view">
+                <p class="accommodation-detail__source"></p>
+                <p class="card-creator-subtitle accommodation-detail__creator"></p>
+                <div class="voters-row accommodation-detail__voters"></div>
+                <section class="accommodation-detail__description-section"><h3 class="accommodation-detail__section-title">O smještaju</h3><p class="accommodation-detail__description"></p></section>
+                <aside class="accommodation-detail__note"><h3 class="accommodation-detail__note-title">Bilješka uz prijedlog</h3><p class="detail-note-text accommodation-detail__note-text"></p></aside>
+            </div>
+            <form id="detail-editable-section" class="accommodation-detail__form" hidden>
+                <div class="form-group"><label for="edit-detail-title">Naziv smještaja</label><input type="text" id="edit-detail-title" class="input-field" required /></div>
+                <div class="form-group"><label for="edit-detail-price">Cijena (€)</label><input type="text" id="edit-detail-price" class="input-field" /></div>
+                <div class="form-group"><label for="edit-detail-image">URL fotografije</label><input type="text" inputmode="url" id="edit-detail-image" class="input-field" /></div>
+                <div class="form-group"><label for="edit-detail-note">Napomena / bilješka</label><textarea id="edit-detail-note" class="input-field"></textarea></div>
+                <div class="accommodation-detail__form-actions"><button class="btn btn-primary" type="submit">Spremi izmjene</button><button class="btn btn-secondary accommodation-detail__cancel" type="button">Odustani</button></div>
+                <p class="accommodation-detail__save-status" role="status"></p>
+            </form>
+        </div>
+        <footer class="accommodation-detail__footer"><a class="btn btn-primary accommodation-detail__offer" target="_blank" rel="noopener noreferrer">Otvori ponudu <span class="material-symbols-outlined accommodation-detail__offer-icon" aria-hidden="true">north_east</span></a></footer>`;
+
+    populateDetail(sheet, option);
+    sheet.querySelector('.card-heart-btn').addEventListener('click', () => window.toggleVote(option.id));
+    sheet.querySelector('.detail-close').addEventListener('click', closeDetail);
+    sheet.querySelector('.accommodation-detail__edit').addEventListener('click', () => setDetailEditing(true));
+    sheet.querySelector('.accommodation-detail__cancel').addEventListener('click', () => setDetailEditing(false));
+    sheet.querySelector('form').addEventListener('submit', event => { event.preventDefault(); saveOptionDetails(); });
 
     const mobile = applyDetailLayout(overlay, sheet);
     sheet.scrollTop = 0;
-
     const targetImage = sheet.querySelector('.card-cover');
-
-    if (
-        mobile &&
-        sourceImage?.complete &&
-        sourceImage.naturalWidth > 0
-    ) {
-        targetImage.src = sourceImage.currentSrc || sourceImage.src;
-    }
-
+    if (mobile && sourceImage?.complete && sourceImage.naturalWidth > 0) targetImage.src = sourceImage.currentSrc || sourceImage.src;
+    sheet.classList.add('accommodation-detail--open');
     overlay.classList.add('active');
     overlay.setAttribute('aria-hidden', 'false');
-
-    if (mobile && !fromHistory) {
-        rememberDetail(opt.id);
-    }
-
+    updateDetailModalIfOpen();
+    if (mobile && !fromHistory) rememberDetail(option.id);
     if (mobile) {
-        animateDetailOpen({
-            sourceImage,
-            targetImage,
-            sheet
-        }).then(completed => {
-            if (completed && version === detailVersion) {
-                sheet.focus({ preventScroll: true });
-            }
+        animateDetailOpen({ sourceImage, targetImage, sheet }).then(completed => {
+            if (completed && version === detailVersion) sheet.focus({ preventScroll: true });
         });
-    } else {
-        sheet.focus({ preventScroll: true });
-    }
+    } else sheet.focus({ preventScroll: true });
+}
+
+function populateDetail(sheet, option) {
+    const creator = state.whitelistedUsers.find(user => user.email === option.created_by);
+    const image = sheet.querySelector('.card-cover');
+    const imageUrl = safeWebUrl(option.image);
+    image.hidden = !imageUrl;
+    sheet.querySelector('.accommodation-detail__placeholder').hidden = Boolean(imageUrl);
+    image.onerror = () => { image.hidden = true; sheet.querySelector('.accommodation-detail__placeholder').hidden = false; };
+    if (imageUrl) image.src = imageUrl;
+    else image.removeAttribute('src');
+    sheet.querySelector('.card-cover').alt = option.title || 'Smještaj';
+    sheet.querySelector('.price-value').textContent = formatPrice(option.price);
+    sheet.querySelector('.detail-title').textContent = option.title || 'Smještaj';
+    const source = sheet.querySelector('.accommodation-detail__source');
+    source.textContent = getListingSource(option.link);
+    source.hidden = !source.textContent;
+    sheet.querySelector('.accommodation-detail__creator').textContent = `Prijedlog: ${creator?.name || option.creatorName || 'član ekipe'}`;
+    sheet.querySelector('.accommodation-detail__description').textContent = option.description || '';
+    sheet.querySelector('.accommodation-detail__description-section').hidden = !option.description;
+    sheet.querySelector('.detail-note-text').textContent = option.note || '';
+    sheet.querySelector('.accommodation-detail__note').hidden = !option.note;
+    const offer = sheet.querySelector('.accommodation-detail__offer');
+    const url = safeWebUrl(option.link);
+    if (url) offer.href = url;
+    else offer.removeAttribute('href');
+    sheet.querySelector('.accommodation-detail__footer').hidden = !url;
+    const owner = Boolean(state.userEmail && option.created_by && option.created_by.toLowerCase() === state.userEmail.toLowerCase());
+    sheet.querySelector('.accommodation-detail__edit').hidden = !owner;
+    for (const field of ['title', 'price', 'image', 'note']) sheet.querySelector(`#edit-detail-${field}`).value = option[field] ?? '';
+    renderVoters(sheet.querySelector('.voters-row'), option.voters || [], option.voterEmails || [], { selected: state.selectedOptionIds.has(option.id) });
+}
+
+function setDetailEditing(editing) {
+    const option = state.options.find(item => String(item.id) === String(state.activeDetailId));
+    const sheet = document.querySelector('#detail-overlay .detail-sheet');
+    if (!option || !sheet) return;
+    const owner = Boolean(state.userEmail && option.created_by && option.created_by.toLowerCase() === state.userEmail.toLowerCase());
+    if (editing && !owner) return;
+    if (editing) populateDetail(sheet, option);
+    sheet.querySelector('#detail-readonly-section').hidden = editing;
+    sheet.querySelector('#detail-editable-section').hidden = !editing;
+    sheet.querySelector('.accommodation-detail__edit').hidden = editing || !owner;
+    sheet.querySelector('.accommodation-detail__footer').hidden = editing || !safeWebUrl(option.link);
+    sheet.querySelector('.accommodation-detail__save-status').textContent = '';
+    if (editing) sheet.querySelector('#edit-detail-title').focus();
+    else sheet.querySelector('.accommodation-detail__edit').focus({ preventScroll: true });
+}
+
+function findDetailSource(optionId) {
+    const card = findOptionCard(optionId);
+    const rows = Array.from(document.querySelectorAll('[data-detail-id]')).filter(row => row.dataset.detailId === String(optionId));
+    return [card, ...rows].filter(Boolean).map(element => element.querySelector('.card-cover')).find(image => image?.getBoundingClientRect().width > 0);
 }
 
 export function closeDetail({
@@ -537,8 +421,7 @@ export function closeDetail({
             sheet
         ) {
             completed = await animateDetailClose({
-                sourceImage: findOptionCard(optionId)
-                    ?.querySelector('.card-cover'),
+                sourceImage: findDetailSource(optionId),
                 targetImage: sheet.querySelector('.card-cover'),
                 sheet
             });
@@ -548,6 +431,7 @@ export function closeDetail({
 
         if (!completed || version !== detailVersion) return;
 
+        sheet?.classList.remove('accommodation-detail--open');
         overlay?.classList.remove('active');
         overlay?.setAttribute('aria-hidden', 'true');
 
@@ -580,6 +464,7 @@ export function updateDetailModalIfOpen() {
         const pending = isVotePending(opt.id);
 
         heartBtn.classList.toggle('voted', isSelected);
+        heartBtn.classList.toggle('vote-button--selected', isSelected);
         heartBtn.setAttribute('aria-pressed', String(isSelected));
         heartBtn.disabled = pending;
         heartBtn.setAttribute('aria-busy', String(pending));
@@ -590,85 +475,46 @@ export function updateDetailModalIfOpen() {
         renderVoters(
             votersRow,
             opt.voters || [],
-            opt.voterEmails || []
+            opt.voterEmails || [],
+            { selected: isSelected }
         );
     }
 }
 
 export async function saveOptionDetails() {
     const optionId = state.activeDetailId;
-    if (optionId == null) return;
-
-    const opt = state.options.find(
-        option => String(option.id) === String(optionId)
-    );
-    if (!opt) return;
-
-    const saveButton = document.querySelector(
-        '#detail-editable-section button'
-    );
-
-    if (saveButton?.disabled) return;
-
-    const editTitle = document
-        .getElementById('edit-detail-title')?.value.trim();
-
-    const rawPrice = document
-        .getElementById('edit-detail-price')?.value.trim();
-
-    const editImage = document
-        .getElementById('edit-detail-image')?.value.trim();
-
-    const editNote = document
-        .getElementById('edit-detail-note')?.value.trim();
-
-    if (!editTitle) {
-        showToast('Naziv smještaja ne može biti prazan.', 'error');
-        return;
-    }
-
-    const editPrice = rawPrice && !rawPrice.includes('€')
-        ? `${rawPrice}€`
-        : (rawPrice || 'N/A');
-
+    const option = state.options.find(item => String(item.id) === String(optionId));
+    const sheet = document.querySelector('#detail-overlay .detail-sheet');
+    if (!option || !sheet) return;
+    const form = sheet.querySelector('#detail-editable-section');
+    const button = form.querySelector('button[type="submit"]');
+    if (form.hidden || button.disabled) return;
+    const title = form.querySelector('#edit-detail-title').value.trim();
+    if (!title) { showToast('Naziv smještaja ne može biti prazan.', 'error'); return; }
+    const rawPrice = form.querySelector('#edit-detail-price').value.trim();
     const updates = {
-        title: editTitle,
-        price: editPrice,
-        image: editImage ||
-            'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80',
-        note: editNote || ''
+        title,
+        price: rawPrice && !rawPrice.includes('€') ? `${rawPrice}€` : rawPrice || 'N/A',
+        image: form.querySelector('#edit-detail-image').value.trim(),
+        note: form.querySelector('#edit-detail-note').value.trim()
     };
-
-    if (saveButton) saveButton.disabled = true;
-
+    button.disabled = true;
+    const status = sheet.querySelector('.accommodation-detail__save-status');
+    status.textContent = 'Spremanje…';
     try {
-        const savedOptions = await updateOption(optionId, updates);
-
-        if (!Array.isArray(savedOptions) || savedOptions.length !== 1) {
-            throw new Error(
-                'The accommodation was not updated. It may no longer exist or you may not have permission.'
-            );
-        }
-
-        const savedOption = savedOptions[0];
-
-        state.options = state.options.map(option =>
-            String(option.id) === String(optionId)
-                ? { ...option, ...savedOption }
-                : option
-        );
-
-        await renderOptions();
-
+        const saved = await updateOption(optionId, updates);
+        if (!Array.isArray(saved) || saved.length !== 1) throw new Error('The update was not confirmed.');
+        state.options = state.options.map(item => String(item.id) === String(optionId) ? { ...item, ...saved[0] } : item);
+        await renderOptions(false, null, false);
+        await renderLeaderboard(false);
         if (String(state.activeDetailId) === String(optionId)) {
-            closeDetail();
+            populateDetail(sheet, state.options.find(item => String(item.id) === String(optionId)));
+            setDetailEditing(false);
         }
-
-        showToast('Izmjene uspješno spremljene!');
+        showToast('Izmjene su spremljene.');
     } catch (error) {
         console.error('Failed to save option edits:', error);
-        showToast('Greška pri spremanju izmjena.', 'error');
-    } finally {
-        if (saveButton) saveButton.disabled = false;
-    }
+        status.textContent = 'Spremanje nije uspjelo. Tvoje izmjene su sačuvane u obrascu.';
+        showToast('Greška pri spremanju izmjena. Pokušajte ponovno.', 'error');
+    } finally { button.disabled = false; }
 }

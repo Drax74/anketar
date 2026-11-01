@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="Glasajte za smještaj u Madridu!">
 
   <!-- Open Graph / WhatsApp Preview Meta Tags -->
@@ -26,143 +26,81 @@
   <link rel="preload" as="image" href="/hero-cover-image.webp" fetchpriority="high">
 </head>
 <body>
-
-<div class="app-scroll-container">
-
-  <!-- DESKTOP TOP USER / LOGOUT HEADER ROW (Hidden on mobile via CSS) -->
-  <div class="desktop-top-header">
-    <button class="btn btn-secondary desktop-logout-btn" onclick="logoutUser()">
-      <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">logout</span> Odjava
-    </button>
-    <div class="desktop-user-profile">
-      <div class="user-avatar" id="desktop-user-avatar-initials">U</div>
+<div class="app-scroll-container trip-app">
+  <header class="trip-header">
+    <div class="trip-header__identity">
+      <a class="trip-header__title" href="./" aria-label="Madrid — početna">Madrid<span class="trip-header__dot" aria-hidden="true">.</span></a>
+      <p class="trip-header__dates">3.–6. prosinca 2026.</p>
     </div>
-  </div>
-
-  <!-- HERO HEADER (Shared across all screen sizes) -->
-  <header class="header-card hero-header" id="hero-header">
-    <div class="hero-bg-parallax"></div>
-    <div class="hero-overlay-gradient"></div>
-    <div class="hero-content-inner">
-      <h1>🇪🇸 Madrid</h1>
-      <p>03.12 – 06.12.2026</p>
+    <nav class="trip-header__tabs" aria-label="Glavne stranice">
+      <button class="trip-header__tab" type="button" data-nav-view="stays">Smještaji</button>
+      <button class="trip-header__tab" type="button" data-nav-view="rankings">Poredak</button>
+    </nav>
+    <div class="profile-menu">
+      <button id="floating-avatar-btn" class="profile-menu__trigger" type="button" onclick="toggleUserMenu()" aria-label="Korisnički izbornik" aria-expanded="false" aria-controls="user-dropdown-menu">
+        <span class="profile-menu__avatar" id="user-avatar-initials">U</span>
+      </button>
+      <div id="user-dropdown-menu" class="profile-menu__panel">
+        <span class="profile-menu__name" id="footer-user-name">Korisnik</span>
+        <span class="profile-menu__email" id="footer-user-email"></span>
+        <button class="profile-menu__logout" type="button" onclick="logoutUser()"><span class="material-symbols-outlined profile-menu__logout-icon" aria-hidden="true">logout</span>Odjava</button>
+      </div>
     </div>
   </header>
 
-  <!-- UNIFIED WORKSPACE (Single DOM structure for Mobile & Desktop) -->
-  <main class="accommodation-layout">
+  <main>
+    <section id="stays-view" class="trip-app__view" aria-label="Smještaji">
+      <header class="trip-hero" id="hero-header">
+        <img class="trip-hero__image" src="/hero-cover-image.webp" alt="" fetchpriority="high" />
+        <div class="trip-hero__content">
+          <p class="trip-hero__eyebrow">Trkadzije &amp; Rumoljubi</p>
+          <h1 class="trip-hero__title">Madrid, zajedno.</h1>
+          <p class="trip-hero__subtitle">Pronađimo smještaj za našu ekipu.</p>
+        </div>
+      </header>
 
-    <!-- SHARED STICKY HEADER WRAPPER (On mobile, locks Leaderboard + Controls together) -->
-    <div class="sticky-header-stack">
+      <button id="leader-teaser" class="leader-teaser" type="button" data-nav-view="rankings" hidden></button>
 
-      <!-- LEADERBOARD PANE -->
-      <aside class="leaderboard-wrapper-pane" id="leaderboard-pane">
-        <div id="leaderboard-section" class="leaderboard-section">
-          <div class="leaderboard-header">
-            <span class="leaderboard-title">Top 3 Favorita</span>
-          </div>
-          <div id="leaderboard-container" class="leaderboard-container">
-            <!-- HTML SKELETON PLACEHOLDERS -->
-            <div class="leaderboard-item skeleton-card" style="position: relative;">
-              <div class="leaderboard-rank skeleton-box" style="width: 24px; height: 24px;"></div>
-              <div class="leaderboard-info" style="gap: 6px;">
-                <div class="skeleton-box" style="width: 60%; height: 14px;"></div>
-                <div class="skeleton-box" style="width: 100%; height: 5px; border-radius: 3px;"></div>
-              </div>
-              <div class="skeleton-box" style="width: 32px; height: 14px;"></div>
-            </div>
-            <div class="leaderboard-item skeleton-card" style="position: relative;">
-              <div class="leaderboard-rank skeleton-box" style="width: 24px; height: 24px;"></div>
-              <div class="leaderboard-info" style="gap: 6px;">
-                <div class="skeleton-box" style="width: 60%; height: 14px;"></div>
-                <div class="skeleton-box" style="width: 100%; height: 5px; border-radius: 3px;"></div>
-              </div>
-              <div class="skeleton-box" style="width: 32px; height: 14px;"></div>
-            </div>
-            <div class="leaderboard-item skeleton-card" style="position: relative;">
-              <div class="leaderboard-rank skeleton-box" style="width: 24px; height: 24px;"></div>
-              <div class="leaderboard-info" style="gap: 6px;">
-                <div class="skeleton-box" style="width: 60%; height: 14px;"></div>
-                <div class="skeleton-box" style="width: 100%; height: 5px; border-radius: 3px;"></div>
-              </div>
-              <div class="skeleton-box" style="width: 32px; height: 14px;"></div>
+      <div class="trip-app__workspace">
+        <aside class="rankings-sidebar" aria-label="Trenutni favoriti">
+          <div class="rankings-sidebar__heading"><h2 class="rankings-sidebar__title">Favoriti ekipe</h2><span class="material-symbols-outlined rankings-sidebar__icon" aria-hidden="true">leaderboard</span></div>
+          <div id="leaderboard-preview"></div>
+          <button class="rankings-sidebar__link" type="button" data-nav-view="rankings">Cijeli poredak<span class="material-symbols-outlined rankings-sidebar__link-icon" aria-hidden="true">arrow_forward</span></button>
+          <p class="rankings-sidebar__hint">Možeš glasati za više prijedloga.</p>
+        </aside>
+        <section class="trip-app__stays" aria-labelledby="stays-heading">
+          <div class="browse-toolbar">
+            <h2 class="browse-toolbar__title" id="stays-heading" tabindex="-1">Smještaji <span class="browse-toolbar__count options-count">0</span></h2>
+            <div class="browse-toolbar__actions">
+              <button id="btn-manual-sort" class="browse-toolbar__sort" type="button" onclick="toggleManualSort()"><span class="material-symbols-outlined browse-toolbar__sort-icon" aria-hidden="true">sort</span>Poredaj</button>
+              <button class="btn btn-primary browse-toolbar__add" type="button" data-add-accommodation><span class="material-symbols-outlined" aria-hidden="true">add</span>Dodaj smještaj</button>
             </div>
           </div>
-        </div>
-      </aside>
-
-      <!-- CONTROLS BAR (Mobile: inside sticky wrapper; Desktop: displayed inside right-column via CSS display/order) -->
-      <div class="controls-sticky-wrapper mobile-controls-slot">
-        <div class="controls-row">
-          <span style="font-size: 1rem; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">Smjestaji (<span class="options-count">0</span>)</span>
-          <div style="display: flex; gap: 8px;">
-            <button id="btn-manual-sort" class="btn btn-secondary" style="width: auto; padding: 8px 12px; font-size: 0.85rem;" onclick="toggleManualSort()" title="Poredaj po broju glasova">
-              <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">swap_vert</span> Poredaj
-            </button>
-            <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; font-size: 0.85rem;" onclick="openAddModal()">+ Dodaj Smjestaj</button>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- RIGHT CONTENT PANE (Hosts Cards on Mobile, Hosts Controls + Cards on Desktop) -->
-    <section class="right-content-pane">
-
-      <!-- DESKTOP CONTROLS SLOT (Only visible on desktop via CSS) -->
-      <div class="controls-sticky-wrapper desktop-controls-slot">
-        <div class="controls-row">
-          <span style="font-size: 1rem; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">Smjestaji (<span class="options-count">0</span>)</span>
-          <div style="display: flex; gap: 8px;">
-            <button class="btn btn-secondary" style="width: auto; padding: 8px 12px; font-size: 0.85rem;" onclick="toggleManualSort()" title="Poredaj po broju glasova">
-              <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">swap_vert</span> Poredaj
-            </button>
-            <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; font-size: 0.85rem;" onclick="openAddModal()">+ Dodaj Smjestaj</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ACCOMMODATION CARDS CONTAINER -->
-      <div id="options-container" class="options-list" data-layout>
-        <div class="option-card skeleton-card">
-          <div class="card-cover-container skeleton-box" style="height: 160px;"></div>
-          <div class="card-body" style="gap: 14px;">
-            <div class="skeleton-box" style="width: 70%; height: 20px;"></div>
-            <div class="skeleton-box" style="width: 100%; height: 40px;"></div>
-            <div class="skeleton-box" style="width: 40%; height: 14px;"></div>
-          </div>
-        </div>
-        <div class="option-card skeleton-card">
-          <div class="card-cover-container skeleton-box" style="height: 160px;"></div>
-          <div class="card-body" style="gap: 14px;">
-            <div class="skeleton-box" style="width: 70%; height: 20px;"></div>
-            <div class="skeleton-box" style="width: 100%; height: 40px;"></div>
-            <div class="skeleton-box" style="width: 40%; height: 14px;"></div>
-          </div>
-        </div>
+          <div id="options-container" class="stay-grid options-list" data-layout></div>
+        </section>
       </div>
     </section>
 
+    <section id="rankings-view" class="trip-app__view" aria-labelledby="rankings-heading" hidden>
+      <header class="ranking-heading">
+        <p class="ranking-heading__eyebrow">Glasovi grupe</p>
+        <h1 class="ranking-heading__title" id="rankings-heading" tabindex="-1">Poredak</h1>
+        <p class="ranking-heading__description">Favoriti naše ekipe, na jednom mjestu.</p>
+      </header>
+      <div id="leaderboard-container" class="ranking-list"></div>
+      <p class="ranking-heading__hint">Možeš glasati za više prijedloga.</p>
+    </section>
   </main>
 </div>
 
+<nav class="app-navigation" aria-label="Navigacija">
+  <button class="app-navigation__item" type="button" data-nav-view="stays"><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">home</span><span>Smještaji</span></button>
+  <button class="app-navigation__item app-navigation__item--add" type="button" data-add-accommodation><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">add</span><span>Dodaj</span></button>
+  <button class="app-navigation__item" type="button" data-nav-view="rankings"><span class="material-symbols-outlined app-navigation__icon" aria-hidden="true">leaderboard</span><span>Poredak</span></button>
+</nav>
+
 <!-- MODALS & TOAST -->
 <div id="app-toast" class="app-toast" role="status" aria-live="polite"></div>
-
-<div class="floating-user-container">
-  <button id="floating-avatar-btn" class="floating-fab-btn" onclick="toggleUserMenu()" aria-label="User Menu">
-    <div class="user-avatar" id="user-avatar-initials">U</div>
-  </button>
-  <div id="user-dropdown-menu" class="user-dropdown-menu">
-    <div class="dropdown-header">
-      <span class="dropdown-user-name" id="footer-user-name">Loading...</span>
-      <span class="dropdown-user-email" id="footer-user-email"></span>
-    </div>
-    <button class="dropdown-logout-btn" onclick="logoutUser()">
-      <span class="material-symbols-outlined">logout</span> Sign Out
-    </button>
-  </div>
-</div>
 
 <div id="auth-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="auth-title">
   <div class="modal" style="text-align: center; padding: 32px 24px;">
@@ -180,14 +118,14 @@
   <div class="native-sheet-container">
     <div class="native-sheet-handle"></div>
     <div class="native-sheet-payload">
-      <h2 id="add-title">Dodaj Smjestaj</h2>
+      <h2 id="add-title">Dodaj smještaj</h2>
       <div id="add-step-1">
         <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-top: 8px; margin-bottom: 16px; line-height: 1.4;">
           Unesi link smještaja s Booking.com ili Airbnb-a.
         </p>
         <div class="form-group">
           <label for="input-link">Link smještaja</label>
-          <input type="url" id="input-link" class="input-field" placeholder="Unesi Booking.com ili Airbnb link" oninput="clearFieldError('input-link', 'error-input-link')" />
+          <input type="url" id="input-link" class="input-field" placeholder="Unesi Booking.com ili Airbnb link" />
           <div class="error-message" id="error-input-link">Unesi važeći URL smještaja.</div>
         </div>
         <div style="display: flex; gap: 12px; margin-top: 20px;">
@@ -196,6 +134,7 @@
         </div>
       </div>
       <div id="add-skeleton-loading" style="display: none; padding: 12px 0;">
+        <div class="spinner" aria-hidden="true"></div>
         <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 16px; text-align: center;">Dohvaćam podatke...</p>
       </div>
       <div id="add-step-2" style="display: none;">
@@ -206,9 +145,21 @@
             <span>Nema slike</span>
           </div>
         </div>
+        <div id="scraper-success-preview" class="read-only-preview" style="display: none;">
+          <p id="preview-title" class="read-only-title"></p>
+          <p id="preview-desc" class="read-only-desc"></p>
+        </div>
+        <div class="form-group" id="group-title">
+          <label for="input-title">Naziv smještaja</label>
+          <input type="text" id="input-title" class="input-field" placeholder="Npr. Loft u centru" />
+        </div>
+        <div class="form-group" id="group-image">
+          <label for="input-image">URL fotografije (opcionalno)</label>
+          <input type="url" id="input-image" class="input-field" placeholder="https://…" />
+        </div>
         <div class="form-group">
-          <label for="input-price">Ukupna Cijena</label>
-          <input type="text" id="input-price" class="input-field" placeholder="450€ total" />
+          <label for="input-price">Ukupna cijena</label>
+          <input type="text" id="input-price" class="input-field" placeholder="Npr. 450 € ukupno" />
         </div>
         <div class="form-group">
           <label for="input-note">Napomena (opcionalno)</label>
@@ -216,7 +167,7 @@
         </div>
         <div style="display: flex; gap: 12px; margin-top: 20px;">
           <button class="btn btn-secondary" onclick="resetAddModalStep()">Natrag</button>
-          <button class="btn btn-primary" id="btn-add-submit" onclick="submitNewOption()">Dodaj Prijedlog</button>
+          <button class="btn btn-primary" id="btn-add-submit" onclick="submitNewOption()">Dodaj prijedlog</button>
         </div>
       </div>
     </div>
@@ -224,23 +175,7 @@
 </div>
 
 <div id="detail-overlay" class="detail-overlay" aria-hidden="true" onclick="if(event.target===this) closeDetail()">
-  <article class="detail-sheet" role="dialog" aria-modal="true" aria-labelledby="detail-title">
-    <button class="detail-close" type="button" aria-label="Close details" onclick="closeDetail()">×</button>
-    <img id="detail-image" class="detail-image" alt="" />
-    <div class="detail-content">
-      <div class="detail-meta"><span id="detail-votes" class="detail-pill"></span></div>
-      <div id="detail-readonly-section">
-        <div style="margin-bottom: 8px;"><span id="detail-price" class="detail-pill"></span></div>
-        <h2 id="detail-title" class="detail-title"></h2>
-        <p id="detail-description"></p>
-        <p id="detail-note" class="detail-note"></p>
-      </div>
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top: 12px;">
-        <button id="detail-vote" class="btn btn-primary" type="button" style="flex:1" onclick="voteFromDetail()">Glasaj</button>
-        <a id="detail-link" class="btn btn-secondary" target="_blank" rel="noopener noreferrer" style="flex:1; text-decoration:none;" href="#">Otvori ↗</a>
-      </div>
-    </div>
-  </article>
+  <article class="detail-sheet accommodation-detail" role="dialog" aria-modal="true" aria-labelledby="detail-title"></article>
 </div>
 
 <script type="module" src="/src/main.js"></script>

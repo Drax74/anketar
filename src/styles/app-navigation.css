@@ -1,0 +1,6 @@
+.app-navigation { position: fixed; bottom: 0; left: 0; right: 0; z-index: 90; display: flex; justify-content: center; gap: 16px; padding: 9px 16px calc(9px + env(safe-area-inset-bottom, 0px)); background: rgba(18,19,22,.96); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 1px solid rgba(255,255,255,.06); }
+.app-navigation__item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 48px; max-width: 130px; flex: 1; border: 0; border-radius: 12px; background: transparent; color: var(--md-sys-color-on-surface-variant); font-size: 10px; font-weight: 550; }
+.app-navigation__item[aria-current="page"] { color: var(--md-sys-color-primary); }
+.app-navigation__item[aria-current="page"] .app-navigation__icon { font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
+.app-navigation__item--add .app-navigation__icon { font-size: 29px; }
+@media (min-width: 1024px) { .app-navigation { display: none; } }

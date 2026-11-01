@@ -13,12 +13,12 @@
     --md-sys-color-on-primary-container: #FFC857;
 
     /* --- Borders & Outlines --- */
-    --md-sys-color-outline: #92939D;
+    --md-sys-color-outline: #A4A5AE;
     --md-sys-color-outline-variant: rgba(146, 147, 157, 0.22);
 
     /* --- Typography Colors --- */
-    --md-sys-color-on-surface: #E5E7EB;
-    --md-sys-color-on-surface-variant: #92939D;
+    --md-sys-color-on-surface: #F3F3F5;
+    --md-sys-color-on-surface-variant: #A4A5AE;
 
     /* --- Status & Financials --- */
     --md-sys-color-success: #10b981;

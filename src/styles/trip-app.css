@@ -1,0 +1,9 @@
+.trip-app { width: 100%; max-width: 1440px; margin: 0 auto; padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(104px + env(safe-area-inset-bottom, 0px)); }
+.trip-app__workspace { display: block; }
+.trip-app__stays { min-width: 0; }
+.trip-app__view { animation: view-enter 180ms ease-out; }
+@keyframes view-enter { from { opacity: .5; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@media (min-width: 1024px) {
+    .trip-app { padding: 28px 32px 64px; }
+    .trip-app__workspace { display: grid; grid-template-columns: 272px minmax(0, 1fr); gap: 32px; align-items: start; }
+}

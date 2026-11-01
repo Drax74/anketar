@@ -1,0 +1,14 @@
+.poll-status { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 48px 20px; text-align: center; }
+.poll-status__icon { font-size: 36px; color: var(--md-sys-color-primary); }
+.poll-status__title { font-size: 20px; font-weight: 600; letter-spacing: -.4px; }
+.poll-status__message { max-width: 320px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; line-height: 1.7; }
+.poll-status__action { width: auto; padding: 12px 20px; }
+.poll-status__skeletons { width: 100%; display: grid; grid-template-columns: minmax(0,1fr); gap: 22px; }
+.poll-status__skeleton { background: var(--md-sys-color-surface); border-radius: 16px; overflow: hidden; }
+.poll-status__skeleton-image { aspect-ratio: 16 / 10; background: #24262b; }
+.poll-status__skeleton-line { height: 12px; margin: 18px 16px; border-radius: 4px; background: #24262b; }
+.poll-status__skeleton-line--short { width: 45%; }
+.poll-status--loading { padding: 0; align-items: stretch; }
+.poll-status--loading .poll-status__message { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media (min-width: 640px) { .poll-status__skeletons { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (min-width: 1280px) { .poll-status__skeletons { grid-template-columns: repeat(3,minmax(0,1fr)); } }

@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import { webfontDownload } from "vite-plugin-webfont-dl";
 import injectHTML from 'vite-plugin-html-inject';
 
 export default defineConfig({
@@ -11,10 +10,6 @@ export default defineConfig({
     },
     plugins: [
         injectHTML(),
-        webfontDownload([
-            'https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap',
-            'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap'
-        ]),
         VitePWA({
             registerType: 'autoUpdate',
             includeAssets: [

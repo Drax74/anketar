@@ -4,7 +4,7 @@ import { animate, spring } from "motion";
  * Universal FLIP Spring Animation Engine with Smooth Cinematic Easing
  */
 export async function animateLayoutTransition(container, renderCallback, options = {}) {
-    if (!container || typeof animate !== 'function') {
+    if (!container || typeof animate !== 'function' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         renderCallback();
         return;
     }
@@ -41,7 +41,7 @@ export async function animateLayoutTransition(container, renderCallback, options
             animate(
                 newEl,
                 { opacity: [0, 1], scale: [0.97, 1], y: [12, 0] },
-                { duration: 0.45, easing: [0.22, 1, 0.36, 1] } // Smooth cubic-bezier entrance
+                { duration: 0.22, ease: [0.22, 1, 0.36, 1] } // Smooth cubic-bezier entrance
             );
         }
     });

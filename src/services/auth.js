@@ -23,6 +23,7 @@ function applySession(session) {
     localStorage.removeItem('poll_user_name');
 
     const authModal = document.getElementById('auth-modal');
+    authModal?.setAttribute('aria-hidden', state.userEmail ? 'true' : 'false');
 
     if (state.userEmail) {
         authModal?.classList.remove('active');

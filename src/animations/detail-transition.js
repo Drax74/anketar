@@ -19,7 +19,12 @@ function isVisible(rect) {
 
 function cardRadii(image) {
     const card = image?.closest('.option-card');
-    if (!card) return [0, 0, 0, 0];
+    if (!card) {
+        const cover = image?.closest('.card-cover-container');
+        if (!cover) return [0, 0, 0, 0];
+        const style = getComputedStyle(cover);
+        return ['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius'].map(key => parseFloat(style[key]) || 0);
+    }
 
     const style = getComputedStyle(card);
     const border = parseFloat(style.borderTopWidth) || 0;
@@ -64,7 +69,7 @@ function createMovingControls(
         const clone = start.cloneNode(true);
         clone.removeAttribute('id');
         clone.removeAttribute('onclick');
-        clone.classList.remove('is-popping');
+        clone.classList.remove('is-popping', 'vote-button--popping');
         clone.querySelector('.vote-heart-particles')?.remove();
 
         clone.querySelectorAll('[id]').forEach(element => {

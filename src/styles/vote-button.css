@@ -1,0 +1,9 @@
+.vote-button { position: absolute; left: 12px; bottom: 12px; top: auto; z-index: 10; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; background: rgba(17,18,20,.78); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: #fff; transition: background-color 140ms ease, transform 140ms ease; }
+.vote-button__icon { font-size: 22px; font-variation-settings: 'FILL' 0, 'wght' 450, 'GRAD' 0, 'opsz' 24; }
+.vote-button--selected { color: #ff536b; }
+.vote-button--selected .vote-button__icon { font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
+.vote-button:active { transform: scale(.94); }
+.vote-button:disabled { cursor: wait; }
+.vote-button--popping .vote-button__icon { animation: vote-pop 320ms cubic-bezier(.2,.8,.3,1); }
+@keyframes vote-pop { 0%,100% { transform: scale(1); } 35% { transform: scale(.84); } 70% { transform: scale(1.16); } }
+@media (hover: hover) { .vote-button:hover { background: rgba(30,31,35,.92); } }
