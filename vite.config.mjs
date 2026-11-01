@@ -67,6 +67,7 @@ export default defineConfig({
                 // Store install screenshots and optional language fonts only when needed.
                 globIgnores: [
                     '**/app-preview*.png',
+                    '**/madrid-panorama.png',
                     '**/inter-latin-ext*.woff2',
                     '**/inter-cyrillic*.woff2',
                     '**/inter-greek*.woff2',

@@ -103,7 +103,8 @@ test('manual add fallback works from rankings and returns to browsing', async ({
     await expect(page.locator('#stays-view')).toBeVisible();
     await expect(page.locator('.stay-card')).toHaveCount(6);
     await expect(page.locator('.stay-card__title-button').first()).toHaveText('Ručni prijedlog');
-    await expect(page.locator('.stay-card__placeholder').first()).toBeVisible();
+    await expect(page.locator('.stay-card__image').first()).toHaveAttribute('src', /madrid-default\.webp$/);
+    await expect(page.locator('.stay-card__placeholder').first()).toBeHidden();
     expect(backend.options.at(-1).link).toBe('https://www.airbnb.com/rooms/new');
 });
 
@@ -235,4 +236,28 @@ test('hero selects the smaller source on a high-density phone', async ({ browser
     } finally {
         await context.close();
     }
+});
+
+test('legacy, empty, and failed photos share the local default across views', async ({ page }) => {
+    const backend = await mockPoll(page);
+    backend.options[0].image = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80';
+    backend.options[1].image = '';
+    backend.options[3].image = 'https://example.test/missing-photo.webp';
+    backend.options[4].image = 'javascript:alert(1)';
+    const unsplashRequests = [];
+    page.on('request', request => {
+        if (new URL(request.url()).hostname === 'images.unsplash.com') unsplashRequests.push(request.url());
+    });
+    await page.goto('./');
+    await expect(page.locator('.stay-card')).toHaveCount(5);
+    const images = page.locator('.stay-card__image');
+    for (const index of [0, 1, 3, 4]) await expect(images.nth(index)).toHaveAttribute('src', /\/madrid-default\.webp$/);
+    await expect(images.nth(2)).toHaveAttribute('src', /\/hero-cover-image\.webp$/);
+    await expect(page.locator('.leader-teaser__image')).toHaveAttribute('src', /\/madrid-default\.webp$/);
+    await expect(page.locator('#leaderboard-container .ranking-row__image').first()).toHaveAttribute('src', /\/madrid-default\.webp$/);
+    await images.first().evaluate(image => image.decode());
+    await page.locator('.stay-card__title-button').first().click();
+    await expect(page.locator('.accommodation-detail__image')).toHaveAttribute('src', /\/madrid-default\.webp$/);
+    await expect(page.locator('.accommodation-detail__placeholder')).toBeHidden();
+    expect(unsplashRequests).toEqual([]);
 });

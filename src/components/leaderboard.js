@@ -4,7 +4,7 @@ import { animateLayoutTransition } from '../animations/motion.js';
 import { openDetail } from './modals.js';
 import { renderVoters } from './voters.js';
 import { formatVotes } from '../shared/helpers/format.js';
-import { safeWebUrl } from '../shared/helpers/url.js';
+import { setAccommodationImage } from '../shared/helpers/images.js';
 
 function rankingRow({ option, rank }, featured = false, compact = false) {
     const row = document.createElement('button');
@@ -23,9 +23,7 @@ function rankingRow({ option, rank }, featured = false, compact = false) {
     row.querySelector('.ranking-row__title').textContent = option.title || 'Smještaj';
     row.querySelector('.ranking-row__votes').textContent = formatVotes(option.voters.length);
     const image = row.querySelector('img');
-    const fallback = `${import.meta.env.BASE_URL}hero-cover-image.webp`;
-    image.addEventListener('error', () => { image.src = fallback; }, { once: true });
-    image.src = safeWebUrl(option.image, fallback);
+    setAccommodationImage(image, option.image);
     if (featured) renderVoters(row.querySelector('.ranking-row__voters'), option.voters, option.voterEmails);
     row.addEventListener('click', () => openDetail(option.id));
     return row;
@@ -49,9 +47,7 @@ function renderTeaser(ranked) {
         const image = document.createElement('img');
         image.className = 'leader-teaser__image';
         image.alt = '';
-        const fallback = `${import.meta.env.BASE_URL}hero-cover-image.webp`;
-        image.addEventListener('error', () => { image.src = fallback; }, { once: true });
-        image.src = safeWebUrl(option.image, fallback);
+        setAccommodationImage(image, option.image);
         visual.append(image);
     } else {
         const icon = document.createElement('span');

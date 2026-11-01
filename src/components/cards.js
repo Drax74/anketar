@@ -1,4 +1,4 @@
-import { safeWebUrl } from '../shared/helpers/url.js';
+import { setAccommodationImage } from '../shared/helpers/images.js';
 import { formatPrice } from '../shared/helpers/format.js';
 import { isVotePending } from '../shared/helpers/votes.js';
 import { renderVoters } from './voters.js';
@@ -45,21 +45,15 @@ export async function renderOptions(isNewItemAdded = false, newItemId = null, an
             card.querySelector('.stay-card__creator').textContent = `Prijedlog: ${creator?.name || option.creatorName || 'član ekipe'}`;
             card.querySelector('.price-value').textContent = formatPrice(option.price);
             const image = card.querySelector('.card-cover');
-            const imageUrl = safeWebUrl(option.image);
             const placeholder = card.querySelector('.stay-card__placeholder');
             image.alt = option.title || 'Smještaj';
-            image.hidden = !imageUrl;
-            placeholder.hidden = Boolean(imageUrl);
-            image.addEventListener('error', () => {
-                image.hidden = true;
-                placeholder.hidden = false;
-            }, { once: true });
+            placeholder.hidden = true;
             // The first row can be the LCP element; discover it without lazy-load delay.
             if (index < 3) {
                 image.loading = 'eager';
                 image.fetchPriority = index === 0 ? 'high' : 'auto';
             }
-            if (imageUrl) image.src = imageUrl;
+            setAccommodationImage(image, option.image, () => { placeholder.hidden = false; });
             card.querySelector('.card-heart-btn').addEventListener('click', event => {
                 event.stopPropagation();
                 window.toggleVote(option.id);

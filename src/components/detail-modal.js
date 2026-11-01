@@ -1,3 +1,4 @@
+import { setAccommodationImage } from '../shared/helpers/images.js';
 import { materialIcon } from '../shared/helpers/icons.js';
 import { state } from '../state.js';
 import { updateOption } from '../services/api.js';
@@ -327,12 +328,9 @@ export function openDetail(optionId, { fromHistory = false } = {}) {
 function populateDetail(sheet, option) {
     const creator = state.whitelistedUsers.find(user => user.email === option.created_by);
     const image = sheet.querySelector('.card-cover');
-    const imageUrl = safeWebUrl(option.image);
-    image.hidden = !imageUrl;
-    sheet.querySelector('.accommodation-detail__placeholder').hidden = Boolean(imageUrl);
-    image.onerror = () => { image.hidden = true; sheet.querySelector('.accommodation-detail__placeholder').hidden = false; };
-    if (imageUrl) image.src = imageUrl;
-    else image.removeAttribute('src');
+    const placeholder = sheet.querySelector('.accommodation-detail__placeholder');
+    placeholder.hidden = true;
+    setAccommodationImage(image, option.image, () => { placeholder.hidden = false; });
     sheet.querySelector('.card-cover').alt = option.title || 'Smještaj';
     sheet.querySelector('.price-value').textContent = formatPrice(option.price);
     sheet.querySelector('.detail-title').textContent = option.title || 'Smještaj';
