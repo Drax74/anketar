@@ -5,7 +5,7 @@ export function formatVotes(count) {
 
 export function formatPrice(value) {
     const price = String(value ?? '').trim();
-    if (!price || price === 'N/A') return t('price.onRequest');
+    if (!price || price === 'N/A') return t('price.notEntered');
     if (price.includes('€')) return price.replace(/\s*€/g, ' €').trim();
     return /^[\d.,\s]+$/.test(price) ? `${price} €` : price;
 }

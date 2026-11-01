@@ -225,12 +225,8 @@ export async function submitNewOption() {
         finalImage = manualImage || fallbackImage;
     }
 
-    const rawPrice = document
-        .getElementById('input-price')?.value.trim() || 'N/A';
-
-    const finalPrice = rawPrice !== 'N/A' && !rawPrice.includes('€')
-        ? `${rawPrice}€`
-        : rawPrice;
+    const priceInput = document.getElementById('input-price');
+    const rawPrice = priceInput?.value.trim() || '';
 
     const note = document
         .getElementById('input-note')?.value.trim() || '';
@@ -239,6 +235,16 @@ export async function submitNewOption() {
         showToast(t('form.titleRequired'), 'error');
         return;
     }
+
+    // The add sheet uses button handlers rather than a native form submit, so
+    // explicitly enforce the price constraints for scraped and manual entries.
+    if (!rawPrice || !priceInput.checkValidity()) {
+        showToast(t(rawPrice ? 'form.priceInvalid' : 'form.priceRequired'), 'error');
+        priceInput?.reportValidity();
+        priceInput?.focus();
+        return;
+    }
+    const finalPrice = `${rawPrice}€`;
 
     const tempId = 'opt_' + Date.now();
 

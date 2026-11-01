@@ -1,7 +1,7 @@
 // Entirely fictional data. Every Supabase request is intercepted before leaving the browser.
-export async function mockPoll(page, { tied = false, failReads = false, failScrape = false } = {}) {
+export async function mockPoll(page, { tied = false, failReads = false, failScrape = false, googleName = 'Marko Kovač' } = {}) {
     const email = 'marko@example.test';
-    const user = { id: '00000000-0000-4000-8000-000000000001', email, aud: 'authenticated', role: 'authenticated', user_metadata: { full_name: 'Marko Kovač' } };
+    const user = { id: '00000000-0000-4000-8000-000000000001', email, aud: 'authenticated', role: 'authenticated', user_metadata: { full_name: googleName } };
     const members = ['Marko Kovač', 'Ana Novak', 'Iva Horvat', 'Petar Kovač', 'Luka Marić', 'Ema Babić', 'Ivan Jurić', 'Sara Matić'].map((name, index) => ({ id: index + 1, email: index ? `user${index}@example.test` : email, name }));
     const titles = ['Loft u centru', 'Apartman Sol', 'Casa Madrid', 'Studio Retiro', 'Smještaj <b>Madrid</b> & "ekipa"'];
     const options = titles.map((title, index) => ({ id: `option-${index}`, title, price: String(420 - index * 20), image: '/anketar/hero-cover-image.webp', link: 'https://www.airbnb.com/rooms/test', created_by: members[index].email, note: 'Blizu centra i metroa.', description: 'Svijetao smještaj za zajedničko putovanje.' }));
