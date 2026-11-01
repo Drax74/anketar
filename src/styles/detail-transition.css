@@ -1,0 +1,32 @@
+.detail-transition {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 250;
+    overflow: hidden;
+    pointer-events: none;
+    transform-origin: 0 0;
+    will-change: transform;
+    contain: layout paint style;
+    background: var(--md-sys-color-surface-container-high);
+}
+
+.detail-transition__image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-width: none;
+    max-height: none;
+    transform-origin: 0 0;
+    will-change: transform;
+}
+
+.detail-transition__control {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    pointer-events: none;
+    transform-origin: 0 0;
+    will-change: transform;
+}

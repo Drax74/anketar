@@ -5,6 +5,9 @@
 @import './cards.css';
 @import './components.css';
 @import './modals.css';
+@import './accommodation-detail.css';
+@import './detail-page.css';
+@import './detail-transition.css';
 @import './floating-fab.css';
 
 * {

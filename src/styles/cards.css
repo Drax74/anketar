@@ -77,7 +77,8 @@
 /* HEART VOTE BUTTON (BULLETPROOF FILLED RED HEART ON ACTIVE) */
 .card-heart-btn {
     position: absolute;
-    top: 12px;
+    top: auto;
+    bottom: 12px;
     left: 12px;
     width: 38px;
     height: 38px;
@@ -179,7 +180,8 @@
 /* TOP-RIGHT PRICE BADGE */
 .price-badge {
     position: absolute;
-    top: 12px;
+    top: auto;
+    bottom: 12px;
     right: 12px;
     background: rgba(18, 19, 22, 0.52);
     -webkit-backdrop-filter: blur(10px);

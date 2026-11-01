@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     initAuthListener(({ identityChanged }) => {
         if (identityChanged) {
-            closeDetail();
+            closeDetail({ immediate: true });
             closeAddModal();
             window.location.reload();
             return;
@@ -276,6 +276,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             pollLoaded = true;
             setupRealtimeSubscription();
+            window.dispatchEvent(new Event('poll:ready'));
         } catch (error) {
             if (requestedEmail !== state.userEmail) return;
 
