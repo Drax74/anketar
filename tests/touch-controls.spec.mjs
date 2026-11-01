@@ -113,9 +113,53 @@ test.describe('mobile touch controls', () => {
         await page.locator('.accommodation-detail__edit').click();
         await page.locator('#edit-detail-title').fill('Sačuvani unos');
         await swipe(page, { y: 130, dy: 130 });
+        await swipe(page, { x: 100, y: 130, dx: 160 });
         await expect(page.locator('#detail-overlay')).toHaveAttribute('aria-hidden', 'false');
         await expect(page.locator('#edit-detail-title')).toHaveValue('Sačuvani unos');
     });
+
+    for (const view of ['stays', 'rankings']) {
+        test(`rightward detail swipe returns to ${view} through history`, async ({ page }) => {
+            const backend = await mockPoll(page);
+            backend.options[0].description = 'Dugi opis smještaja. '.repeat(150);
+            await page.goto('./');
+            await expect(page.locator('.stay-card')).toHaveCount(5);
+            if (view === 'rankings') await page.locator('.app-navigation [data-nav-view="rankings"]').tap();
+            const opener = page.locator(view === 'stays' ? '.stay-card__title-button' : '#leaderboard-container .ranking-row').first();
+            await opener.tap();
+            const sheet = page.locator('#detail-overlay .detail-sheet');
+            await expect(sheet).toBeFocused();
+            await swipe(page, { x: 270, y: 130, dx: -160 });
+            await swipe(page, { x: 5, y: 130, dx: 160 });
+            await swipe(page, { x: 100, y: 130, dx: 40 });
+            await expect(page.locator('#detail-overlay')).toHaveAttribute('aria-hidden', 'false');
+            await swipe(page, { y: 300, dy: -160 });
+            await expect.poll(() => sheet.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
+            // Chromium consumes the next touch to stop a native momentum scroll;
+            // wait for it to settle before starting a separate Back gesture.
+            await sheet.evaluate(el => new Promise(resolve => {
+                let previous = el.scrollTop;
+                let stableFrames = 0;
+                function check() {
+                    stableFrames = el.scrollTop === previous ? stableFrames + 1 : 0;
+                    previous = el.scrollTop;
+                    if (stableFrames >= 4) resolve();
+                    else requestAnimationFrame(check);
+                }
+                requestAnimationFrame(check);
+            }));
+            await swipe(page, { x: 100, y: 200, dx: 160 });
+            await expect(page.locator('#detail-overlay')).toHaveAttribute('aria-hidden', 'true');
+            await expect(page.locator(`#${view}-view`)).toBeVisible();
+            await expect(page.locator('.app-scroll-container')).toHaveJSProperty('inert', false);
+            await page.goForward();
+            await expect(page.locator('#detail-overlay')).toHaveAttribute('aria-hidden', 'false');
+            await expect(sheet).toBeFocused();
+            await swipe(page, { x: 100, y: 130, dx: 160 });
+            await expect(page.locator('#detail-overlay')).toHaveAttribute('aria-hidden', 'true');
+            await expect(page.locator(`#${view}-view`)).toBeVisible();
+        });
+    }
 
     test('add sheet dismisses from its handle and never consumes input editing', async ({ page }) => {
         await openPoll(page);
@@ -177,5 +221,6 @@ test('desktop touch input preserves the current view and open detail', async ({ 
     expect(backend.reads).toHaveLength(reads);
     await page.locator('.stay-card__title-button').first().click();
     await swipe(page, { x: 600, y: 250, dy: 120 });
+    await swipe(page, { x: 600, y: 250, dx: 160 });
     await expect(page.locator('#detail-overlay')).toHaveAttribute('aria-hidden', 'false');
 });

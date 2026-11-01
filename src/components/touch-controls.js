@@ -50,7 +50,7 @@ export function setupTouchControls({ refresh, canRefresh }) {
         const sheet = overlay?.querySelector('.detail-sheet, .native-sheet-container');
         if (document.querySelector('#auth-modal.active, .profile-menu__panel.active')) return;
         if (document.querySelector('#detail-overlay.active, #add-modal-overlay.active') && !sheet) return;
-        if (sheet && (!sheet.contains(target) || sheet.scrollTop > 0 ||
+        if (sheet && (!sheet.contains(target) ||
             overlay.querySelector('#detail-editable-section:not([hidden])'))) return;
         const view = target.closest('#stays-view, #rankings-view');
         if (!sheet && !view) return;
@@ -58,6 +58,7 @@ export function setupTouchControls({ refresh, canRefresh }) {
         gesture = {
             x: touch.clientX, y: touch.clientY, id: touch.identifier,
             sheet, overlay, view, axis: null, distance: 0,
+            sheetAtTop: sheet && sheet.scrollTop <= 0,
             pull: !sheet && view === stays && window.scrollY <= 0 && canRefresh()
         };
     }, { passive: true });
@@ -71,8 +72,9 @@ export function setupTouchControls({ refresh, canRefresh }) {
         const dy = touch.clientY - gesture.y;
         if (!gesture.axis) {
             if (Math.max(Math.abs(dx), Math.abs(dy)) < 12) return;
-            if (Math.abs(dx) > Math.abs(dy) * 1.5 && !gesture.sheet) gesture.axis = 'x';
-            else if (dy > Math.abs(dx) * 1.5 && (gesture.sheet || gesture.pull)) gesture.axis = 'y';
+            if (Math.abs(dx) > Math.abs(dy) * 1.5 &&
+                (!gesture.sheet || (gesture.overlay.id === 'detail-overlay' && dx > 0))) gesture.axis = 'x';
+            else if (dy > Math.abs(dx) * 1.5 && (gesture.sheetAtTop || gesture.pull)) gesture.axis = 'y';
             else return reset(); // Scrolling or an ambiguous diagonal owns this touch.
         }
         if (gesture.axis === 'y' && (dy < 0 || (gesture.sheet ? gesture.sheet.scrollTop > 0 : window.scrollY > 0))) return reset();
@@ -91,6 +93,7 @@ export function setupTouchControls({ refresh, canRefresh }) {
         // A claimed drag must not also activate the element under the finger.
         suppressClickUntil = performance.now() + 400;
         if (completed.axis === 'x' && Math.abs(completed.distance) >= 72) {
+            if (completed.overlay?.id === 'detail-overlay' && completed.distance > 0) closeDetail();
             if (completed.distance < 0 && completed.view === stays) showAppView('rankings', { focus: false });
             if (completed.distance > 0 && completed.view?.id === 'rankings-view') showAppView('stays', { focus: false });
         } else if (completed.axis === 'y' && completed.distance >= 80) {
