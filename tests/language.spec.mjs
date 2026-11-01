@@ -9,7 +9,7 @@ test('initial HTML includes resolved text, metadata, labels and placeholders', a
     expect(source).toContain('<html lang="hr">');
     expect(source).toContain('<title>Madrid - Trkadzije &amp; Rumoljubi</title>');
     expect(source).toContain('content="Glasajte za smještaj u Madridu!"');
-    expect(source).toContain('aria-label="Madrid — početna"');
+    expect(source).toContain('aria-label="Trkadzije &amp; Rumoljubi — početna"');
     expect(source).toContain('placeholder="Unesi Booking.com ili Airbnb link"');
 });
 

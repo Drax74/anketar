@@ -1,8 +1,6 @@
 .trip-header { display: flex; align-items: center; gap: 24px; margin-bottom: 20px; }
-.trip-header__identity { flex: 1; }
-.trip-header__title { font-size: 26px; font-weight: 750; letter-spacing: -1.2px; text-decoration: none; line-height: 1.2; }
-.trip-header__dot { color: var(--md-sys-color-primary); }
-.trip-header__dates { margin-top: 4px; color: var(--md-sys-color-on-surface-variant); font-size: 12px; }
+.trip-header__identity { flex: 1; min-width: 0; display: flex; align-items: center; }
+.trip-header__title { font-size: clamp(18px, 5vw, 26px); font-weight: 750; letter-spacing: -1.2px; text-decoration: none; line-height: 1.2; white-space: nowrap; }
 .trip-header__tabs { display: none; gap: 8px; }
 .trip-header__tab { padding: 10px 18px; border: 0; border-radius: 999px; background: transparent; color: var(--md-sys-color-on-surface-variant); font-weight: 600; font-size: 14px; }
 .trip-header__tab[aria-current="page"] { background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); }
