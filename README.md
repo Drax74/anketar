@@ -44,3 +44,21 @@ In JavaScript, use `t('form.title')` from `src/i18n.js`. Messages with values us
 In `index.html` and HTML partials, use `{{t:form.title}}`. Vite resolves these markers for both development and production, so page text and metadata are present in the initial HTML. The PWA manifest reads the same catalog at build time; rebuild after changing its copy. This centralizes the current Croatian language without adding a language picker or dependencies.
 
 `npm test` runs language-helper checks before the browser suite; `npm run test:unit` runs those checks alone.
+
+## Availability and roles
+
+`options.created_by` stores the creator's email, not their displayed name. Cards and details resolve it against `whitelist.name`. Editing never changes that identity.
+
+`options.is_taken` is a non-null boolean, default `false`. The existing edit form exposes a **Zauzeto** checkbox to the owner and super admin. A taken accommodation keeps its existing votes and interactions and shows a dark-red badge on cards/details, ranking rows, sidebar rows, and the unique-leader teaser. Availability changes received through realtime refresh these badges too.
+
+`whitelist.role` supports `user` (default) and `super_admin`. Approved regular users retain their existing behavior and can edit only their own proposals; a super admin can edit any proposal. Roles come only from the whitelist, never Google user metadata. There is no role-management UI. Assignments and changes to whitelist identity must be made through trusted database administration.
+
+Deploy the database changes through the Supabase SQL Editor as the database owner, in this order:
+
+1. Run `supabase/migrations/202611010001_availability_roles.sql`. It adds the fields, validates role values, enables owner/admin UPDATE policies, and protects roles and creator identity. Existing SELECT/INSERT/DELETE policies remain in place. Unknown restrictive UPDATE/ALL policies cause a transactional failure so they can be reviewed without silently removing existing rules.
+2. Run `supabase/admin/assign_super_admin.sql` to assign `draksic.m@gmail.com`, the explicitly selected account. It requires exactly one matching whitelist record. Other existing accounts stay `user`.
+3. Reload the app and confirm the owner/admin edit paths using actual accounts. The database checks the current role on every update, so a role revocation does not depend on refreshing a JWT.
+
+These SQL files are not deployed by GitHub Pages. Until the migration is applied, the frontend keeps existing editing/adding working and hides the availability control on rows without `is_taken`; absent roles behave as `user`. Local mock/browser tests cannot establish live Supabase deployment or its existing policies.
+
+To test the migration, its repeatability, and database access rules in a disposable PostgreSQL 16 container, run `bash scripts/test-database.sh` with the managed Docker daemon available. The test publishes no ports and uses no production credentials. Files under `supabase/tests` are test fixtures only and must never be run on the live project.

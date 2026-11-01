@@ -64,3 +64,4 @@
         scroll-behavior: auto;
     }
 }
+.detail-page__availability { top: calc(64px + env(safe-area-inset-top, 0px)); }

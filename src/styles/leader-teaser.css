@@ -7,3 +7,5 @@
 .leader-teaser__votes { color: var(--md-sys-color-on-surface-variant); font-size: 11px; }
 .leader-teaser__arrow { color: var(--md-sys-color-on-surface-variant); font-size: 20px; }
 @media (min-width: 1024px) { .leader-teaser { display: none; } }
+.leader-teaser__heading { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.leader-teaser__availability { flex-shrink: 0; display: inline-flex; }

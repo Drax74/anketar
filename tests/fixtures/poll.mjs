@@ -1,10 +1,12 @@
 // Entirely fictional data. Every Supabase request is intercepted before leaving the browser.
-export async function mockPoll(page, { tied = false, failReads = false, failScrape = false, googleName = 'Marko Kovač' } = {}) {
+export async function mockPoll(page, { tied = false, failReads = false, failScrape = false, googleName = 'Marko Kovač', role = 'user', legacySchema = false } = {}) {
     const email = 'marko@example.test';
     const user = { id: '00000000-0000-4000-8000-000000000001', email, aud: 'authenticated', role: 'authenticated', user_metadata: { full_name: googleName } };
     const members = ['Marko Kovač', 'Ana Novak', 'Iva Horvat', 'Petar Kovač', 'Luka Marić', 'Ema Babić', 'Ivan Jurić', 'Sara Matić'].map((name, index) => ({ id: index + 1, email: index ? `user${index}@example.test` : email, name }));
+    if (!legacySchema) members.forEach((member, index) => { member.role = index ? 'user' : role; });
     const titles = ['Loft u centru', 'Apartman Sol', 'Casa Madrid', 'Studio Retiro', 'Smještaj <b>Madrid</b> & "ekipa"'];
     const options = titles.map((title, index) => ({ id: `option-${index}`, title, price: String(420 - index * 20), image: '/anketar/hero-cover-image.webp', link: 'https://www.airbnb.com/rooms/test', created_by: members[index].email, note: 'Blizu centra i metroa.', description: 'Svijetao smještaj za zajedničko putovanje.' }));
+    if (!legacySchema) options.forEach(option => { option.is_taken = false; });
     const votes = [8, tied ? 8 : 6, 4, 1].flatMap((count, index) => members.slice(0, count).map((member, number) => ({ id: index * 100 + number + 1, option_id: `option-${index}`, user_email: member.email })));
     const backend = { options, votes, writes: [], reads: [], failReads, failScrape, failWrites: false, writeDelay: 0, readDelay: 0 };
     const expires = Math.floor(Date.now() / 1000) + 3600;
@@ -39,12 +41,15 @@ export async function mockPoll(page, { tied = false, failReads = false, failScra
         const body = request.postDataJSON();
         if (table === 'options' && request.method() === 'PATCH') {
             const item = backend.options.find(option => option.id === url.searchParams.get('id')?.slice(3));
+            if (members[0].role !== 'super_admin' && item.created_by !== email) return json({ message: 'not allowed' }, 403);
+            if (legacySchema && Object.hasOwn(body, 'is_taken')) return json({ message: 'column is_taken does not exist' }, 400);
             Object.assign(item, body);
             return json([item]);
         }
         if (table === 'options' && request.method() === 'POST') {
-            backend.options.push(...body);
-            return json(null);
+            const saved = body.map(item => legacySchema ? item : { ...item, is_taken: false });
+            backend.options.push(...saved);
+            return json(saved);
         }
         if (table === 'votes' && request.method() === 'DELETE') {
             backend.votes = backend.votes.filter(vote => !(vote.option_id === url.searchParams.get('option_id')?.slice(3) && vote.user_email === url.searchParams.get('user_email')?.slice(3)));

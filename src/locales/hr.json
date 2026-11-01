@@ -1,5 +1,9 @@
 {
   "locale": "hr",
+  "availability.taken": "Zauzeto",
+  "availability.help": "Označi ako smještaj više nije dostupan za naše datume.",
+  "availability.itemLabel": "{title}, zauzeto",
+  "detail.editForbidden": "Nemate dopuštenje za uređivanje ovog smještaja.",
   "meta.description": "Glasajte za smještaj u Madridu!",
   "meta.socialTitle": "🇪🇸 Madrid Ekskurzija (03.12 – 06.12.2026)",
   "meta.title": "Madrid - Trkadzije & Rumoljubi",

@@ -21,3 +21,6 @@
 .ranking-row--compact .ranking-row__title { font-size: 12px; }
 .ranking-row--compact .ranking-row__votes { font-size: 11px; }
 .ranking-row--compact .ranking-row__arrow { display: none; }
+.ranking-row__heading { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.ranking-row__heading .ranking-row__title { min-width: 0; max-width: 100%; }
+.ranking-row__availability { display: inline-flex; }

@@ -6,6 +6,7 @@ import { renderVoters } from './voters.js';
 import { state } from '../state.js';
 import { animateLayoutTransition } from '../animations/motion.js';
 import { openDetail } from './modals.js';
+import { renderAvailabilityBadge } from './availability-badge.js';
 
 export async function renderOptions(isNewItemAdded = false, newItemId = null, animateIn = true) {
     const container = document.getElementById('options-container');
@@ -29,6 +30,7 @@ export async function renderOptions(isNewItemAdded = false, newItemId = null, an
             card.addEventListener('click', () => openDetail(option.id));
             card.innerHTML = `
                 <div class="card-cover-container stay-card__cover">
+                    <span class="stay-card__availability" hidden></span>
                     <img class="card-cover stay-card__image" alt="" loading="lazy" decoding="async" /><span class="stay-card__placeholder" hidden><span class="material-symbols-outlined" aria-hidden="true">&#xe58a;</span>${htmlText('common.imageUnavailable')}</span>
                     <button class="card-heart-btn vote-button${selected ? ' voted vote-button--selected' : ''}" type="button" aria-label="${htmlText('votes.add')}" aria-pressed="${selected}">
                         <span class="material-symbols-outlined vote-button__icon" aria-hidden="true">&#xe87e;</span>
@@ -45,6 +47,7 @@ export async function renderOptions(isNewItemAdded = false, newItemId = null, an
             const creator = state.whitelistedUsers.find(user => user.email === option.created_by);
             card.querySelector('.stay-card__creator').textContent = t('stay.creator', { name: creator?.name || option.creatorName || t('common.teamMember') });
             card.querySelector('.price-value').textContent = formatPrice(option.price);
+            renderAvailabilityBadge(card.querySelector('.stay-card__availability'), option);
             const image = card.querySelector('.card-cover');
             const placeholder = card.querySelector('.stay-card__placeholder');
             image.alt = option.title || t('common.stay');

@@ -88,13 +88,6 @@ export function setupRealtimeSubscription() {
                 const newOpt = payload.new;
                 const oldOpt = payload.old;
 
-                if (
-                    newOpt?.created_by === state.userEmail ||
-                    oldOpt?.created_by === state.userEmail
-                ) {
-                    return;
-                }
-
                 if (payload.eventType === 'INSERT' && newOpt) {
                     const creatorUser = state.whitelistedUsers.find(
                         user => user.email === newOpt.created_by
@@ -119,6 +112,13 @@ export function setupRealtimeSubscription() {
                         renderOptions(true, newOpt.id);
                         renderVoteUI();
                     }
+                } else if (payload.eventType === 'UPDATE' && newOpt) {
+                    state.options = state.options.map(option =>
+                        String(option.id) === String(newOpt.id) ? { ...option, ...newOpt } : option
+                    );
+                    rebuildVoteState();
+                    renderOptions(false, null, false);
+                    renderVoteUI();
                 } else if (payload.eventType === 'DELETE' && oldOpt) {
                     state.options = state.options.filter(
                         option => String(option.id) !== String(oldOpt.id)

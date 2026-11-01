@@ -10,6 +10,8 @@ import { isVotePending } from '../shared/helpers/votes.js';
 import { renderVoters } from './voters.js';
 import { showToast } from './toast.js';
 import { renderOptions, findOptionCard } from './cards.js';
+import { canEditAccommodation } from '../shared/helpers/permissions.js';
+import { renderAvailabilityBadge, supportsAvailability } from './availability-badge.js';
 import {
     animateDetailOpen,
     animateDetailClose,
@@ -128,6 +130,7 @@ function applyDetailLayout(overlay, sheet) {
 
     back.classList.toggle('detail-page__back', mobile);
     vote.classList.toggle('detail-page__vote', mobile);
+    sheet.querySelector('.accommodation-detail__availability').classList.toggle('detail-page__availability', mobile);
 
     back.querySelector('.material-symbols-outlined').textContent =
         materialIcon(mobile ? 'arrow_back' : 'close');
@@ -272,6 +275,7 @@ export function openDetail(optionId, { fromHistory = false } = {}) {
     sheet.classList.add('accommodation-detail');
     sheet.innerHTML = `
         <div class="card-cover-container accommodation-detail__cover">
+            <span class="accommodation-detail__availability" hidden></span>
             <img class="card-cover accommodation-detail__image" alt="" /><span class="accommodation-detail__placeholder" hidden><span class="material-symbols-outlined" aria-hidden="true">&#xe58a;</span>${htmlText('common.imageUnavailable')}</span>
             <button class="card-heart-btn vote-button" type="button" aria-label="${htmlText('votes.add')}" aria-pressed="false">
                 <span class="material-symbols-outlined vote-button__icon" aria-hidden="true">&#xe87e;</span>
@@ -297,6 +301,7 @@ export function openDetail(optionId, { fromHistory = false } = {}) {
                 <div class="form-group"><label for="edit-detail-price">${htmlText('form.price')}</label><input type="text" id="edit-detail-price" class="input-field" /></div>
                 <div class="form-group"><label for="edit-detail-image">${htmlText('form.imageUrl')}</label><input type="text" inputmode="url" id="edit-detail-image" class="input-field" /></div>
                 <div class="form-group"><label for="edit-detail-note">${htmlText('form.note')}</label><textarea id="edit-detail-note" class="input-field"></textarea></div>
+                <div class="accommodation-detail__availability-field" hidden><label class="accommodation-detail__availability-label"><input type="checkbox" id="edit-detail-is-taken" class="accommodation-detail__availability-input" />${htmlText('availability.taken')}</label><p class="accommodation-detail__availability-help">${htmlText('availability.help')}</p></div>
                 <div class="accommodation-detail__form-actions"><button class="btn btn-primary" type="submit">${htmlText('detail.save')}</button><button class="btn btn-secondary accommodation-detail__cancel" type="button">${htmlText('common.cancel')}</button></div>
                 <p class="accommodation-detail__save-status" role="status"></p>
             </form>
@@ -348,8 +353,11 @@ function populateDetail(sheet, option) {
     if (url) offer.href = url;
     else offer.removeAttribute('href');
     sheet.querySelector('.accommodation-detail__footer').hidden = !url;
-    const owner = Boolean(state.userEmail && option.created_by && option.created_by.toLowerCase() === state.userEmail.toLowerCase());
-    sheet.querySelector('.accommodation-detail__edit').hidden = !owner;
+    const editable = canEditAccommodation(option);
+    sheet.querySelector('.accommodation-detail__edit').hidden = !editable;
+    renderAvailabilityBadge(sheet.querySelector('.accommodation-detail__availability'), option);
+    sheet.querySelector('.accommodation-detail__availability-field').hidden = !supportsAvailability(option);
+    sheet.querySelector('#edit-detail-is-taken').checked = option.is_taken === true;
     for (const field of ['title', 'price', 'image', 'note']) sheet.querySelector(`#edit-detail-${field}`).value = option[field] ?? '';
     renderVoters(sheet.querySelector('.voters-row'), option.voters || [], option.voterEmails || [], { selected: state.selectedOptionIds.has(option.id) });
 }
@@ -358,12 +366,12 @@ function setDetailEditing(editing) {
     const option = state.options.find(item => String(item.id) === String(state.activeDetailId));
     const sheet = document.querySelector('#detail-overlay .detail-sheet');
     if (!option || !sheet) return;
-    const owner = Boolean(state.userEmail && option.created_by && option.created_by.toLowerCase() === state.userEmail.toLowerCase());
-    if (editing && !owner) return;
+    const editable = canEditAccommodation(option);
+    if (editing && !editable) return;
     if (editing) populateDetail(sheet, option);
     sheet.querySelector('#detail-readonly-section').hidden = editing;
     sheet.querySelector('#detail-editable-section').hidden = !editing;
-    sheet.querySelector('.accommodation-detail__edit').hidden = editing || !owner;
+    sheet.querySelector('.accommodation-detail__edit').hidden = editing || !editable;
     sheet.querySelector('.accommodation-detail__footer').hidden = editing || !safeWebUrl(option.link);
     sheet.querySelector('.accommodation-detail__save-status').textContent = '';
     if (editing) sheet.querySelector('#edit-detail-title').focus();
@@ -456,6 +464,7 @@ export function updateDetailModalIfOpen() {
 
     const overlay = document.getElementById('detail-overlay');
     if (!overlay || !overlay.classList.contains('active')) return;
+    renderAvailabilityBadge(overlay.querySelector('.accommodation-detail__availability'), opt);
 
     const isSelected = state.selectedOptionIds.has(opt.id);
     const heartBtn = overlay.querySelector('.card-heart-btn');
@@ -486,6 +495,10 @@ export async function saveOptionDetails() {
     const option = state.options.find(item => String(item.id) === String(optionId));
     const sheet = document.querySelector('#detail-overlay .detail-sheet');
     if (!option || !sheet) return;
+    if (!canEditAccommodation(option)) {
+        showToast(t('detail.editForbidden'), 'error');
+        return;
+    }
     const form = sheet.querySelector('#detail-editable-section');
     const button = form.querySelector('button[type="submit"]');
     if (form.hidden || button.disabled) return;
@@ -498,6 +511,7 @@ export async function saveOptionDetails() {
         image: form.querySelector('#edit-detail-image').value.trim(),
         note: form.querySelector('#edit-detail-note').value.trim()
     };
+    if (supportsAvailability(option)) updates.is_taken = form.querySelector('#edit-detail-is-taken').checked;
     button.disabled = true;
     const status = sheet.querySelector('.accommodation-detail__save-status');
     status.textContent = t('detail.saving');

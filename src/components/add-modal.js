@@ -10,6 +10,7 @@ import {
 import { renderOptions } from './cards.js';
 import { showToast } from './toast.js';
 import { renderLeaderboard } from './leaderboard.js';
+import { updateDetailModalIfOpen } from './detail-modal.js';
 
 let scrapeGeneration = 0;
 
@@ -287,7 +288,15 @@ export async function submitNewOption() {
     renderLeaderboard(false);
 
     try {
-        await addOption(dbPayload);
+        const saved = await addOption(dbPayload);
+        if (saved) {
+            // The database supplies is_taken=false. Old schemas remain usable
+            // until the migration is applied; do not invent a supported column.
+            state.options = state.options.map(item => item.id === tempId ? { ...item, ...saved } : item);
+            await renderOptions(false, null, false);
+            await renderLeaderboard(false);
+            updateDetailModalIfOpen();
+        }
     } catch (error) {
         console.error('Add failed:', error);
 

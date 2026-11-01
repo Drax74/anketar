@@ -1,4 +1,6 @@
 import { supabase } from '../supabase.js';
+import { state } from '../state.js';
+import { canEditAccommodation } from '../shared/helpers/permissions.js';
 
 export async function getWhitelistedUsers() {
     const { data, error } = await supabase.from('whitelist').select('*');
@@ -58,11 +60,14 @@ export async function removeVote(userEmail, optionId) {
 }
 
 export async function addOption(option) {
-    const { error } = await supabase.from('options').insert([option]);
+    const { data, error } = await supabase.from('options').insert([option]).select();
     if (error) throw error;
+    return data?.[0];
 }
 
 export async function updateOption(id, fields) {
+    const option = state.options.find(item => String(item.id) === String(id));
+    if (!canEditAccommodation(option)) throw new Error('Accommodation update is not permitted.');
     const { data, error } = await supabase
         .from('options')
         .update(fields)
