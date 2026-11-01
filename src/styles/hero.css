@@ -5,4 +5,40 @@
 .trip-hero__eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.75); }
 .trip-hero__title { margin: 6px 0 3px; color: white; font-size: clamp(26px, 6vw, 34px); font-weight: 750; line-height: 1.1; letter-spacing: -1.2px; }
 .trip-hero__subtitle { font-size: 12px; color: rgba(255,255,255,.8); }
-@media (min-width: 1024px) { .trip-hero { height: 280px; margin-bottom: 32px; } .trip-hero__content { padding: 30px; } .trip-hero__title { font-size: 44px; } .trip-hero__subtitle { font-size: 14px; } }
+@media (min-width: 1024px) {
+    .trip-hero {
+        display: grid;
+        grid-template-columns: var(--trip-sidebar-width) minmax(0, 1fr);
+        column-gap: var(--trip-column-gap);
+        grid-template-rows: minmax(0, 1fr);
+        height: 280px;
+        margin-bottom: 32px;
+    }
+    .trip-hero::after {
+        background: linear-gradient(0deg, rgba(8,9,11,.16), transparent 65%);
+    }
+    .trip-hero__image {
+        position: relative;
+        inset: auto;
+        grid-column: 2;
+        grid-row: 1;
+        min-width: 0;
+        min-height: 0;
+        object-fit: contain;
+        /* The full 3:2 photograph is about 420px wide at this hero height. */
+        mask-image: linear-gradient(90deg,
+            transparent calc(50% - 210px),
+            black calc(50% - 135px),
+            black calc(50% + 135px),
+            transparent calc(50% + 210px));
+    }
+    .trip-hero__content {
+        grid-column: 1;
+        grid-row: 1;
+        min-width: 0;
+        justify-content: center;
+        padding: 20px;
+    }
+    .trip-hero__title { font-size: 40px; }
+    .trip-hero__subtitle { font-size: 14px; }
+}
