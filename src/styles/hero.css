@@ -7,11 +7,12 @@
 .trip-hero__subtitle { font-size: 12px; color: rgba(255,255,255,.8); }
 @media (min-width: 1024px) {
     .trip-hero {
+        --trip-hero-height: 280px;
         display: grid;
         grid-template-columns: var(--trip-sidebar-width) minmax(0, 1fr);
         column-gap: var(--trip-column-gap);
         grid-template-rows: minmax(0, 1fr);
-        height: 280px;
+        height: var(--trip-hero-height);
         margin-bottom: 32px;
     }
     .trip-hero::after {
@@ -24,13 +25,8 @@
         grid-row: 1;
         min-width: 0;
         min-height: 0;
-        object-fit: contain;
-        /* The full 3:2 photograph is about 420px wide at this hero height. */
-        mask-image: linear-gradient(90deg,
-            transparent calc(50% - 210px),
-            black calc(50% - 135px),
-            black calc(50% + 135px),
-            transparent calc(50% + 210px));
+        object-fit: cover;
+        mask-image: linear-gradient(90deg, transparent, black 64px);
     }
     .trip-hero__content {
         grid-column: 1;
