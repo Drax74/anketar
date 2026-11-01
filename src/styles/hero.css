@@ -1,4 +1,4 @@
-.trip-hero { position: relative; isolation: isolate; height: 168px; margin-bottom: 16px; overflow: hidden; border-radius: 18px; background: var(--md-sys-color-surface); }
+.trip-hero { position: relative; isolation: isolate; height: 168px; margin-bottom: 16px; overflow: hidden; border-radius: 18px; background: var(--md-sys-color-background); }
 .trip-hero::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(8,9,11,.76), rgba(8,9,11,.12)), linear-gradient(0deg, rgba(8,9,11,.45), transparent); }
 .trip-hero__image { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 .trip-hero__content { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; padding: 20px; }
@@ -7,7 +7,7 @@
 .trip-hero__subtitle { font-size: 12px; color: rgba(255,255,255,.8); }
 @media (min-width: 1024px) {
     .trip-hero {
-        --trip-hero-height: 280px;
+        --trip-hero-height: 400px;
         display: grid;
         grid-template-columns: var(--trip-sidebar-width) minmax(0, 1fr);
         column-gap: var(--trip-column-gap);
