@@ -1,23 +1,31 @@
 import { t } from '../i18n.js';
 import { formatVotes, getInitials } from '../shared/helpers/format.js';
+import { avatarColor } from '../shared/helpers/avatars.js';
+import { openVotersDialog } from './voters-dialog.js';
 
-const AVATAR_PALETTE = ['#647FA8', '#648C79', '#B87983', '#B58A45', '#8A78B5', '#B97655', '#4E9290', '#858B98'];
-
-export function renderVoters(container, voters = [], voterEmails = [], { selected = false } = {}) {
+export function renderVoters(container, voters = [], voterEmails = [], { selected = false, optionId = null } = {}) {
     container.replaceChildren();
     container.classList.add('voter-stack');
 
     if (voters.length) {
-        const stack = document.createElement('div');
+        const stack = document.createElement(optionId == null ? 'div' : 'button');
         stack.className = 'voter-stack__avatars';
+        if (optionId != null) {
+            stack.type = 'button';
+            stack.dataset.votersOption = String(optionId);
+            stack.setAttribute('aria-label', t('votes.viewVoters', { votes: formatVotes(voters.length) }));
+            stack.setAttribute('aria-haspopup', 'dialog');
+            stack.addEventListener('click', event => {
+                event.stopPropagation();
+                openVotersDialog(optionId, stack);
+            });
+        }
         voters.slice(0, 3).forEach((name, index) => {
             const text = String(name ?? '');
             const identifier = String(voterEmails[index] || text);
-            let hash = 0;
-            for (let i = 0; i < identifier.length; i++) hash = identifier.charCodeAt(i) + ((hash << 5) - hash);
             const avatar = document.createElement('span');
             avatar.className = 'voter-stack__avatar';
-            avatar.style.setProperty('--avatar-color', AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length]);
+            avatar.style.setProperty('--avatar-color', avatarColor(identifier));
             avatar.title = text;
             avatar.textContent = getInitials(text);
             stack.append(avatar);

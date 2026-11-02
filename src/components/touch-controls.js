@@ -43,7 +43,7 @@ export function setupTouchControls({ refresh, canRefresh }) {
         const control = target.closest(interactive);
         // Both edges belong to the browser (Back/Forward), even inside a sheet.
         if (touch.clientX < 28 || touch.clientX > innerWidth - 28 ||
-            (control && !control.matches('.ranking-row, .stay-card__title-button')) ||
+            (control && !control.matches('.ranking-row, .ranking-row__open, .stay-card__title-button')) ||
             document.activeElement?.matches('input, textarea, select, [contenteditable="true"]') ||
             !window.getSelection()?.isCollapsed) return;
 

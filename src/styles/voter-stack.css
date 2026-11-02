@@ -1,8 +1,11 @@
 .voter-stack { display: flex; align-items: center; gap: 9px; min-height: 28px; flex-wrap: wrap; }
-.voter-stack__avatars { display: inline-flex; padding-left: 0; flex-shrink: 0; }
+.voter-stack__avatars { display: inline-flex; align-items: center; padding: 8px; margin: -8px; flex-shrink: 0; border: 0; border-radius: 999px; background: transparent; color: inherit; cursor: pointer; }
 .voter-stack__avatar { display: grid; place-items: center; width: 28px; height: 28px; margin-left: -7px; border: 2px solid var(--md-sys-color-surface); border-radius: 50%; background: var(--avatar-color, #647fa8); color: white; font-size: 9px; font-weight: 600; }
 .voter-stack__avatar:first-child { margin-left: 0; }
 .voter-stack__avatar--more { background: #35373e; }
 .voter-stack__summary { color: var(--md-sys-color-on-surface-variant); font-size: 11px; }
 .voter-stack__selection { color: var(--md-sys-color-primary); font-size: 11px; font-weight: 550; }
 .voter-stack__selection::before { content: '·'; margin-right: 6px; color: var(--md-sys-color-on-surface-variant); }
+@media (hover: hover) {
+    .voter-stack__avatars:hover { background: var(--md-sys-color-primary-container); }
+}

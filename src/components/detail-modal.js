@@ -359,7 +359,7 @@ function populateDetail(sheet, option) {
     sheet.querySelector('.accommodation-detail__availability-field').hidden = !supportsAvailability(option);
     sheet.querySelector('#edit-detail-is-taken').checked = option.is_taken === true;
     for (const field of ['title', 'price', 'image', 'note']) sheet.querySelector(`#edit-detail-${field}`).value = option[field] ?? '';
-    renderVoters(sheet.querySelector('.voters-row'), option.voters || [], option.voterEmails || [], { selected: state.selectedOptionIds.has(option.id) });
+    renderVoters(sheet.querySelector('.voters-row'), option.voters || [], option.voterEmails || [], { selected: state.selectedOptionIds.has(option.id), optionId: option.id });
 }
 
 function setDetailEditing(editing) {
@@ -488,7 +488,7 @@ export function updateDetailModalIfOpen({ refreshContent = false } = {}) {
             votersRow,
             opt.voters || [],
             opt.voterEmails || [],
-            { selected: isSelected }
+            { selected: isSelected, optionId: opt.id }
         );
     }
 }

@@ -24,3 +24,5 @@
 .ranking-row__heading { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; min-width: 0; }
 .ranking-row__heading .ranking-row__title { min-width: 0; max-width: 100%; }
 .ranking-row__availability { display: inline-flex; }
+.ranking-row__open { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; padding: 0; border: 0; border-radius: inherit; background: transparent; cursor: pointer; }
+.ranking-row__voters { position: relative; z-index: 2; }

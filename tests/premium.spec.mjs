@@ -200,10 +200,17 @@ test('loading rankings do not push the accommodation list down', async ({ page }
     await page.goto('./');
     await page.evaluate(() => document.fonts.ready);
     await expect(page.locator('#leader-teaser')).toHaveAttribute('aria-busy', 'true');
+    // Compare settled layout, not a frame of the view-enter translateY animation
+    // or fallback-font metrics while the local fonts are still loading.
+    await page.evaluate(() => document.fonts.ready);
+    await page.locator('#stays-view').evaluate(element =>
+        Promise.all(element.getAnimations().map(animation => animation.finished))
+    );
     const before = await page.locator('.browse-toolbar').boundingBox();
     release();
     await expect(page.locator('.stay-card')).toHaveCount(5);
     await expect(page.locator('#leader-teaser')).toHaveAttribute('aria-busy', 'false');
+    await page.evaluate(() => document.fonts.ready);
     const after = await page.locator('.browse-toolbar').boundingBox();
     expect(Math.abs(after.y - before.y)).toBeLessThan(1);
 });

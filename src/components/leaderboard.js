@@ -9,26 +9,28 @@ import { setAccommodationImage } from '../shared/helpers/images.js';
 import { renderAvailabilityBadge } from './availability-badge.js';
 
 function rankingRow({ option, rank }, featured = false, compact = false) {
-    const row = document.createElement('button');
-    row.type = 'button';
+    const row = document.createElement('div');
+    row.setAttribute('role', 'group');
     row.className = `ranking-row animate-item${featured ? ' ranking-row--featured' : ''}${compact ? ' ranking-row--compact' : ''}`;
     row.dataset.id = option.id;
     row.dataset.detailId = option.id;
     row.setAttribute('aria-label', t('rankings.rowLabel', { title: option.title || t('common.stay'), votes: formatVotes(option.voters.length) }));
     if (option.is_taken === true) row.setAttribute('aria-label', t('availability.itemLabel', { title: row.getAttribute('aria-label') }));
     row.innerHTML = `
+        <button class="ranking-row__open" type="button"></button>
         <span class="ranking-row__rank"></span>
         <span class="card-cover-container ranking-row__image-wrap"><img class="card-cover ranking-row__image" alt="" loading="lazy" /></span>
         <span class="ranking-row__copy"><span class="ranking-row__heading"><span class="leaderboard-item-title ranking-row__title"></span><span class="ranking-row__availability" hidden></span></span><span class="ranking-row__votes"></span></span>
         <span class="ranking-row__voters"></span>
         <span class="material-symbols-outlined ranking-row__arrow" aria-hidden="true">&#xe5cc;</span>`;
     row.querySelector('.ranking-row__rank').textContent = String(rank).padStart(2, '0');
+    row.querySelector('.ranking-row__open').setAttribute('aria-label', row.getAttribute('aria-label'));
     row.querySelector('.ranking-row__title').textContent = option.title || t('common.stay');
     row.querySelector('.ranking-row__votes').textContent = formatVotes(option.voters.length);
     renderAvailabilityBadge(row.querySelector('.ranking-row__availability'), option);
     const image = row.querySelector('img');
     setAccommodationImage(image, option.image);
-    if (featured) renderVoters(row.querySelector('.ranking-row__voters'), option.voters, option.voterEmails);
+    if (featured) renderVoters(row.querySelector('.ranking-row__voters'), option.voters, option.voterEmails, { optionId: option.id });
     row.addEventListener('click', () => openDetail(option.id));
     return row;
 }

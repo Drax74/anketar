@@ -58,6 +58,8 @@ On subscription/reconnection the app fetches a fresh poll snapshot because Postg
 
 The interface supports mobile browsing/rankings navigation, a desktop ranking sidebar, explicit owner editing, browser Back/Forward for mobile details, and reduced-motion preferences.
 
+Click an accommodation's voter avatars (including the `+N` avatar) to open **Glasali su**, a scrollable list of everyone who voted. It uses the same whitelist-derived names as the cards, highlights your own vote, and updates while votes change. The popup works from cards, details, and the featured ranking row; Escape, the close button, or the backdrop dismiss it and return focus to the avatar control.
+
 On mobile, swipe horizontally across the content to switch between Stays and Rankings. Swipe right in a detail to return to the view that opened it, even after scrolling the detail. Pull down at the top of Stays to refresh, or at the top of a detail/add sheet to dismiss it. Short drags do not trigger actions. Screen-edge gestures, multiple fingers, form controls, and active editing stay with the browser; scrolling a sheet back to its top does not dismiss it in the same gesture. Reduced-motion mode keeps the refresh status visible without a spinning animation. No gesture library is required.
 
 ## App text

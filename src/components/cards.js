@@ -87,7 +87,7 @@ function updateVoteControls(card, option) {
     button.setAttribute('aria-label', selected ? t('votes.remove') : t('votes.add'));
     button.disabled = pending;
     button.setAttribute('aria-busy', String(pending));
-    renderVoters(card.querySelector('.voters-row'), option.voters || [], option.voterEmails || [], { selected });
+    renderVoters(card.querySelector('.voters-row'), option.voters || [], option.voterEmails || [], { selected, optionId: option.id });
 }
 
 export function updateCardSubelements(optionId) {

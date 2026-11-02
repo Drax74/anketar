@@ -2,6 +2,7 @@ import { t } from '../i18n.js';
 import { supabase } from '../supabase.js';
 import { state } from '../state.js';
 import { getVotes, getPollData } from './api.js';
+import { refreshVotersDialog } from '../components/voters-dialog.js';
 import {
     applyRealtimeVote,
     rebuildVoteState,
@@ -18,6 +19,7 @@ import {
 } from '../components/modals.js';
 
 export function renderVoteUI({ refreshDetail = false } = {}) {
+    refreshVotersDialog();
     state.options.forEach(option => updateCardSubelements(option.id));
     updateDetailModalIfOpen({ refreshContent: refreshDetail });
     return renderLeaderboard();
