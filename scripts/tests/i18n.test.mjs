@@ -33,7 +33,7 @@ test('the initial document and HTML partials resolve all language markers', asyn
         assert.doesNotMatch(rendered, /\{\{t:/);
         if (path === 'index.html') {
             assert.match(rendered, /<html lang="hr">/);
-            assert.match(rendered, /<title>Madrid - Trkadzije &amp; Rumoljubi<\/title>/);
+            assert.match(rendered, /<title>Madrid - Trkadžije &amp; Rumoljubi<\/title>/);
             assert.match(rendered, /placeholder="Unesi Booking.com ili Airbnb link"/);
         }
     }

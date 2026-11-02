@@ -68,7 +68,7 @@ test('regular users cannot edit other proposals even by invoking the save handle
         document.getElementById('edit-detail-title').value = 'Unauthorized';
         await window.saveOptionDetails();
     });
-    await expect(page.locator('#app-toast')).toHaveText('Nemate dopuštenje za uređivanje ovog smještaja.');
+    await expect(page.locator('#app-toast')).toHaveText('Nemaš dopuštenje za uređivanje ovog smještaja.');
     expect(backend.writes).toHaveLength(0);
     expect(backend.options[1].title).toBe('Apartman Sol');
 });

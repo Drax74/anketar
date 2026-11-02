@@ -7,8 +7,8 @@ test('initial HTML includes resolved text, metadata, labels and placeholders', a
     const source = await response.text();
     expect(source).not.toContain('{{t:');
     expect(source).toContain('<html lang="hr">');
-    expect(source).toContain('<title>Madrid - Trkadzije &amp; Rumoljubi</title>');
-    expect(source).toContain('content="Glasajte za smještaj u Madridu!"');
+    expect(source).toContain('<title>Madrid - Trkadžije &amp; Rumoljubi</title>');
+    expect(source).toContain('content="Glasaj za smještaj u Madridu!"');
     expect(source).toContain('aria-label="Trkadžije &amp; Rumoljubi — početna"');
     expect(source).toContain('placeholder="Unesi Booking.com ili Airbnb link"');
 });
