@@ -2,14 +2,16 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import injectHTML from 'vite-plugin-html-inject';
 import { localizeHtml, t } from './src/i18n.js';
+import { msw } from 'msw/vite';
 
-export default defineConfig({
+export default defineConfig(({ command, mode }) => ({
     base: '/anketar/',
     build: {
         outDir: 'dist',
         assetsDir: 'assets',
     },
     plugins: [
+        ...(command === 'serve' && mode === 'mock' ? [msw({ mode: 'worker-only' })] : []),
         injectHTML(),
         {
             name: 'app-language',
@@ -87,4 +89,4 @@ export default defineConfig({
             }
         })
     ]
-});
+}));
