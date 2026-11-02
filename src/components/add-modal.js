@@ -283,6 +283,7 @@ export async function submitNewOption() {
 
     closeAddModal();
 
+    state.pendingOptions.set(tempId, newOption);
     state.options = [newOption, ...state.options];
     renderOptions(true, tempId);
     renderLeaderboard(false);
@@ -308,6 +309,8 @@ export async function submitNewOption() {
         renderLeaderboard(false);
         showToast(t('add.failed'), 'error');
         return;
+    } finally {
+        state.pendingOptions.delete(tempId);
     }
 
     return tempId;

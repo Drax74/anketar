@@ -31,6 +31,14 @@ The tests run their own Vite server and use fictional members and accommodations
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm test
 ```
 
+`tests/multi-user.spec.mjs` opens two isolated browser contexts with different approved users and a shared in-memory backend. Writes in one session produce Supabase/Phoenix WebSocket messages for both sessions, which pass through the actual Supabase SDK and app subscription handlers. The tests verify new cards, vote additions/removals, rankings, avatars, open details, availability, duplicate events before/after HTTP responses, and simultaneous votes. They also cover reconnect catch-up, stale snapshots, pending creates, server-side deletion, and preserving an unsaved owner form when an admin edits the same proposal. Assertions verify that the documents never reload.
+
+Run only these checks with `npm test -- tests/multi-user.spec.mjs` (add the Chromium environment variable above when using the system browser). The fixture intercepts all Supabase traffic and does not contact a real project. It tests client synchronization, not Supabase replication configuration or live database permissions; a separate real-backend integration suite is still needed for those.
+
+`.github/workflows/test.yml` runs the unit/browser suite and production build on pull requests and pushes to `main`, and can also be triggered manually. Failed browser traces are retained as an artifact. It needs no Supabase credentials.
+
+On subscription/reconnection the app fetches a fresh poll snapshot because Postgres changes are not replayed for disconnected clients. Live-event revisions prevent a delayed snapshot from overwriting newer events, and pending creates/votes remain visible while their requests complete.
+
 The interface supports mobile browsing/rankings navigation, a desktop ranking sidebar, explicit owner editing, browser Back/Forward for mobile details, and reduced-motion preferences.
 
 On mobile, swipe horizontally across the content to switch between Stays and Rankings. Swipe right in a detail to return to the view that opened it, even after scrolling the detail. Pull down at the top of Stays to refresh, or at the top of a detail/add sheet to dismiss it. Short drags do not trigger actions. Screen-edge gestures, multiple fingers, form controls, and active editing stay with the browser; scrolling a sheet back to its top does not dismiss it in the same gesture. Reduced-motion mode keeps the refresh status visible without a spinning animation. No gesture library is required.

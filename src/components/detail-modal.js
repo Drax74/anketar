@@ -368,7 +368,7 @@ function setDetailEditing(editing) {
     if (!option || !sheet) return;
     const editable = canEditAccommodation(option);
     if (editing && !editable) return;
-    if (editing) populateDetail(sheet, option);
+    populateDetail(sheet, option);
     sheet.querySelector('#detail-readonly-section').hidden = editing;
     sheet.querySelector('#detail-editable-section').hidden = !editing;
     sheet.querySelector('.accommodation-detail__edit').hidden = editing || !editable;
@@ -454,7 +454,7 @@ export function closeDetail({
     return closeTask;
 }
 
-export function updateDetailModalIfOpen() {
+export function updateDetailModalIfOpen({ refreshContent = false } = {}) {
     if (state.activeDetailId === null) return;
 
     const opt = state.options.find(
@@ -464,6 +464,9 @@ export function updateDetailModalIfOpen() {
 
     const overlay = document.getElementById('detail-overlay');
     if (!overlay || !overlay.classList.contains('active')) return;
+    const sheet = overlay.querySelector('.detail-sheet');
+    // Refresh read-only fields without replacing a form someone is editing.
+    if (refreshContent && sheet.querySelector('#detail-editable-section').hidden) populateDetail(sheet, opt);
     renderAvailabilityBadge(overlay.querySelector('.accommodation-detail__availability'), opt);
 
     const isSelected = state.selectedOptionIds.has(opt.id);

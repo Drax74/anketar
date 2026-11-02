@@ -1,4 +1,5 @@
 export const state = {
+    pendingOptions: new Map(),
     userEmail: '',
     userName: '',
     selectedOptionIds: new Set(),
