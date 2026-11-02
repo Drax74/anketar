@@ -6,13 +6,16 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
+    "dev:mock": "vite --mode mock --port 5175 --strictPort",
     "build": "vite build",
     "preview": "vite preview",
+    "check:production": "node scripts/check-production-mocks.mjs",
     "generate-icons": "pwa-assets-generator --preset minimal public/android-chrome-512x512.png",
     "test": "npm run test:unit && playwright test",
     "test:unit": "node --test scripts/tests/*.test.mjs",
     "build:icons": "node scripts/build-icons.mjs",
     "predev": "npm run build:fonts",
+    "predev:mock": "npm run build:fonts",
     "prebuild": "npm run build:fonts",
     "pretest": "npm run build:fonts",
     "build:fonts": "npm run build:icons && node scripts/build-text-font.mjs"
@@ -29,13 +32,14 @@
   },
   "homepage": "https://github.com/Drax74/anketar#readme",
   "devDependencies": {
+    "@fontsource-variable/material-symbols-outlined": "^5.3.9",
     "@playwright/test": "^1.64.1",
     "@vite-pwa/assets-generator": "^2.0.0",
+    "msw": "^3.0.3",
     "subset-font": "^2.9.0",
     "vite": "^8.3.5",
     "vite-plugin-html-inject": "^1.1.2",
-    "vite-plugin-pwa": "^2.0.0",
-    "@fontsource-variable/material-symbols-outlined": "^5.3.9"
+    "vite-plugin-pwa": "^2.0.0"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

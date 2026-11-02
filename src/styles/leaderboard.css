@@ -3,7 +3,7 @@
 .ranking-row__image-wrap { position: relative; display: block; height: 66px; border-radius: 10px; overflow: hidden; background: var(--md-sys-color-surface-container-high); }
 .ranking-row__image { display: block; width: 100%; height: 100%; object-fit: cover; }
 .ranking-row__copy { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
-.ranking-row__title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--md-sys-color-on-surface); font-size: 15px; font-weight: 600; line-height: 1.35; letter-spacing: -.2px; }
+.ranking-row__title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; color: var(--md-sys-color-on-surface); font-size: 15px; font-weight: 600; line-height: 1.35; letter-spacing: -.2px; }
 .ranking-row__votes { color: var(--md-sys-color-on-surface-variant); font-size: 12px; }
 .ranking-row__arrow { color: var(--md-sys-color-on-surface-variant); font-size: 20px; }
 .ranking-row__voters:empty { display: none; }

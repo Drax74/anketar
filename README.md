@@ -18,6 +18,23 @@ npm run preview
 
 GitHub Pages builds and deploys `main` through `.github/workflows/deploy.yml`. Build output is generated under `dist`; use an external `--outDir` when checking a build without changing the tracked deployment files.
 
+## Interactive mock development
+
+```sh
+npm ci
+npm run dev:mock
+```
+
+Open the Vite address on port **5175**, with the `/anketar/` base path. This runs the real app against **Mock Service Worker**, with 32 fictional approved users and 16 accommodations. The crowded scenario includes 28, 24, 19, 14, 11, and 10-vote cards, long Croatian names, long/unbroken titles, availability badges, missing photos, and an old entry with no price. The first user is a mock super admin; the others are regular users.
+
+The floating **MOCK · 32 users** control lets you switch users, choose **crowded / tied / empty**, reset data, and simulate another user's vote. Changes persist in this mock origin's local storage until reset. Opening another tab shares the mock accommodations/votes while each tab keeps its own selected user, so you can inspect realtime updates interactively. Scraping returns fictional data; use an accommodation link containing `manual` to exercise the manual-entry fallback.
+
+Hide the controls using their button, or append `?mockControls=0` for clean screenshots. Reload restores controls hidden with the button.
+
+Mock mode uses a local `/anketar/mock-api` endpoint and separate per-tab auth storage; it never reuses a live Supabase session. The official MSW Vite plugin serves the worker only during mock development. The bootstrap waits for MSW before creating the Supabase client. Normal `npm run dev` keeps the real backend; production builds exclude the worker, handlers, mock controls, and seeded data. This mock backend is for UI development and does not replace tests of real Supabase permissions or replication.
+
+`tests/mock-dev.spec.mjs` exercises the actual browser service worker, crowded layouts at six screen widths, writes/reloads, controls, roles, and cross-tab realtime. After building, run `npm run check:production -- <build-directory>` to verify mock assets/data are excluded; CI runs this check too.
+
 ## Browser checks
 
 ```sh

@@ -209,7 +209,7 @@ function showPollMessage(message, onRetry = null, { loading = false } = {}) {
     document.querySelectorAll('.options-count').forEach(element => { element.textContent = '0'; });
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initializeApp() {
     setupAppNavigation();
     setPollAvailability(false);
     await checkInitialSession();
@@ -345,7 +345,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     updateUserUI();
     await loadPollData();
-});
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeApp, { once: true });
+else initializeApp();
 
 export async function handleNewOptionSubmission() {
     const tempId = await submitNewOption();
