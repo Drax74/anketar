@@ -7,7 +7,12 @@ import { getInitials } from './shared/helpers/format.js';
 import { state } from './state.js';
 import { getPollData } from './services/api.js';
 import { refreshVotesFromServer, renderVoteUI, setupRealtimeSubscription} from './services/realtime.js';
-import { initAuthListener, checkInitialSession, logoutUserSession, loginWithGoogle } from './services/auth.js';
+import {
+    initAuthListener,
+    checkInitialSession,
+    logoutUserSession,
+    initGoogleLogin
+} from './services/auth.js';
 import { findOptionCard, renderOptions, scrollToCardIfNeeded } from './components/cards.js';
 import { renderLeaderboard } from './components/leaderboard.js';
 import { openDetail, closeDetail, saveOptionDetails } from './components/modals.js';
@@ -235,6 +240,10 @@ async function initializeApp() {
                 : (state.userName || state.userEmail);
         }
 
+        if (!state.userEmail) {
+            initGoogleLogin('google-btn').catch(err => console.warn('Google login init warning:', err));
+        }
+
         updateUserUI();
 
         if (pollLoaded) {
@@ -384,7 +393,6 @@ window.saveOptionDetails = saveOptionDetails;
 window.openAddModal = openAddModal;
 window.closeAddModal = closeAddModal;
 window.submitNewOption = handleNewOptionSubmission;
-window.loginWithGoogle = loginWithGoogle;
 window.logoutUser = logoutUserSession;
 window.toggleUserMenu = toggleUserMenu;
 document.addEventListener('keydown', event => {

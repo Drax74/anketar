@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="/src/styles/style.css">
   <link rel="preload" as="image" href="/madrid-default.webp" fetchpriority="high">
   <link rel="preload" as="image" href="/hero-cover-image.webp" imagesrcset="/hero-cover-image-800.webp 800w, /hero-cover-image.webp 1600w" imagesizes="(min-width: 1440px) 1072px, (min-width: 1024px) calc(100vw - 368px), calc(100vw - 32px)" fetchpriority="high">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <div class="app-scroll-container trip-app">
@@ -107,9 +108,7 @@
     <p style="font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 24px; line-height: 1.5;">
       {{t:auth.intro}}
     </p>
-    <button class="btn btn-primary" onclick="loginWithGoogle()" style="width: 100%; padding: 12px; font-size: 1rem;">
-      {{t:auth.google}}
-    </button>
+    <div id="google-btn" style="display: flex; justify-content: center; margin-top: 12px;"></div>
   </div>
 </div>
 

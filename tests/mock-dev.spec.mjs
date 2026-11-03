@@ -2,11 +2,35 @@ import { test as base, expect } from '@playwright/test';
 
 const test = base.extend({
     context: async ({ context }, use) => {
+        await context.route('https://accounts.google.com/gsi/client', route => {
+            route.fulfill({
+                status: 200,
+                contentType: 'application/javascript',
+                body: `
+                    window.google = window.google || {};
+                    window.google.accounts = {
+                        id: {
+                            initialize: () => {},
+                            renderButton: (container) => {
+                                if (container) {
+                                    container.innerHTML = '<button id="mock-google-btn">Sign in with Google</button>';
+                                }
+                            },
+                            disableAutoSelect: () => {},
+                            prompt: () => {}
+                        }
+                    };
+                `
+            });
+        });
+
         const external = [];
         const errors = [];
         context.on('request', request => {
             const url = new URL(request.url());
-            if (!['127.0.0.1', 'localhost'].includes(url.hostname)) external.push(url.hostname);
+            if (!['127.0.0.1', 'localhost', 'accounts.google.com'].includes(url.hostname)) {
+                external.push(url.hostname);
+            }
         });
         context.on('page', page => page.on('pageerror', error => errors.push(error.message)));
         await use(context);
